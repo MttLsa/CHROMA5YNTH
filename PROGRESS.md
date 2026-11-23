@@ -7,4 +7,4 @@
 - Param iniziali: master_volume, master_polyphony. Editor generico da GuiLayout + About.
 - Installer: installer/macos/build_pkg.sh (.pkg VST3+AU), installer/windows/chroma5ynth.iss (Inno, VST3).
 - CI .github/workflows/build.yml: macOS Universal + Win x64, ctest, pluginval (strict 10), auval, artifact installer, release su tag v*, firma/notarizzazione opzionale via secrets.
-- Locale (Linux): build verde, 5 test verdi, pluginval VST3 strict 10 SUCCESS. CI macOS/Windows non ancora verificata.
+- CI: Windows verde (build, test, pluginval strict 10, installer .exe). macOS: nessun runner assegnato da GitHub (job in coda e annullato dopo 15 min, anche con macos-15/26/14/15-intel) → auval, .pkg e Universal da verificare.
