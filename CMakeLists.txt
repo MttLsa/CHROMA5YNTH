@@ -34,6 +34,10 @@ FetchContent_MakeAvailable(JUCE)
 
 # ---------------------------------------------------------------- Generated params
 find_package(Python3 REQUIRED COMPONENTS Interpreter)
+execute_process(COMMAND ${Python3_EXECUTABLE} -c "import yaml" RESULT_VARIABLE CHROMA_YAML_RESULT OUTPUT_QUIET ERROR_QUIET)
+if(NOT CHROMA_YAML_RESULT EQUAL 0)
+    message(FATAL_ERROR "PyYAML not found for ${Python3_EXECUTABLE}: run '${Python3_EXECUTABLE} -m pip install pyyaml'")
+endif()
 file(GLOB CHROMA_PARAM_YAMLS CONFIGURE_DEPENDS ${CMAKE_SOURCE_DIR}/params/*.yaml)
 set(CHROMA_GEN_DIR ${CMAKE_BINARY_DIR}/generated)
 set(CHROMA_GEN_FILES

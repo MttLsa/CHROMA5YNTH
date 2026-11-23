@@ -29,10 +29,13 @@ jobs:
         run: |
           if [[ "$GITHUB_REF_TYPE" == "tag" ]]; then V="${GITHUB_REF_NAME#v}"; else V="$(grep -m1 -oE 'project\(CHROMA5YNTH VERSION [0-9.]+' CMakeLists.txt | awk '{print $3}')"; fi
           echo "VERSION=$V" >> "$GITHUB_ENV"
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
       - name: Python deps
-        run: python3 -m pip install --break-system-packages pyyaml || python3 -m pip install pyyaml
+        run: python -m pip install pyyaml
       - name: Configure
-        run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_OSX_ARCHITECTURES="x86_64;arm64"
+        run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_OSX_ARCHITECTURES="x86_64;arm64" -DPython3_EXECUTABLE="$(python -c 'import sys;print(sys.executable)')"
       - name: Build
         run: cmake --build build --config Release -j3
       - name: Tests
@@ -96,10 +99,14 @@ jobs:
         run: |
           if [[ "$GITHUB_REF_TYPE" == "tag" ]]; then V="${GITHUB_REF_NAME#v}"; else V="$(grep -m1 -oE 'project\(CHROMA5YNTH VERSION [0-9.]+' CMakeLists.txt | awk '{print $3}')"; fi
           echo "VERSION=$V" >> "$GITHUB_ENV"
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
       - name: Python deps
         run: python -m pip install pyyaml
       - name: Configure
-        run: cmake -S . -B build -A x64
+        shell: bash
+        run: cmake -S . -B build -A x64 -DPython3_EXECUTABLE="$(python -c 'import sys;print(sys.executable)')"
       - name: Build
         run: cmake --build build --config Release --parallel
       - name: Tests
