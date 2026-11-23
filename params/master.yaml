@@ -1,0 +1,21 @@
+params:
+  - id: master_volume
+    name: Master Volume
+    type: float
+    min: -60.0
+    max: 6.0
+    default: 0.0
+    skew: -12.0
+    step: 0.01
+    unit: dB
+    section: Master
+    description: Livello di uscita finale, prima del limiter.
+
+  - id: master_polyphony
+    name: Polyphony
+    type: choice
+    choices: ["12", "24", "36"]
+    default: "24"
+    section: Master
+    description: Dimensione del pool globale di voci condiviso tra i layer.
+    automatable: false
