@@ -1,0 +1,12 @@
+name: probe-macos
+on: push
+jobs:
+  probe:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-26, macos-15-intel, macos-14, macos-latest-xlarge]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 5
+    steps:
+      - run: sw_vers; uname -m
