@@ -35,7 +35,23 @@ cat > "$WORK/distribution.xml" <<XML
 XML
 
 SIGN_ARGS=()
-if [[ -n "${MAC_INSTALLER_SIGN_ID:-}" ]]; then SIGN_ARGS=(--sign "$MAC_INSTALLER_SIGN_ID"); fi
+if [[ -n "${MAC_INSTALLER_SIGN_ID:-}" ]]; then
+  echo "Building signed installer..."
+  productbuild \
+    --distribution "$WORK/distribution.xml" \
+    --package-path "$WORK" \
+    --sign "$MAC_INSTALLER_SIGN_ID" \
+    "$OUT/${PRODUCT}-${VERSION}-macOS.pkg"
+else
+  echo "Building unsigned installer..."
+  productbuild \
+    --distribution "$WORK/distribution.xml" \
+    --package-path "$WORK" \
+    "$OUT/${PRODUCT}-${VERSION}-macOS.pkg"
+fi
+
+rm -rf "$WORK"
+echo "Built $OUT/${PRODUCT}-${VERSION}-macOS.pkg"
 productbuild --distribution "$WORK/distribution.xml" --package-path "$WORK" "${SIGN_ARGS[@]}" \
   "$OUT/${PRODUCT}-${VERSION}-macOS.pkg"
 rm -rf "$WORK"
