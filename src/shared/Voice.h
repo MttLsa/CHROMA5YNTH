@@ -63,6 +63,7 @@ private:
     std::array<LfoParams, 4> lfoP {};
     ModMatrixState matrix;
     std::array<float, lp::count> offsets {};
+    std::array<float, 4> lfoOut {};
 
     float glideTarget = 60.0f, glideStep = 0.0f, glideTime = 0.0f;
     bool gliding = false;

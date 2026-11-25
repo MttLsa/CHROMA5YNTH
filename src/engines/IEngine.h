@@ -28,6 +28,7 @@ struct EngineVoiceParams
     const float* driftSemis = nullptr;            // DRIFT: per-oscillator pitch offset [maxUnison], null = off
     const float* base = nullptr;                  // layer plain values [lp::count] (smoothed)
     const float* offsets = nullptr;               // per-voice normalised modulation offsets [lp::count], may be null
+    const float* lfo = nullptr;                   // layer LFO 1..4 outputs of this voice [4], may be null
     float* bypassL = nullptr;                     // optional post-filter bus (Mixer routing "Bypass")
     float* bypassR = nullptr;
 };

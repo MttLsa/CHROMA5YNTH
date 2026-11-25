@@ -125,7 +125,7 @@
 | Mod N Enable | Off / On | On |  | Abilita lo slot N. |
 | Mod N Source | 31 voci | Off |  | Sorgente dello slot N. |
 | Mod N CC | 0 … 127 | 1 |  | Numero CC quando la sorgente è MIDI CC. |
-| Mod N Destination | 187 voci | Off |  | Destinazione: qualunque parametro continuo del Layer. |
+| Mod N Destination | 251 voci | Off |  | Destinazione: qualunque parametro continuo del Layer. |
 | Mod N Amount | -1.0 … 1.0 | 0.0 |  | Quantità ±100% del range della destinazione. |
 | Mod N Via | 31 voci | Off |  | Sorgente che scala l'amount (Off = 1). |
 | Mod N Curve | Linear / Exponential / Logarithmic / S-Curve | Linear |  | Curva applicata alla sorgente. |
@@ -193,6 +193,94 @@
 | Noise Color | -1.0 … 1.0 | 0.0 |  | Tilt spettrale: < 0 più scuro, > 0 più brillante. |
 | Noise Pan | -1.0 … 1.0 | 0.0 |  | Pan del Noise. |
 | Noise Stereo Width | 0.0 … 1.0 | 0.0 | % | 0 = mono, 100% = canali L/R indipendenti. |
+
+## FM6 · Op N
+
+| Parametro | Range | Default | Unità | Descrizione |
+|---|---|---|---|---|
+| Op N | Off / On | On |  | Attiva l'operatore N (spento o a livello 0 = zero CPU; non modula e non suona). |
+| Op N Ratio/Fixed | Ratio / Fixed | Ratio |  | Ratio = frequenza proporzionale alla nota; Fixed = frequenza fissa in Hz. |
+| Op N Ratio | 0.0625 … 64.0 | 1.0 | x | Rapporto di frequenza rispetto alla nota (Ratio). Destinazione Mod Matrix "Op freq". |
+| Op N Coarse | -24 … 24 | 0 | st | Trasposizione in semitoni (Ratio e Fixed). |
+| Op N Fine | -100.0 … 100.0 | 0.0 | ct | Intonazione fine in cent (Ratio e Fixed). |
+| Op N Fixed Hz | 1.0 … 20000.0 | 440.0 | Hz | Frequenza in modalità Fixed (non segue la tastiera). |
+| Op N Detune | -10.0 … 10.0 | 0.0 | ct | Piccolo scostamento in cent per battimenti tra operatori. |
+| Op N Wave | Sine / Half Sine / Abs Sine / Pulse Sine / Alt Sine / Camel Sine / Square / Saw | Sine |  | Forma dell'operatore: Sine + 7 forme derivate dalla sinusoide (semionda, raddrizzata, impulsi, doppia frequenza alternata, quadra e saw morbide). |
+| Op N Phase | 0.0 … 360.0 | 0.0 | ° | Fase iniziale usata con Phase Reset. |
+| Op N Phase Reset | Off / On | On |  | On = la fase riparte da Phase a ogni nota; Off = fase libera. |
+| Op N Sync | Off / On | Off |  | Hard sync: la fase dell'operatore riparte a ogni ciclo della nota fondamentale (timbri formantici con rapporti non interi). |
+| Op N Feedback | 0.0 … 1.0 | 0.0 | % | Auto-modulazione dell'operatore (negli algoritmi 4 e 6 l'anello di feedback dell'Op 6 passa da Op 4 / Op 5). Destinazione "Op feedback". |
+| Op N Output Level | 0.0 … 1.0 | 0.0 | % | Livello d'uscita con legge logaritmica (−6 dB ogni 1/12 di corsa, come una scala 0–99): per un modulatore è l'indice di modulazione. Destinazione "Op level". Default per indice (1: 1.0). |
+| Op N Velocity Sens | 0.0 … 1.0 | 0.0 | % | Quanto la velocity riduce il livello dell'operatore (100% = fino a −42 dB a velocity minima). |
+| Op N AM Sens | 0.0 … 1.0 | 0.0 | % | Sensibilità dell'operatore alla modulazione d'ampiezza degli LFO FM (Amp Depth). |
+| Op N Pan | -1.0 … 1.0 | 0.0 |  | Pan dell'operatore quando è un carrier. |
+| Op N Breakpoint | 0 … 127 | 60 |  | Nota MIDI di riferimento del key scaling di livello (60 = C3). |
+| Op N Left Depth | 0.0 … 1.0 | 0.0 | % | Profondità del key scaling sotto il breakpoint. |
+| Op N Right Depth | 0.0 … 1.0 | 0.0 | % | Profondità del key scaling sopra il breakpoint. |
+| Op N Left Curve | -Lin / -Exp / +Exp / +Lin | -Lin |  | Curva sotto il breakpoint: − attenua, + amplifica; Lin lineare in ottave, Exp esponenziale. |
+| Op N Right Curve | -Lin / -Exp / +Exp / +Lin | -Lin |  | Curva sopra il breakpoint. |
+| Op N Rate Scaling | 0.0 … 1.0 | 0.0 | % | Le note alte accorciano i tempi dell'inviluppo dell'operatore (100% = ×2 ogni ottava). |
+
+## FM6 · Op N Env
+
+| Parametro | Range | Default | Unità | Descrizione |
+|---|---|---|---|---|
+| Op N Attack | 0.0 … 10.0 | 0.002 | s | Attacco dell'inviluppo dell'operatore. |
+| Op N Hold | 0.0 … 10.0 | 0.0 | s | Hold al picco. |
+| Op N Decay | 0.0 … 10.0 | 1.0 | s | Decadimento. |
+| Op N Sustain | 0.0 … 1.0 | 1.0 | % | Livello di sustain. |
+| Op N Release | 0.0 … 20.0 | 0.3 | s | Rilascio (la voce termina con l'Amp Env del Layer). |
+| Op N Attack Curve | Linear / Exponential / Logarithmic | Linear |  | Curva dell'attacco. |
+| Op N Decay Curve | Linear / Exponential / Logarithmic | Exponential |  | Curva del decay. |
+| Op N Release Curve | Linear / Exponential / Logarithmic | Exponential |  | Curva del release. |
+| Op N Env Loop | Off / On | Off |  | Ripete Attack-Hold-Decay finché la nota è tenuta. |
+| Op N Time Scale | 0.1 … 10.0 | 1.0 | x | Moltiplica tutti i tempi dell'inviluppo. |
+
+## FM6 · Custom
+
+| Parametro | Range | Default | Unità | Descrizione |
+|---|---|---|---|---|
+| Custom Op 1 → Op N | -1.0 … 1.0 | 0.0 |  | Matrice Custom: modulazione di Op 1 su Op N (segno = polarità; diagonale = feedback). |
+| Custom Op 2 → Op N | -1.0 … 1.0 | 0.0 |  | Matrice Custom: modulazione di Op 2 su Op N. |
+| Custom Op 3 → Op N | -1.0 … 1.0 | 0.0 |  | Matrice Custom: modulazione di Op 3 su Op N. |
+| Custom Op 4 → Op N | -1.0 … 1.0 | 0.0 |  | Matrice Custom: modulazione di Op 4 su Op N. |
+| Custom Op 5 → Op N | -1.0 … 1.0 | 0.0 |  | Matrice Custom: modulazione di Op 5 su Op N. |
+| Custom Op 6 → Op N | -1.0 … 1.0 | 0.0 |  | Matrice Custom: modulazione di Op 6 su Op N. |
+| Custom Op N Out | 0.0 … 1.0 | 0.0 | % | Matrice Custom: livello dell'Op N come carrier (0 = non suona). Default per indice (1: 1.0). |
+
+## FM6 · LFO
+
+| Parametro | Range | Default | Unità | Descrizione |
+|---|---|---|---|---|
+| FM LFO N Pitch Depth | 0.0 … 12.0 | 0.0 | st | Vibrato da LFO N del Layer (Delay, Rate, Key sync = Mode Retrigger) su tutti gli operatori in Ratio. |
+| FM LFO N Amp Depth | 0.0 … 1.0 | 0.0 | % | Tremolo da LFO N sugli operatori, scalato dall'AM Sens di ciascuno. |
+| FM LFO N Op Depth | 0.0 … 1.0 | 0.0 | % | Modulazione da LFO N dell'indice di modulazione (brillantezza). |
+
+## FM6 · Algorithm
+
+| Parametro | Range | Default | Unità | Descrizione |
+|---|---|---|---|---|
+| Algorithm | 33 voci | 1 |  | Algoritmo A: 32 configurazioni classiche a 6 operatori, o Custom (matrice 6×6). |
+| Algorithm B | 33 voci | 1 |  | Algoritmo B, destinazione dell'Algorithm Morph. |
+| Algorithm Morph | 0.0 … 1.0 | 0.0 | % | Interpola connessioni, feedback e carrier dall'algoritmo A (0%) al B (100%). |
+| Mod Index | 0.0 … 2.0 | 1.0 | x | Scala tutte le modulazioni tra operatori (non il feedback). Destinazione "Mod index". |
+| FM Output | 0.0 … 1.0 | 0.7 | % | Livello d'uscita dei carrier prima del filtro. |
+
+## FM6 · Pitch Env
+
+| Parametro | Range | Default | Unità | Descrizione |
+|---|---|---|---|---|
+| Pitch Env Amount | -48.0 … 48.0 | 0.0 | st | Escursione dell'inviluppo di pitch (0 = spento). |
+| Pitch Env Attack | 0.0 … 10.0 | 0.0 | s | Attacco. |
+| Pitch Env Decay | 0.0 … 10.0 | 0.2 | s | Decadimento. |
+| Pitch Env Sustain | 0.0 … 1.0 | 0.0 | % | Livello di sustain. |
+| Pitch Env Release | 0.0 … 20.0 | 0.2 | s | Rilascio. |
+| Pitch Env Attack Curve | Linear / Exponential / Logarithmic | Linear |  | Curva dell'attacco. |
+| Pitch Env Decay Curve | Linear / Exponential / Logarithmic | Exponential |  | Curva del decay. |
+| Pitch Env Release Curve | Linear / Exponential / Logarithmic | Exponential |  | Curva del release. |
+| Pitch Env Velocity | 0.0 … 1.0 | 0.0 | % | Quanto la velocity scala l'escursione. |
+| Pitch Env Key Track | -1.0 … 1.0 | 0.0 |  | Le note alte accorciano (> 0) o allungano (< 0) i tempi. |
+| Pitch Env Retrigger | Off / On | On |  | Al retrigger riparte da zero (Off = dal livello corrente). |
 
 ## Layer FX · Distortion
 

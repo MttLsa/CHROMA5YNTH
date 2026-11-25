@@ -1,5 +1,6 @@
 #include "Synth.h"
 #include "engines/analog/AnalogEngine.h"
+#include "engines/fm/FmEngine.h"
 #include "engines/sine/SineEngine.h"
 #include "shared/ParamRange.h"
 #include "shared/Scale.h"
@@ -49,8 +50,9 @@ Synth::Synth (juce::AudioProcessor& p, juce::AudioProcessorValueTreeState& s) : 
               get (ParamIDs::layerTranspose[l]), get (ParamIDs::layerKeyLo[l]), get (ParamIDs::layerKeyHi[l]),
               get (ParamIDs::layerVelLo[l]), get (ParamIDs::layerVelHi[l]), get (ParamIDs::layerMidiChannel[l]),
               get (ParamIDs::layerMaxVoices[l]) };
-        // Analog (§3A); the engines of later phases use the test sine engine until implemented.
+        // Analog (§3A), FM6 (§3C); the engines of later phases use the test sine engine until implemented.
         analogEngines[l] = std::make_unique<AnalogEngine>();
+        fmEngines[l] = std::make_unique<FmEngine>();
         sineEngines[l] = std::make_unique<SineEngine>();
         engineIndex[l] = 0;
         runtime[l].engine = analogEngines[l].get();
@@ -72,6 +74,7 @@ void Synth::prepare (double sr, int maxBlockSize, int numOutputChannels)
     for (size_t l = 0; l < numLayers; ++l)
     {
         analogEngines[l]->prepare (sr, controlBlock, maxPoolVoices);
+        fmEngines[l]->prepare (sr, controlBlock, maxPoolVoices);
         sineEngines[l]->prepare (sr, controlBlock, maxPoolVoices);
         layers[l].bufL.assign (controlBlock, 0.0f);
         layers[l].bufR.assign (controlBlock, 0.0f);
@@ -176,7 +179,7 @@ void Synth::readHostParams() noexcept
             st.stackSize = 0;
             st.monoVoice = -1;
             engineIndex[l] = e;
-            runtime[l].engine = e == 0 ? analogEngines[l].get() : sineEngines[l].get();
+            runtime[l].engine = e == 0 ? analogEngines[l].get() : e == 2 ? fmEngines[l].get() : sineEngines[l].get();
         }
     }
 }

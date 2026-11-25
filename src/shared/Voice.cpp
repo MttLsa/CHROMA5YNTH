@@ -299,6 +299,9 @@ void Voice::controlTick (VoiceGlobals& G, int n) noexcept
     ep.unisonPan = val (L, lp::unisonPan);
     ep.base = L.base.data();
     ep.offsets = offsets.data();
+    for (size_t i = 0; i < 4; ++i)
+        lfoOut[i] = lfos[i].value();
+    ep.lfo = lfoOut.data();
     updateFilter (L, dt);
 
     if (L.engine != nullptr)
