@@ -13,7 +13,7 @@ env:
 
 jobs:
   macos:
-    runs-on: macos-latest
+    runs-on: macos-15-intel
     env:
       # Optional signing / notarization: active only if these secrets exist.
       MACOS_CERT_P12: ${{ secrets.MACOS_CERT_P12 }}
