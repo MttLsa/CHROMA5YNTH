@@ -56,4 +56,5 @@
 - src/engines/fm/FmSysex: import banchi .syx 32 voci (4104 byte con checksum o 4096 raw) → valori lp (algoritmo, feedback sull'Op giusto, ratio/fixed, key scaling, EG approssimati ad ADSR, Pitch EG, LFO 1, transpose, Amp Env neutro), nome patch.
 - Synth: engine FM6 preallocato per Layer (indice 2). tests/test_fm.cpp: tabella algoritmi, sine pulita, sidebande = Bessel (±0.5 dB), Mod Index, feedback stabile/periodico, Ratio/Coarse/Fine/Fixed, key scaling, velocity, ENV/release, Custom = classico, Morph, Pitch Env, LFO pitch/amp/op, Sync, forme, pan/unison, aliasing 4× < −60 dB, import .syx, integrazione Synth. 59/59 verdi (Linux).
 - CPU (Release, Linux): voce 6 Op con feedback a 2× ≈ 1.7% core @48 kHz. Bench: `chroma_tests "[.bench]"`.
+- Windows annullato (richiesta utente): rimossi job CI windows e installer Inno; CLAUDE.md aggiornato (solo macOS).
 - Aperti: GUI FM6 + selezione file .syx (fase GUI); Op Env a 4 rate/level non nativi (approssimazione ADSR); SIMD su unison.

@@ -7,7 +7,7 @@
 - Output in chat: niente spiegazioni, niente riepiloghi del codice. Solo: file toccati, esito build/test, problemi aperti.
 - Non chiedere conferme per scelte già decise in SPEC.md. Le voci marcate [DEFAULT] sono decise.
 - A fine fase: build verde + test verdi → commit → aggiorna PROGRESS.md (max 10 righe per fase) → STOP.
-- Fine fase obbligatoria: CI GitHub Actions verde su macOS e Windows, poi crea una PR verso main e scrivi il link come ultima riga.
+- Fine fase obbligatoria: CI GitHub Actions verde su macOS, poi crea una PR verso main e scrivi il link come ultima riga.
 
 ## Identità plugin (obbligatoria)
 - Nome prodotto: CHROMA5YNTH. Produttore (come appare nelle DAW): "TMFU audiovibe" (scritto esattamente così).
@@ -24,7 +24,7 @@
 
 ## Stack
 - JUCE 8, C++20, CMake (JUCE via FetchContent), Catch2 per test, pluginval + auval per validazione.
-- Formati: VST3, AU, Standalone (solo per test). macOS Universal (x86_64 + arm64), min macOS 10.13. Windows x64 VST3 (deciso).
+- Formati: VST3, AU, Standalone (solo per test). macOS Universal (x86_64 + arm64), min macOS 10.13. Solo macOS (Windows annullato: niente job CI né installer Windows).
 - Build ufficiali e installer SOLO via GitHub Actions (il Mac dello sviluppatore è un MacBook Pro 2012 Intel con connessione hotspot: evitare download pesanti in locale).
 
 ## Architettura del codice

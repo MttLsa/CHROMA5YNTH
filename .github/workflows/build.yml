@@ -90,50 +90,9 @@ jobs:
           name: macos-installer
           path: dist/*.pkg
 
-  windows:
-    runs-on: windows-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Version
-        shell: bash
-        run: |
-          if [[ "$GITHUB_REF_TYPE" == "tag" ]]; then V="${GITHUB_REF_NAME#chroma5ynth-v}"; else V="$(grep -m1 -oE 'project\(CHROMA5YNTH VERSION [0-9.]+' CMakeLists.txt | awk '{print $3}')"; fi
-          echo "VERSION=$V" >> "$GITHUB_ENV"
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.12"
-      - name: Python deps
-        run: python -m pip install pyyaml
-      - name: Configure
-        shell: bash
-        run: cmake -S . -B build -A x64 -DPython3_EXECUTABLE="$(python -c 'import sys;print(sys.executable)')"
-      - name: Build
-        run: cmake --build build --config Release --parallel
-      - name: Tests
-        run: ctest --test-dir build -C Release --output-on-failure
-      - name: pluginval
-        shell: bash
-        run: |
-          curl -sSL -o pluginval.zip "https://github.com/Tracktion/pluginval/releases/download/${PLUGINVAL_VERSION}/pluginval_Windows.zip"
-          7z x -y pluginval.zip > /dev/null
-          ./pluginval.exe --strictness-level 10 --validate-in-process --skip-gui-tests --timeout-ms 300000 "build/${PLUGIN}_artefacts/Release/VST3/${PLUGIN}.vst3"
-      - name: Build installer (Inno Setup)
-        shell: pwsh
-        run: |
-          $find = { Get-ChildItem -Path "${env:ProgramFiles(x86)}","${env:ProgramFiles}" -Filter ISCC.exe -Recurse -Depth 2 -ErrorAction SilentlyContinue | Select-Object -First 1 -ExpandProperty FullName }
-          $iscc = & $find
-          if (-not $iscc) { choco install innosetup -y --no-progress; $iscc = & $find }
-          Write-Host "ISCC: $iscc"
-          & $iscc "/DAppVersion=$env:VERSION" "/DSourceDir=$PWD\build\$env:PLUGIN`_artefacts\Release\VST3" "/DOutDir=$PWD\dist" installer\windows\chroma5ynth.iss
-          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-      - uses: actions/upload-artifact@v4
-        with:
-          name: windows-installer
-          path: dist/*.exe
-
   release:
     if: startsWith(github.ref, 'refs/tags/chroma5ynth-v')
-    needs: [macos, windows]
+    needs: [macos]
     runs-on: ubuntu-latest
     permissions:
       contents: write
