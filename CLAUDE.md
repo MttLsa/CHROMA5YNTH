@@ -7,6 +7,7 @@
 - Output in chat: niente spiegazioni, niente riepiloghi del codice. Solo: file toccati, esito build/test, problemi aperti.
 - Non chiedere conferme per scelte già decise in SPEC.md. Le voci marcate [DEFAULT] sono decise.
 - A fine fase: build verde + test verdi → commit → aggiorna PROGRESS.md (max 10 righe per fase) → STOP.
+- Fine fase obbligatoria: CI GitHub Actions verde su macOS e Windows, poi crea una PR verso main e scrivi il link come ultima riga.
 
 ## Identità plugin (obbligatoria)
 - Nome prodotto: CHROMA5YNTH. Produttore (come appare nelle DAW): "TMFU audiovibe" (scritto esattamente così).
