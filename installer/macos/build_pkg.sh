@@ -34,7 +34,6 @@ cat > "$WORK/distribution.xml" <<XML
 </installer-gui-script>
 XML
 
-SIGN_ARGS=()
 if [[ -n "${MAC_INSTALLER_SIGN_ID:-}" ]]; then
   echo "Building signed installer..."
   productbuild \
@@ -50,9 +49,5 @@ else
     "$OUT/${PRODUCT}-${VERSION}-macOS.pkg"
 fi
 
-rm -rf "$WORK"
-echo "Built $OUT/${PRODUCT}-${VERSION}-macOS.pkg"
-productbuild --distribution "$WORK/distribution.xml" --package-path "$WORK" "${SIGN_ARGS[@]}" \
-  "$OUT/${PRODUCT}-${VERSION}-macOS.pkg"
 rm -rf "$WORK"
 echo "Built $OUT/${PRODUCT}-${VERSION}-macOS.pkg"
