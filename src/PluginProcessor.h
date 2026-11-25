@@ -1,6 +1,7 @@
 #pragma once
 
 #include <juce_audio_processors/juce_audio_processors.h>
+#include "core/Synth.h"
 
 namespace chroma
 {
@@ -37,11 +38,11 @@ public:
     void setStateInformation (const void* data, int sizeInBytes) override;
 
     juce::AudioProcessorValueTreeState& getState() noexcept { return state; }
+    Synth& getSynth() noexcept { return synth; }
 
 private:
     juce::AudioProcessorValueTreeState state;
-    std::atomic<float>* masterVolumeDb = nullptr;
-    juce::SmoothedValue<float, juce::ValueSmoothingTypes::Multiplicative> masterGain;
+    Synth synth { *this, state };
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (ChromaProcessor)
 };

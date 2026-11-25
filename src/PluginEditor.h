@@ -23,6 +23,10 @@ private:
     StyleLookAndFeel lookAndFeel;      // declared first: destroyed after every child
     std::vector<std::unique_ptr<Panel>> panels;
     std::vector<std::unique_ptr<Control>> controls;
+    std::vector<std::unique_ptr<juce::AudioProcessorValueTreeState::ComboBoxAttachment>> comboAttachments;
+    juce::Viewport viewport;
+    juce::Component content;
+    int layoutContent (int width);
     juce::TextButton aboutButton { "About" };
     juce::TooltipWindow tooltips { this, 600 };
 

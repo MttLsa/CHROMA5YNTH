@@ -8,13 +8,12 @@ ChromaProcessor::ChromaProcessor()
     : AudioProcessor (BusesProperties().withOutput ("Output", juce::AudioChannelSet::stereo(), true)),
       state (*this, nullptr, "CHROMA5YNTH", createParameterLayout())
 {
-    masterVolumeDb = state.getRawParameterValue (ParamIDs::masterVolume);
 }
 
-void ChromaProcessor::prepareToPlay (double sampleRate, int)
+void ChromaProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
 {
-    masterGain.reset (sampleRate, 0.02);
-    masterGain.setCurrentAndTargetValue (juce::Decibels::decibelsToGain (masterVolumeDb->load()));
+    synth.prepare (sampleRate, samplesPerBlock, getTotalNumOutputChannels());
+    setLatencySamples (synth.getLatencySamples());
 }
 
 bool ChromaProcessor::isBusesLayoutSupported (const BusesLayout& layouts) const
@@ -23,14 +22,15 @@ bool ChromaProcessor::isBusesLayoutSupported (const BusesLayout& layouts) const
     return out == juce::AudioChannelSet::stereo() || out == juce::AudioChannelSet::mono();
 }
 
-void ChromaProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::MidiBuffer&)
+void ChromaProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::MidiBuffer& midi)
 {
     juce::ScopedNoDenormals noDenormals;
-    buffer.clear();
-
-    // Engines/layers arrive in later phases; keep the smoother advancing.
-    masterGain.setTargetValue (juce::Decibels::decibelsToGain (masterVolumeDb->load(), -60.0f));
-    masterGain.skip (buffer.getNumSamples());
+    double bpm = 120.0;
+    if (auto* ph = getPlayHead())
+        if (auto pos = ph->getPosition())
+            if (auto b = pos->getBpm())
+                bpm = *b;
+    synth.process (buffer, midi, bpm);
 }
 
 juce::AudioProcessorEditor* ChromaProcessor::createEditor()
@@ -40,7 +40,10 @@ juce::AudioProcessorEditor* ChromaProcessor::createEditor()
 
 void ChromaProcessor::getStateInformation (juce::MemoryBlock& destData)
 {
-    if (auto xml = state.copyState().createXml())
+    auto tree = state.copyState();
+    tree.removeChild (tree.getChildWithName ("CORE"), nullptr);
+    tree.appendChild (synth.saveState(), nullptr);
+    if (auto xml = tree.createXml())
         copyXmlToBinary (*xml, destData);
 }
 
@@ -48,7 +51,13 @@ void ChromaProcessor::setStateInformation (const void* data, int sizeInBytes)
 {
     if (auto xml = getXmlFromBinary (data, sizeInBytes))
         if (xml->hasTagName (state.state.getType()))
-            state.replaceState (juce::ValueTree::fromXml (*xml));
+        {
+            auto tree = juce::ValueTree::fromXml (*xml);
+            const auto core = tree.getChildWithName ("CORE");
+            tree.removeChild (core, nullptr);
+            state.replaceState (tree);
+            synth.loadState (core);
+        }
 }
 } // namespace chroma
 

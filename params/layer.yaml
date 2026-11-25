@@ -1,0 +1,18 @@
+# Parametri comuni dei Layer (§1), esposti all'host.
+blocks:
+  - repeat: { count: 12 }
+    section: Layer {n}
+    params:
+      - { id: "layer{n}_on", array: layerOn, name: "L{n} On", type: bool, default: false, default_by_index: { 1: true }, description: "Layer {n} acceso. Spento = zero CPU." }
+      - { id: "layer{n}_engine", array: layerEngine, name: "L{n} Engine", type: choice, choices: [Analog, Additive, FM6, Wavetable, PD], default: Analog, automatable: false, description: "Engine del Layer {n}." }
+      - { id: "layer{n}_volume", array: layerVolume, name: "L{n} Volume", type: float, min: -60.0, max: 6.0, default: 0.0, skew: -12.0, step: 0.01, unit: dB, description: "Volume del Layer {n}." }
+      - { id: "layer{n}_pan", array: layerPan, name: "L{n} Pan", type: float, min: -1.0, max: 1.0, default: 0.0, step: 0.001, description: "Pan del Layer {n} (−1 = L, +1 = R)." }
+      - { id: "layer{n}_mute", array: layerMute, name: "L{n} Mute", type: bool, default: false, description: "Mute del Layer {n}." }
+      - { id: "layer{n}_solo", array: layerSolo, name: "L{n} Solo", type: bool, default: false, description: "Solo del Layer {n}: se almeno un Layer è in solo, suonano solo i Layer in solo." }
+      - { id: "layer{n}_transpose", array: layerTranspose, name: "L{n} Transpose", type: int, min: -48, max: 48, default: 0, unit: st, description: "Trasposizione del Layer {n} in semitoni." }
+      - { id: "layer{n}_key_lo", array: layerKeyLo, name: "L{n} Key Low", type: int, min: 0, max: 127, default: 0, description: "Nota più bassa del key range del Layer {n}." }
+      - { id: "layer{n}_key_hi", array: layerKeyHi, name: "L{n} Key High", type: int, min: 0, max: 127, default: 127, description: "Nota più alta del key range del Layer {n}." }
+      - { id: "layer{n}_vel_lo", array: layerVelLo, name: "L{n} Vel Low", type: int, min: 1, max: 127, default: 1, description: "Velocity minima del Layer {n}." }
+      - { id: "layer{n}_vel_hi", array: layerVelHi, name: "L{n} Vel High", type: int, min: 1, max: 127, default: 127, description: "Velocity massima del Layer {n}." }
+      - { id: "layer{n}_midi_ch", array: layerMidiChannel, name: "L{n} MIDI Ch", type: choice, choices: [All, "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16"], default: All, automatable: false, description: "Canale MIDI del Layer {n} (ignorato in MPE)." }
+      - { id: "layer{n}_max_voices", array: layerMaxVoices, name: "L{n} Max Voices", type: int, min: 1, max: 36, default: 36, automatable: false, description: "Voci massime del Layer {n} (limitate dal pool globale)." }

@@ -7,7 +7,7 @@ using APVTS = juce::AudioProcessorValueTreeState;
 
 namespace
 {
-constexpr int knobW = 76, knobH = 96, segW = 120, segH = 40, panelH = style::panelHeaderH + knobH + 12;
+constexpr int knobW = 76, knobH = 96, segW = 120, segH = 40;
 }
 
 struct ChromaEditor::Control
@@ -30,7 +30,7 @@ ChromaEditor::ChromaEditor (ChromaProcessor& p) : AudioProcessorEditor (p)
     for (const auto* s : gui::sections)
     {
         panels.push_back (std::make_unique<Panel> (s));
-        addAndMakeVisible (*panels.back());
+        content.addAndMakeVisible (*panels.back());
     }
 
     for (const auto& e : gui::params)
@@ -42,7 +42,16 @@ ChromaEditor::ChromaEditor (ChromaProcessor& p) : AudioProcessorEditor (p)
         c->section = e.section;
         const juce::String type (e.type);
 
-        if (type == "choice" || type == "bool")
+        if (type == "choice" && e.numChoices > 4)
+        {
+            auto combo = std::make_unique<juce::ComboBox>();
+            combo->addItemList (apvts.getParameter (e.id)->getAllValueStrings(), 1);
+            combo->setTooltip (e.name);
+            comboAttachments.push_back (std::make_unique<APVTS::ComboBoxAttachment> (apvts, e.id, *combo));
+            c->widget = std::move (combo);
+            c->compact = true;
+        }
+        else if (type == "choice" || type == "bool")
         {
             auto seg = std::make_unique<Segmented>();
             seg->attach (apvts, e.id);
@@ -56,7 +65,7 @@ ChromaEditor::ChromaEditor (ChromaProcessor& p) : AudioProcessorEditor (p)
             c->widget = std::move (knob);
         }
 
-        addAndMakeVisible (*c->widget);
+        content.addAndMakeVisible (*c->widget);
         controls.push_back (std::move (c));
     }
 
@@ -66,10 +75,12 @@ ChromaEditor::ChromaEditor (ChromaProcessor& p) : AudioProcessorEditor (p)
     };
     addAndMakeVisible (aboutButton);
 
-    const int h = style::titleH + (int) gui::sections.size() * (panelH + style::margin) + style::margin;
+    viewport.setViewedComponent (&content, false);
+    viewport.setScrollBarsShown (true, false);
+    addAndMakeVisible (viewport);
     setResizable (true, true);
-    setResizeLimits (480, h, 2000, 1600);
-    setSize (720, h);
+    setResizeLimits (480, 320, 2400, 1800);
+    setSize (980, 720);
 }
 
 ChromaEditor::~ChromaEditor()
@@ -88,22 +99,44 @@ void ChromaEditor::paint (juce::Graphics& g)
 void ChromaEditor::resized()
 {
     aboutButton.setBounds (getWidth() - style::margin - 80, (style::titleH - 24) / 2, 80, 24);
+    viewport.setBounds (getLocalBounds().withTrimmedTop (style::titleH));
+    const int w = viewport.getWidth() - viewport.getScrollBarThickness();
+    content.setSize (w, layoutContent (w));
+}
 
-    int y = style::titleH;
+// Panels stacked vertically; controls wrap into rows inside each panel.
+int ChromaEditor::layoutContent (int width)
+{
+    const int rowH = knobH + style::margin;
+    const int innerW = width - 2 * style::margin - 12;
+    int y = 0;
     for (size_t i = 0; i < panels.size(); ++i)
     {
-        auto& panel = *panels[i];
-        panel.setBounds (style::margin, y, getWidth() - 2 * style::margin, panelH);
-        auto area = panel.content() + panel.getPosition();
+        int x = 0, rows = 1;
         for (auto& c : controls)
         {
-            if (c->section != gui::sections[i])
-                continue;
-            auto cell = area.removeFromLeft (c->compact ? segW : knobW);
-            c->widget->setBounds (c->compact ? cell.withSizeKeepingCentre (segW, segH) : cell);
-            area.removeFromLeft (style::margin);
+            if (c->section != gui::sections[i]) continue;
+            const int cw = c->compact ? segW : knobW;
+            if (x > 0 && x + cw > innerW) { x = 0; ++rows; }
+            x += cw + style::margin;
         }
-        y += panelH + style::margin;
+        const int h = style::panelHeaderH + rows * rowH + 8;
+        auto& panel = *panels[i];
+        panel.setBounds (style::margin, y, width - 2 * style::margin, h);
+        const auto area = panel.content() + panel.getPosition();
+        x = 0;
+        int row = 0;
+        for (auto& c : controls)
+        {
+            if (c->section != gui::sections[i]) continue;
+            const int cw = c->compact ? segW : knobW;
+            if (x > 0 && x + cw > area.getWidth()) { x = 0; ++row; }
+            const juce::Rectangle<int> cell (area.getX() + x, area.getY() + row * rowH, cw, knobH);
+            c->widget->setBounds (c->compact ? cell.withSizeKeepingCentre (segW, segH) : cell);
+            x += cw + style::margin;
+        }
+        y += h + style::margin;
     }
+    return y;
 }
 } // namespace chroma

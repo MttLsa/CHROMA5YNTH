@@ -19,3 +19,56 @@ params:
     section: Master
     description: Dimensione del pool globale di voci condiviso tra i layer.
     automatable: false
+
+  - id: scale_on
+    name: Scale
+    type: bool
+    default: false
+    section: Scale
+    description: "SCALE attivo: ogni classe di nota suona solo i Layer assegnati al suo slot (slot vuoto = nota muta). Off = ogni Layer attivo suona tutte le note."
+
+  - id: mpe_on
+    name: MPE
+    type: bool
+    default: false
+    section: MPE
+    description: Abilita MPE (pitch, pressure e slide per nota sui canali membri).
+
+  - id: mpe_zone
+    name: MPE Zone
+    type: choice
+    choices: [Lower, Upper]
+    default: Lower
+    section: MPE
+    description: "Zona MPE: Lower = master canale 1, membri 2–16; Upper = master canale 16, membri 1–15."
+    automatable: false
+
+  - id: mpe_bend_range
+    name: MPE Bend Range
+    type: int
+    min: 1
+    max: 96
+    default: 48
+    unit: st
+    section: MPE
+    description: Escursione del pitch bend per nota sui canali membri MPE.
+    automatable: false
+
+blocks:
+  - repeat:
+      count: 12
+      vars:
+        key: [c, cs, d, ds, e, f, fs, g, gs, a, as, b]
+        note: ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"]
+    params:
+      - id: scale_{key}
+        array: scaleSlot
+        name: Scale {note}
+        type: int
+        min: 0
+        max: 4095
+        default: 1
+        section: Scale
+        description: "Slot {note}: maschera dei Layer assegnati (bit 0 = Layer 1 … bit 11 = Layer 12). 0 = nota muta."
+        automatable: false
+        gui: false

@@ -2,9 +2,137 @@
 
 # Parametri
 
+## Automation
+
+| Parametro | Range | Default | Unità | Descrizione |
+|---|---|---|---|---|
+| Automation N | 0.0 … 1.0 | 0.0 |  | Automation Slot N: guida il parametro interno assegnato con click destro → Assign to automation. ID stabile. |
+
+## Layer N
+
+| Parametro | Range | Default | Unità | Descrizione |
+|---|---|---|---|---|
+| LN On | Off / On | Off |  | Layer N acceso. Spento = zero CPU. Default per indice (1: True). |
+| LN Engine | Analog / Additive / FM6 / Wavetable / PD | Analog |  | Engine del Layer N. |
+| LN Volume | -60.0 … 6.0 | 0.0 | dB | Volume del Layer N. |
+| LN Pan | -1.0 … 1.0 | 0.0 |  | Pan del Layer N (−1 = L, +1 = R). |
+| LN Mute | Off / On | Off |  | Mute del Layer N. |
+| LN Solo | Off / On | Off |  | Solo del Layer N: se almeno un Layer è in solo, suonano solo i Layer in solo. |
+| LN Transpose | -48 … 48 | 0 | st | Trasposizione del Layer N in semitoni. |
+| LN Key Low | 0 … 127 | 0 |  | Nota più bassa del key range del Layer N. |
+| LN Key High | 0 … 127 | 127 |  | Nota più alta del key range del Layer N. |
+| LN Vel Low | 1 … 127 | 1 |  | Velocity minima del Layer N. |
+| LN Vel High | 1 … 127 | 127 |  | Velocity massima del Layer N. |
+| LN MIDI Ch | All / 1 / 2 / 3 / 4 / 5 / 6 / 7 / 8 / 9 / 10 / 11 / 12 / 13 / 14 / 15 / 16 | All |  | Canale MIDI del Layer N (ignorato in MPE). |
+| LN Max Voices | 1 … 36 | 36 |  | Voci massime del Layer N (limitate dal pool globale). |
+
+## Layer · Voice
+
+| Parametro | Range | Default | Unità | Descrizione |
+|---|---|---|---|---|
+| Level | 0.0 … 1.0 | 1.0 | % | Livello per voce (destinazione di modulazione). |
+| Pan Offset | -1.0 … 1.0 | 0.0 |  | Offset di pan per voce, sommato al Pan del Layer. |
+| Pitch | -48.0 … 48.0 | 0.0 | st | Intonazione fine per voce in semitoni. |
+| Voice Mode | Mono / Poly / Unison / Legato | Poly |  | Mono / Poly / Unison (mono con stack unison) / Legato. |
+| Unison | 1 … 16 | 1 |  | Voci di unison interne alla voce (non consumano il pool). |
+| Unison Detune | 0.0 … 100.0 | 20.0 | ct | Detune totale dello stack unison. |
+| Unison Spread | 0.0 … 1.0 | 0.5 | % | Apertura stereo dello stack unison. |
+| Unison Pan | -1.0 … 1.0 | 0.0 |  | Centro di pan dello stack unison. |
+| Voice Stealing | Off / On | On |  | Ruba voci quando il Layer o il pool sono pieni (più vecchia, poi più silenziosa). Off = nuove note ignorate. |
+| Note Priority | Last / First / Lowest / Highest | Last |  | Priorità di nota in Mono/Unison/Legato. |
+| Retrigger | Off / On | On |  | In Mono/Unison riavvia gli inviluppi a ogni nuova nota. |
+| Glide | Off / On | Off |  | Portamento. |
+| Glide Time | 0.0 … 5.0 | 0.1 | s | Tempo di glide. |
+| Glide Mode | Always / Legato | Always |  | Always = sempre; Legato = solo su note legate. |
+| Glide Curve | Linear / Exponential | Linear |  | Linear = tempo costante; Exponential = avvicinamento esponenziale. |
+
+## Layer · Performance
+
+| Parametro | Range | Default | Unità | Descrizione |
+|---|---|---|---|---|
+| Pitch Bend Range | 1 … 48 | 2 | st | Escursione del pitch bend (in MPE vale per il canale master). |
+| Velocity Curve | -1.0 … 1.0 | 0.0 |  | Curva di velocity: < 0 morbida, 0 lineare, > 0 dura. |
+| Aftertouch Sens | 0.0 … 1.0 | 1.0 | % | Sensibilità aftertouch / pressure. |
+| Sustain | Off / On | On |  | Risponde al pedale sustain (CC64). |
+| Sostenuto | Off / On | On |  | Risponde al pedale sostenuto (CC66). |
+| Expression | Off / On | On |  | CC11 scala il volume del Layer. |
+| Mod Wheel Amount | 0.0 … 1.0 | 1.0 | % | Scala la sorgente Mod Wheel. |
+
+## Layer · Amp Env…Mod Env 3
+
+| Parametro | Range | Default | Unità | Descrizione |
+|---|---|---|---|---|
+| Amp Env…Mod Env 3 Attack | 0.0 … 10.0 | 0.005 | s | Attacco. |
+| Amp Env…Mod Env 3 Hold | 0.0 … 10.0 | 0.0 | s | Hold al picco. |
+| Amp Env…Mod Env 3 Decay | 0.0 … 10.0 | 0.3 | s | Decadimento. |
+| Amp Env…Mod Env 3 Sustain | 0.0 … 1.0 | 0.8 | % | Livello di sustain. |
+| Amp Env…Mod Env 3 Release | 0.0 … 20.0 | 0.3 | s | Rilascio. |
+| Amp Env…Mod Env 3 Attack Curve | Linear / Exponential / Logarithmic | Linear |  | Curva dell'attacco (lin/exp/log). |
+| Amp Env…Mod Env 3 Decay Curve | Linear / Exponential / Logarithmic | Exponential |  | Curva del decay. |
+| Amp Env…Mod Env 3 Release Curve | Linear / Exponential / Logarithmic | Exponential |  | Curva del release. |
+| Amp Env…Mod Env 3 Velocity | 0.0 … 1.0 | 0.0 | % | Quanto la velocity scala il livello. |
+| Amp Env…Mod Env 3 Key Track | -1.0 … 1.0 | 0.0 |  | Le note alte accorciano (> 0) o allungano (< 0) i tempi. |
+| Amp Env…Mod Env 3 Loop | Off / On | Off |  | Ripete Attack-Hold-Decay finché la nota è tenuta. |
+| Amp Env…Mod Env 3 Retrigger | Off / On | On |  | Al retrigger riparte da zero (Off = dal livello corrente). |
+| Amp Env…Mod Env 3 Time Scale | 0.1 … 10.0 | 1.0 | x | Moltiplica tutti i tempi. |
+| Amp Env…Mod Env 3 Amount | -1.0 … 1.0 | 1.0 |  | Ampiezza dell'uscita (±100%). |
+
+## Layer · LFO N
+
+| Parametro | Range | Default | Unità | Descrizione |
+|---|---|---|---|---|
+| LFO N Shape | Sine / Triangle / Square / Saw Up / Saw Down / S&H / Random Smooth / Custom | Sine |  | Forma d'onda. |
+| LFO N Rate | 0.01 … 30.0 | 2.0 | Hz | Frequenza (Sync Off). |
+| LFO N Sync | Off / On | Off |  | Sincronizza al tempo dell'host. |
+| LFO N Division | 1/1 / 1/2 / 1/4 / 1/8 / 1/16 / 1/32 / 1/1T / 1/2T / 1/4T / 1/8T / 1/16T / 1/32T / 1/1D / 1/2D / 1/4D / 1/8D / 1/16D / 1/32D | 1/4 |  | Divisione in Sync (terzine T, puntate D). |
+| LFO N Phase | 0.0 … 360.0 | 0.0 | ° | Fase iniziale. |
+| LFO N Offset | -1.0 … 1.0 | 0.0 |  | Offset DC dell'uscita. |
+| LFO N Delay | 0.0 … 10.0 | 0.0 | s | Ritardo dall'inizio della nota. |
+| LFO N Fade In | 0.0 … 10.0 | 0.0 | s | Fade-in dopo il delay. |
+| LFO N Fade Out | 0.0 … 10.0 | 0.0 | s | Fade-out dal rilascio della nota (0 = nessuno). |
+| LFO N Mode | Free / Retrigger / One-shot | Retrigger |  | Free = fase libera; Retrigger = riparte a ogni nota; One-shot = un solo ciclo. |
+| LFO N Smooth | 0.0 … 1.0 | 0.0 | % | Smussa l'uscita. |
+| LFO N Stereo Phase | 0.0 … 180.0 | 0.0 | ° | Sfasamento del canale destro. |
+| LFO N Unipolar | Off / On | Off |  | Polarità: Off = bipolare (−1…1), On = unipolare (0…1). |
+| LFO N Amount | -1.0 … 1.0 | 1.0 |  | Ampiezza dell'uscita (±100%). |
+
+## Layer · Mod Matrix
+
+| Parametro | Range | Default | Unità | Descrizione |
+|---|---|---|---|---|
+| Mod N Enable | Off / On | On |  | Abilita lo slot N. |
+| Mod N Source | 31 voci | Off |  | Sorgente dello slot N. |
+| Mod N CC | 0 … 127 | 1 |  | Numero CC quando la sorgente è MIDI CC. |
+| Mod N Destination | 83 voci | Off |  | Destinazione: qualunque parametro continuo del Layer. |
+| Mod N Amount | -1.0 … 1.0 | 0.0 |  | Quantità ±100% del range della destinazione. |
+| Mod N Via | 31 voci | Off |  | Sorgente che scala l'amount (Off = 1). |
+| Mod N Curve | Linear / Exponential / Logarithmic / S-Curve | Linear |  | Curva applicata alla sorgente. |
+| Mod N Smoothing | 0.0 … 1.0 | 0.0 | % | Smoothing della modulazione (0–500 ms). |
+| Mod N Invert | Off / On | Off |  | Inverte la sorgente. |
+
+## Macro
+
+| Parametro | Range | Default | Unità | Descrizione |
+|---|---|---|---|---|
+| Macro N | 0.0 … 1.0 | 0.0 |  | Macro globale N. Assegnabile a qualunque parametro di qualunque Layer o del Master (Min/Max per assegnazione) e sorgente della Mod Matrix. |
+
 ## Master
 
 | Parametro | Range | Default | Unità | Descrizione |
 |---|---|---|---|---|
 | Master Volume | -60.0 … 6.0 | 0.0 | dB | Livello di uscita finale, prima del limiter. |
 | Polyphony | 12 / 24 / 36 | 24 |  | Dimensione del pool globale di voci condiviso tra i layer. |
+
+## Scale
+
+| Parametro | Range | Default | Unità | Descrizione |
+|---|---|---|---|---|
+| Scale | Off / On | Off |  | SCALE attivo: ogni classe di nota suona solo i Layer assegnati al suo slot (slot vuoto = nota muta). Off = ogni Layer attivo suona tutte le note. |
+
+## MPE
+
+| Parametro | Range | Default | Unità | Descrizione |
+|---|---|---|---|---|
+| MPE | Off / On | Off |  | Abilita MPE (pitch, pressure e slide per nota sui canali membri). |
+| MPE Zone | Lower / Upper | Lower |  | Zona MPE: Lower = master canale 1, membri 2–16; Upper = master canale 16, membri 1–15. |
+| MPE Bend Range | 1 … 96 | 48 | st | Escursione del pitch bend per nota sui canali membri MPE. |
