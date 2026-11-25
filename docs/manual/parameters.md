@@ -125,7 +125,7 @@
 | Mod N Enable | Off / On | On |  | Abilita lo slot N. |
 | Mod N Source | 31 voci | Off |  | Sorgente dello slot N. |
 | Mod N CC | 0 … 127 | 1 |  | Numero CC quando la sorgente è MIDI CC. |
-| Mod N Destination | 134 voci | Off |  | Destinazione: qualunque parametro continuo del Layer. |
+| Mod N Destination | 187 voci | Off |  | Destinazione: qualunque parametro continuo del Layer. |
 | Mod N Amount | -1.0 … 1.0 | 0.0 |  | Quantità ±100% del range della destinazione. |
 | Mod N Via | 31 voci | Off |  | Sorgente che scala l'amount (Off = 1). |
 | Mod N Curve | Linear / Exponential / Logarithmic / S-Curve | Linear |  | Curva applicata alla sorgente. |
@@ -194,6 +194,113 @@
 | Noise Pan | -1.0 … 1.0 | 0.0 |  | Pan del Noise. |
 | Noise Stereo Width | 0.0 … 1.0 | 0.0 | % | 0 = mono, 100% = canali L/R indipendenti. |
 
+## Layer FX · Distortion
+
+| Parametro | Range | Default | Unità | Descrizione |
+|---|---|---|---|---|
+| Distortion | Off / On | Off |  | Attiva la distorsione (spenta = zero CPU). |
+| Distortion Type | Soft / Hard / Tube / Fuzz / Op-Amp Clip / Pedal Clip / Bitcrush | Soft |  | Soft (tanh), Hard (clip), Tube (asimmetrica, armoniche pari), Fuzz (rettificata, gate), Op-Amp Clip (guadagno alto + clip a diodi), Pedal Clip (hard clip a diodi), Bitcrush (riduzione bit e sample rate). |
+| Distortion Drive | 0.0 … 1.0 | 0.3 | % | Guadagno in ingresso (0–40 dB). Bitcrush: profondità (16→2 bit, riduzione di sample rate). |
+| Distortion Tone | 0.0 … 1.0 | 0.5 | % | Tono in uscita: < 50% più scuro, > 50% più brillante. |
+| Distortion Mix | 0.0 … 1.0 | 1.0 | % | Bilanciamento dry/wet. |
+| Distortion Output | -24.0 … 12.0 | 0.0 | dB | Livello in uscita (il segnale distorto è già compensato in volume). |
+
+## Layer FX · Chorus
+
+| Parametro | Range | Default | Unità | Descrizione |
+|---|---|---|---|---|
+| Chorus | Off / On | Off |  | Attiva il chorus. |
+| Chorus Rate | 0.01 … 10.0 | 0.6 | Hz | Velocità di modulazione. |
+| Chorus Depth | 0.0 … 1.0 | 0.5 | % | Profondità di modulazione del ritardo (100% = ±5 ms). |
+| Chorus Delay | 1.0 … 40.0 | 8.0 | ms | Ritardo centrale delle linee. |
+| Chorus Feedback | -0.95 … 0.95 | 0.0 |  | Retroazione (negativa = fase invertita). |
+| Chorus Width | 0.0 … 1.0 | 1.0 | % | Apertura stereo (sfasamento L/R della modulazione). |
+| Chorus Mix | 0.0 … 1.0 | 0.5 | % | Bilanciamento dry/wet. |
+
+## Layer FX · Phaser
+
+| Parametro | Range | Default | Unità | Descrizione |
+|---|---|---|---|---|
+| Phaser | Off / On | Off |  | Attiva il phaser. |
+| Phaser Rate | 0.01 … 10.0 | 0.3 | Hz | Velocità dello sweep. |
+| Phaser Depth | 0.0 … 1.0 | 0.7 | % | Ampiezza dello sweep (100% = ±3 ottave). |
+| Phaser Feedback | -0.95 … 0.95 | 0.5 |  | Retroazione (enfatizza le tacche). |
+| Phaser Frequency | 50.0 … 5000.0 | 800.0 | Hz | Frequenza centrale degli all-pass. |
+| Phaser Stages | 2 … 12 | 4 |  | Numero di stadi all-pass (2–12). |
+| Phaser Mix | 0.0 … 1.0 | 0.5 | % | Bilanciamento dry/wet (50% = tacche più profonde). |
+
+## Layer FX · Flanger
+
+| Parametro | Range | Default | Unità | Descrizione |
+|---|---|---|---|---|
+| Flanger | Off / On | Off |  | Attiva il flanger. |
+| Flanger Rate | 0.01 … 10.0 | 0.2 | Hz | Velocità di modulazione. |
+| Flanger Depth | 0.0 … 1.0 | 0.6 | % | Profondità di modulazione del ritardo. |
+| Flanger Feedback | -0.95 … 0.95 | 0.5 |  | Retroazione (negativa = fase invertita). |
+| Flanger Delay | 0.1 … 10.0 | 1.5 | ms | Ritardo minimo della linea. |
+| Flanger Stereo | 0.0 … 1.0 | 0.5 | % | Sfasamento L/R della modulazione (100% = 180°). |
+| Flanger Mix | 0.0 … 1.0 | 0.5 | % | Bilanciamento dry/wet. |
+
+## Layer FX · Delay
+
+| Parametro | Range | Default | Unità | Descrizione |
+|---|---|---|---|---|
+| Delay | Off / On | Off |  | Attiva il delay. |
+| Delay Time L | 1.0 … 2000.0 | 375.0 | ms | Tempo del canale sinistro (Sync off). |
+| Delay Time R | 1.0 … 2000.0 | 375.0 | ms | Tempo del canale destro (Sync off). |
+| Delay Sync | Off / On | Off |  | Tempi sincronizzati al tempo dell'host. |
+| Delay Division L | 1/1 / 1/2 / 1/4 / 1/8 / 1/16 / 1/32 / 1/1T / 1/2T / 1/4T / 1/8T / 1/16T / 1/32T / 1/1D / 1/2D / 1/4D / 1/8D / 1/16D / 1/32D | 1/8D |  | Suddivisione del canale sinistro (Sync on). |
+| Delay Division R | 1/1 / 1/2 / 1/4 / 1/8 / 1/16 / 1/32 / 1/1T / 1/2T / 1/4T / 1/8T / 1/16T / 1/32T / 1/1D / 1/2D / 1/4D / 1/8D / 1/16D / 1/32D | 1/8D |  | Suddivisione del canale destro (Sync on). |
+| Delay Feedback | 0.0 … 0.98 | 0.35 | % | Retroazione. |
+| Delay HP | 20.0 … 2000.0 | 20.0 | Hz | Passa-alto nella retroazione. |
+| Delay LP | 500.0 … 20000.0 | 12000.0 | Hz | Passa-basso nella retroazione. |
+| Delay Ping-Pong | Off / On | Off |  | Le ripetizioni rimbalzano tra L e R. |
+| Delay Width | 0.0 … 1.0 | 1.0 | % | Apertura stereo del segnale wet. |
+| Delay Mix | 0.0 … 1.0 | 0.3 | % | Bilanciamento dry/wet. |
+
+## Layer FX · Reverb
+
+| Parametro | Range | Default | Unità | Descrizione |
+|---|---|---|---|---|
+| Reverb | Off / On | Off |  | Attiva il riverbero (FDN 16 linee). |
+| Reverb Size | 0.0 … 1.0 | 0.5 | % | Dimensione dello spazio. |
+| Reverb Decay | 0.1 … 20.0 | 2.0 | s | Tempo di decadimento (RT60). |
+| Reverb Pre-Delay | 0.0 … 250.0 | 10.0 | ms | Ritardo prima delle prime riflessioni. |
+| Reverb Damping | 0.0 … 1.0 | 0.4 | % | Assorbimento delle alte frequenze nella coda. |
+| Reverb Diffusion | 0.0 … 1.0 | 0.7 | % | Densità degli echi iniziali. |
+| Reverb Low Cut | 20.0 … 1000.0 | 20.0 | Hz | Passa-alto sul segnale wet. |
+| Reverb High Cut | 1000.0 … 20000.0 | 12000.0 | Hz | Passa-basso sul segnale wet. |
+| Reverb Width | 0.0 … 1.0 | 1.0 | % | Apertura stereo del segnale wet. |
+| Reverb Mix | 0.0 … 1.0 | 0.25 | % | Bilanciamento dry/wet. |
+
+## Layer FX · EQ
+
+| Parametro | Range | Default | Unità | Descrizione |
+|---|---|---|---|---|
+| EQ | Off / On | Off |  | Attiva l'equalizzatore a 3 bande. |
+| EQ Low Freq | 20.0 … 1000.0 | 120.0 | Hz | Frequenza del Low shelf. |
+| EQ Low Gain | -18.0 … 18.0 | 0.0 | dB | Guadagno del Low shelf. |
+| EQ Low Q | 0.3 … 2.0 | 0.707 |  | Pendenza del Low shelf (Q). |
+| EQ Mid Freq | 100.0 … 10000.0 | 1000.0 | Hz | Frequenza del Peak. |
+| EQ Mid Gain | -18.0 … 18.0 | 0.0 | dB | Guadagno del Peak. |
+| EQ Mid Q | 0.1 … 10.0 | 0.707 |  | Larghezza del Peak (Q). |
+| EQ High Freq | 1000.0 … 20000.0 | 6000.0 | Hz | Frequenza dell'High shelf. |
+| EQ High Gain | -18.0 … 18.0 | 0.0 | dB | Guadagno dell'High shelf. |
+| EQ High Q | 0.3 … 2.0 | 0.707 |  | Pendenza dell'High shelf (Q). |
+
+## Layer FX · Compressor
+
+| Parametro | Range | Default | Unità | Descrizione |
+|---|---|---|---|---|
+| Compressor | Off / On | Off |  | Attiva il compressore (stereo linkato, feed-forward). |
+| Comp Threshold | -60.0 … 0.0 | -18.0 | dB | Soglia. |
+| Comp Ratio | 1.0 … 20.0 | 4.0 | :1 | Rapporto di compressione. |
+| Comp Attack | 0.1 … 100.0 | 10.0 | ms | Tempo di attacco. |
+| Comp Release | 10.0 … 2000.0 | 150.0 | ms | Tempo di rilascio. |
+| Comp Knee | 0.0 … 24.0 | 6.0 | dB | Ampiezza del ginocchio morbido. |
+| Comp Makeup | 0.0 … 24.0 | 0.0 | dB | Guadagno di compensazione. |
+| Comp Mix | 0.0 … 1.0 | 1.0 | % | Bilanciamento dry/wet (compressione parallela). |
+
 ## Macro
 
 | Parametro | Range | Default | Unità | Descrizione |
@@ -220,3 +327,76 @@
 | MPE | Off / On | Off |  | Abilita MPE (pitch, pressure e slide per nota sui canali membri). |
 | MPE Zone | Lower / Upper | Lower |  | Zona MPE: Lower = master canale 1, membri 2–16; Upper = master canale 16, membri 1–15. |
 | MPE Bend Range | 1 … 96 | 48 | st | Escursione del pitch bend per nota sui canali membri MPE. |
+
+## Master FX · Drive
+
+| Parametro | Range | Default | Unità | Descrizione |
+|---|---|---|---|---|
+| Master Drive | Off / On | Off |  | Attiva il Drive del Master. |
+| Master Drive Type | Tube / Overdrive / Op-Amp Clip / Pedal Clip / Fuzz / Tape | Tube |  | Tube (asimmetrica), Overdrive (soft clip morbido), Op-Amp Clip (guadagno alto + clip a diodi), Pedal Clip (hard clip a diodi), Fuzz, Tape (saturazione con isteresi e ammorbidimento degli acuti). |
+| Master Drive Amount | 0.0 … 1.0 | 0.3 | % | Guadagno in ingresso (0–40 dB). |
+| Master Drive Tone | 0.0 … 1.0 | 0.5 | % | Tono in uscita: < 50% più scuro, > 50% più brillante. |
+| Master Drive Mix | 0.0 … 1.0 | 1.0 | % | Bilanciamento dry/wet. |
+| Master Drive Output | -24.0 … 12.0 | 0.0 | dB | Livello in uscita. |
+
+## Master FX · Chorus
+
+| Parametro | Range | Default | Unità | Descrizione |
+|---|---|---|---|---|
+| Master Chorus | Off / On | Off |  | Attiva il Chorus del Master. |
+| Master Chorus Mode | Chorus I / Chorus II / Dimension 1 / Dimension 2 / Dimension 3 / Dimension 4 / Custom | Chorus I |  | Chorus I / II: chorus BBD a due linee (lento / più veloce e profondo). Dimension 1–4: linee in controfase a bassa profondità, spaziali e senza vibrato percepibile, intensità crescente. Custom: Rate e Depth liberi. |
+| Master Chorus Rate | 0.01 … 10.0 | 0.5 | Hz | Velocità di modulazione (solo Custom). |
+| Master Chorus Depth | 0.0 … 1.0 | 0.5 | % | Profondità di modulazione (solo Custom). |
+| Master Chorus Mix | 0.0 … 1.0 | 0.5 | % | Bilanciamento dry/wet. |
+
+## Master FX · Delay
+
+| Parametro | Range | Default | Unità | Descrizione |
+|---|---|---|---|---|
+| Master Delay | Off / On | Off |  | Attiva il Delay del Master. |
+| Master Delay Type | Digital / Tape / BBD / Ping-Pong / Dual L/R / Multitap | Digital |  | Digital (pulito), Tape (wow/flutter, saturazione), BBD (scuro, modulato), Ping-Pong (rimbalzo L/R), Dual L/R (tempi indipendenti), Multitap (4 tap a 1/4, 2/4, 3/4, 1 del tempo). |
+| Master Delay Time | 1.0 … 2000.0 | 375.0 | ms | Tempo (canale sinistro in Dual L/R), Sync off. |
+| Master Delay Time R | 1.0 … 2000.0 | 500.0 | ms | Tempo del canale destro (solo Dual L/R), Sync off. |
+| Master Delay Sync | Off / On | Off |  | Tempi sincronizzati al tempo dell'host. |
+| Master Delay Division | 1/1 / 1/2 / 1/4 / 1/8 / 1/16 / 1/32 / 1/1T / 1/2T / 1/4T / 1/8T / 1/16T / 1/32T / 1/1D / 1/2D / 1/4D / 1/8D / 1/16D / 1/32D | 1/8D |  | Suddivisione (canale sinistro in Dual L/R), Sync on. |
+| Master Delay Division R | 1/1 / 1/2 / 1/4 / 1/8 / 1/16 / 1/32 / 1/1T / 1/2T / 1/4T / 1/8T / 1/16T / 1/32T / 1/1D / 1/2D / 1/4D / 1/8D / 1/16D / 1/32D | 1/4 |  | Suddivisione del canale destro (solo Dual L/R), Sync on. |
+| Master Delay Feedback | 0.0 … 0.98 | 0.35 | % | Retroazione. |
+| Master Delay HP | 20.0 … 2000.0 | 20.0 | Hz | Passa-alto nella retroazione. |
+| Master Delay LP | 500.0 … 20000.0 | 12000.0 | Hz | Passa-basso nella retroazione. |
+| Master Delay Width | 0.0 … 1.0 | 1.0 | % | Apertura stereo del segnale wet. |
+| Master Delay Modulation | 0.0 … 1.0 | 0.0 | % | Modulazione del tempo (si somma al wow/flutter di Tape e BBD). |
+| Master Delay Ducking | 0.0 … 1.0 | 0.0 | % | Attenua il wet mentre il segnale in ingresso suona (100% = fino a −24 dB). |
+| Master Delay Mix | 0.0 … 1.0 | 0.25 | % | Bilanciamento dry/wet. |
+
+## Master FX · Reverb
+
+| Parametro | Range | Default | Unità | Descrizione |
+|---|---|---|---|---|
+| Master Reverb | Off / On | Off |  | Attiva il Reverb del Master (algoritmico, nessuna convoluzione). |
+| Master Reverb Type | Room / Plate / Hall / Large Hall | Hall |  | Room, Hall, Large Hall: FDN a 16 linee. Plate: modello a piastra (allpass in ingresso + anello a due rami modulati). |
+| Master Reverb Size | 0.0 … 1.0 | 0.5 | % | Dimensione dello spazio. |
+| Master Reverb Decay | 0.1 … 20.0 | 2.5 | s | Tempo di decadimento (RT60). |
+| Master Reverb Pre-Delay | 0.0 … 250.0 | 20.0 | ms | Ritardo prima delle prime riflessioni. |
+| Master Reverb Damping | 0.0 … 1.0 | 0.4 | % | Assorbimento delle alte frequenze nella coda. |
+| Master Reverb Diffusion | 0.0 … 1.0 | 0.7 | % | Densità degli echi iniziali. |
+| Master Reverb Modulation | 0.0 … 1.0 | 0.3 | % | Modulazione lenta delle linee (coda più morbida, meno risonanze metalliche). |
+| Master Reverb Low Cut | 20.0 … 1000.0 | 20.0 | Hz | Passa-alto sul segnale wet. |
+| Master Reverb High Cut | 1000.0 … 20000.0 | 12000.0 | Hz | Passa-basso sul segnale wet. |
+| Master Reverb Width | 0.0 … 1.0 | 1.0 | % | Apertura stereo del segnale wet. |
+| Master Reverb Mix | 0.0 … 1.0 | 0.2 | % | Bilanciamento dry/wet. |
+
+## Master FX · Filter
+
+| Parametro | Range | Default | Unità | Descrizione |
+|---|---|---|---|---|
+| Master Filter | Off / On | Off |  | Attiva il Filter del Master (HP → BP → LP, 12 dB/ott. con risonanza). |
+| Master HP | Off / On | On |  | Attiva il passa-alto. |
+| Master HP Freq | 20.0 … 20000.0 | 20.0 | Hz | Taglio del passa-alto: sale da 20 Hz (aperto). |
+| Master HP Resonance | 0.0 … 1.0 | 0.0 | % | Risonanza del passa-alto. |
+| Master BP | Off / On | Off |  | Attiva il passa-banda. |
+| Master BP Center | 20.0 … 20000.0 | 1000.0 | Hz | Centro del passa-banda. |
+| Master BP Width | 0.0 … 1.0 | 1.0 | % | Larghezza della banda: 100% = ±5 ottave (aperto), 0% = ±1/6 di ottava. |
+| Master BP Resonance | 0.0 … 1.0 | 0.0 | % | Risonanza ai bordi della banda. |
+| Master LP | Off / On | On |  | Attiva il passa-basso. |
+| Master LP Freq | 20.0 … 20000.0 | 20000.0 | Hz | Taglio del passa-basso: scende da 20 kHz (aperto). |
+| Master LP Resonance | 0.0 … 1.0 | 0.0 | % | Risonanza del passa-basso. |

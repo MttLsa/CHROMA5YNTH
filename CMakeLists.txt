@@ -133,7 +133,7 @@ if(CHROMA_BUILD_TESTS)
     FetchContent_MakeAvailable(Catch2)
 
     juce_add_console_app(chroma_tests PRODUCT_NAME "chroma_tests")
-    target_sources(chroma_tests PRIVATE tests/test_params.cpp tests/test_processor.cpp tests/test_core.cpp tests/test_limiter.cpp tests/test_filter.cpp tests/test_analog.cpp)
+    target_sources(chroma_tests PRIVATE tests/test_params.cpp tests/test_processor.cpp tests/test_core.cpp tests/test_limiter.cpp tests/test_filter.cpp tests/test_analog.cpp tests/test_fx.cpp)
     chroma_configure_target(chroma_tests)
     target_link_libraries(chroma_tests PRIVATE Catch2::Catch2WithMain)
 

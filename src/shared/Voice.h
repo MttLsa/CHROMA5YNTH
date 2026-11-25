@@ -42,6 +42,9 @@ public:
     bool pendingRelease = false;
     float glidePitch = 60.0f;          // note portion of the pitch (with glide)
 
+    // Mod matrix offsets (normalised, by lp::Id) of the last control tick.
+    const float* modOffsets() const noexcept { return offsets.data(); }
+
 private:
     float val (const LayerRuntime&, int id) const noexcept;
     EnvParams makeEnv (const LayerRuntime&, int i) const noexcept;

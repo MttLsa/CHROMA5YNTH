@@ -1,0 +1,82 @@
+# LAYER FX (§2): insert per Layer, ordine fisso Distortion → Chorus → Phaser → Flanger → Delay → Reverb → EQ → Compressor.
+# Interni al Layer (Automation Slot / Macro); i float sono destinazioni della Mod Matrix (modulazione dalla voce più recente).
+scope: layer
+
+lists:
+  dist_types: [Soft, Hard, Tube, Fuzz, Op-Amp Clip, Pedal Clip, Bitcrush]
+
+params:
+  - { id: fx_dist_on, name: Distortion, type: bool, default: false, section: "Layer FX · Distortion", description: "Attiva la distorsione (spenta = zero CPU)." }
+  - { id: fx_dist_type, name: Distortion Type, type: choice, choices_from: dist_types, default: Soft, section: "Layer FX · Distortion", description: "Soft (tanh), Hard (clip), Tube (asimmetrica, armoniche pari), Fuzz (rettificata, gate), Op-Amp Clip (guadagno alto + clip a diodi), Pedal Clip (hard clip a diodi), Bitcrush (riduzione bit e sample rate)." }
+  - { id: fx_dist_drive, name: Distortion Drive, type: float, min: 0.0, max: 1.0, default: 0.3, unit: "%", section: "Layer FX · Distortion", description: "Guadagno in ingresso (0–40 dB). Bitcrush: profondità (16→2 bit, riduzione di sample rate)." }
+  - { id: fx_dist_tone, name: Distortion Tone, type: float, min: 0.0, max: 1.0, default: 0.5, unit: "%", section: "Layer FX · Distortion", description: "Tono in uscita: < 50% più scuro, > 50% più brillante." }
+  - { id: fx_dist_mix, name: Distortion Mix, type: float, min: 0.0, max: 1.0, default: 1.0, unit: "%", section: "Layer FX · Distortion", description: "Bilanciamento dry/wet." }
+  - { id: fx_dist_output, name: Distortion Output, type: float, min: -24.0, max: 12.0, default: 0.0, unit: dB, section: "Layer FX · Distortion", description: "Livello in uscita (il segnale distorto è già compensato in volume)." }
+
+  - { id: fx_chorus_on, name: Chorus, type: bool, default: false, section: "Layer FX · Chorus", description: "Attiva il chorus." }
+  - { id: fx_chorus_rate, name: Chorus Rate, type: float, min: 0.01, max: 10.0, default: 0.6, skew: 1.0, unit: Hz, section: "Layer FX · Chorus", description: "Velocità di modulazione." }
+  - { id: fx_chorus_depth, name: Chorus Depth, type: float, min: 0.0, max: 1.0, default: 0.5, unit: "%", section: "Layer FX · Chorus", description: "Profondità di modulazione del ritardo (100% = ±5 ms)." }
+  - { id: fx_chorus_delay, name: Chorus Delay, type: float, min: 1.0, max: 40.0, default: 8.0, skew: 10.0, unit: ms, section: "Layer FX · Chorus", description: "Ritardo centrale delle linee." }
+  - { id: fx_chorus_feedback, name: Chorus Feedback, type: float, min: -0.95, max: 0.95, default: 0.0, section: "Layer FX · Chorus", description: "Retroazione (negativa = fase invertita)." }
+  - { id: fx_chorus_width, name: Chorus Width, type: float, min: 0.0, max: 1.0, default: 1.0, unit: "%", section: "Layer FX · Chorus", description: "Apertura stereo (sfasamento L/R della modulazione)." }
+  - { id: fx_chorus_mix, name: Chorus Mix, type: float, min: 0.0, max: 1.0, default: 0.5, unit: "%", section: "Layer FX · Chorus", description: "Bilanciamento dry/wet." }
+
+  - { id: fx_phaser_on, name: Phaser, type: bool, default: false, section: "Layer FX · Phaser", description: "Attiva il phaser." }
+  - { id: fx_phaser_rate, name: Phaser Rate, type: float, min: 0.01, max: 10.0, default: 0.3, skew: 1.0, unit: Hz, section: "Layer FX · Phaser", description: "Velocità dello sweep." }
+  - { id: fx_phaser_depth, name: Phaser Depth, type: float, min: 0.0, max: 1.0, default: 0.7, unit: "%", section: "Layer FX · Phaser", description: "Ampiezza dello sweep (100% = ±3 ottave)." }
+  - { id: fx_phaser_feedback, name: Phaser Feedback, type: float, min: -0.95, max: 0.95, default: 0.5, section: "Layer FX · Phaser", description: "Retroazione (enfatizza le tacche)." }
+  - { id: fx_phaser_freq, name: Phaser Frequency, type: float, min: 50.0, max: 5000.0, default: 800.0, skew: 500.0, unit: Hz, section: "Layer FX · Phaser", description: "Frequenza centrale degli all-pass." }
+  - { id: fx_phaser_stages, name: Phaser Stages, type: int, min: 2, max: 12, default: 4, section: "Layer FX · Phaser", description: "Numero di stadi all-pass (2–12)." }
+  - { id: fx_phaser_mix, name: Phaser Mix, type: float, min: 0.0, max: 1.0, default: 0.5, unit: "%", section: "Layer FX · Phaser", description: "Bilanciamento dry/wet (50% = tacche più profonde)." }
+
+  - { id: fx_flanger_on, name: Flanger, type: bool, default: false, section: "Layer FX · Flanger", description: "Attiva il flanger." }
+  - { id: fx_flanger_rate, name: Flanger Rate, type: float, min: 0.01, max: 10.0, default: 0.2, skew: 1.0, unit: Hz, section: "Layer FX · Flanger", description: "Velocità di modulazione." }
+  - { id: fx_flanger_depth, name: Flanger Depth, type: float, min: 0.0, max: 1.0, default: 0.6, unit: "%", section: "Layer FX · Flanger", description: "Profondità di modulazione del ritardo." }
+  - { id: fx_flanger_feedback, name: Flanger Feedback, type: float, min: -0.95, max: 0.95, default: 0.5, section: "Layer FX · Flanger", description: "Retroazione (negativa = fase invertita)." }
+  - { id: fx_flanger_delay, name: Flanger Delay, type: float, min: 0.1, max: 10.0, default: 1.5, skew: 2.0, unit: ms, section: "Layer FX · Flanger", description: "Ritardo minimo della linea." }
+  - { id: fx_flanger_stereo, name: Flanger Stereo, type: float, min: 0.0, max: 1.0, default: 0.5, unit: "%", section: "Layer FX · Flanger", description: "Sfasamento L/R della modulazione (100% = 180°)." }
+  - { id: fx_flanger_mix, name: Flanger Mix, type: float, min: 0.0, max: 1.0, default: 0.5, unit: "%", section: "Layer FX · Flanger", description: "Bilanciamento dry/wet." }
+
+  - { id: fx_delay_on, name: Delay, type: bool, default: false, section: "Layer FX · Delay", description: "Attiva il delay." }
+  - { id: fx_delay_time_l, name: Delay Time L, type: float, min: 1.0, max: 2000.0, default: 375.0, skew: 300.0, unit: ms, section: "Layer FX · Delay", description: "Tempo del canale sinistro (Sync off)." }
+  - { id: fx_delay_time_r, name: Delay Time R, type: float, min: 1.0, max: 2000.0, default: 375.0, skew: 300.0, unit: ms, section: "Layer FX · Delay", description: "Tempo del canale destro (Sync off)." }
+  - { id: fx_delay_sync, name: Delay Sync, type: bool, default: false, section: "Layer FX · Delay", description: "Tempi sincronizzati al tempo dell'host." }
+  - { id: fx_delay_div_l, name: Delay Division L, type: choice, choices_from: sync_divisions, default: "1/8D", section: "Layer FX · Delay", description: "Suddivisione del canale sinistro (Sync on)." }
+  - { id: fx_delay_div_r, name: Delay Division R, type: choice, choices_from: sync_divisions, default: "1/8D", section: "Layer FX · Delay", description: "Suddivisione del canale destro (Sync on)." }
+  - { id: fx_delay_feedback, name: Delay Feedback, type: float, min: 0.0, max: 0.98, default: 0.35, unit: "%", section: "Layer FX · Delay", description: "Retroazione." }
+  - { id: fx_delay_hp, name: Delay HP, type: float, min: 20.0, max: 2000.0, default: 20.0, skew: 200.0, unit: Hz, section: "Layer FX · Delay", description: "Passa-alto nella retroazione." }
+  - { id: fx_delay_lp, name: Delay LP, type: float, min: 500.0, max: 20000.0, default: 12000.0, skew: 4000.0, unit: Hz, section: "Layer FX · Delay", description: "Passa-basso nella retroazione." }
+  - { id: fx_delay_pingpong, name: Delay Ping-Pong, type: bool, default: false, section: "Layer FX · Delay", description: "Le ripetizioni rimbalzano tra L e R." }
+  - { id: fx_delay_width, name: Delay Width, type: float, min: 0.0, max: 1.0, default: 1.0, unit: "%", section: "Layer FX · Delay", description: "Apertura stereo del segnale wet." }
+  - { id: fx_delay_mix, name: Delay Mix, type: float, min: 0.0, max: 1.0, default: 0.3, unit: "%", section: "Layer FX · Delay", description: "Bilanciamento dry/wet." }
+
+  - { id: fx_reverb_on, name: Reverb, type: bool, default: false, section: "Layer FX · Reverb", description: "Attiva il riverbero (FDN 16 linee)." }
+  - { id: fx_reverb_size, name: Reverb Size, type: float, min: 0.0, max: 1.0, default: 0.5, unit: "%", section: "Layer FX · Reverb", description: "Dimensione dello spazio." }
+  - { id: fx_reverb_decay, name: Reverb Decay, type: float, min: 0.1, max: 20.0, default: 2.0, skew: 2.5, unit: s, section: "Layer FX · Reverb", description: "Tempo di decadimento (RT60)." }
+  - { id: fx_reverb_predelay, name: Reverb Pre-Delay, type: float, min: 0.0, max: 250.0, default: 10.0, skew: 50.0, unit: ms, section: "Layer FX · Reverb", description: "Ritardo prima delle prime riflessioni." }
+  - { id: fx_reverb_damping, name: Reverb Damping, type: float, min: 0.0, max: 1.0, default: 0.4, unit: "%", section: "Layer FX · Reverb", description: "Assorbimento delle alte frequenze nella coda." }
+  - { id: fx_reverb_diffusion, name: Reverb Diffusion, type: float, min: 0.0, max: 1.0, default: 0.7, unit: "%", section: "Layer FX · Reverb", description: "Densità degli echi iniziali." }
+  - { id: fx_reverb_lowcut, name: Reverb Low Cut, type: float, min: 20.0, max: 1000.0, default: 20.0, skew: 150.0, unit: Hz, section: "Layer FX · Reverb", description: "Passa-alto sul segnale wet." }
+  - { id: fx_reverb_highcut, name: Reverb High Cut, type: float, min: 1000.0, max: 20000.0, default: 12000.0, skew: 5000.0, unit: Hz, section: "Layer FX · Reverb", description: "Passa-basso sul segnale wet." }
+  - { id: fx_reverb_width, name: Reverb Width, type: float, min: 0.0, max: 1.0, default: 1.0, unit: "%", section: "Layer FX · Reverb", description: "Apertura stereo del segnale wet." }
+  - { id: fx_reverb_mix, name: Reverb Mix, type: float, min: 0.0, max: 1.0, default: 0.25, unit: "%", section: "Layer FX · Reverb", description: "Bilanciamento dry/wet." }
+
+  - { id: fx_eq_on, name: EQ, type: bool, default: false, section: "Layer FX · EQ", description: "Attiva l'equalizzatore a 3 bande." }
+  - { id: fx_eq_low_freq, name: EQ Low Freq, type: float, min: 20.0, max: 1000.0, default: 120.0, skew: 150.0, unit: Hz, section: "Layer FX · EQ", description: "Frequenza del Low shelf." }
+  - { id: fx_eq_low_gain, name: EQ Low Gain, type: float, min: -18.0, max: 18.0, default: 0.0, unit: dB, section: "Layer FX · EQ", description: "Guadagno del Low shelf." }
+  - { id: fx_eq_low_q, name: EQ Low Q, type: float, min: 0.3, max: 2.0, default: 0.707, unit: "", section: "Layer FX · EQ", description: "Pendenza del Low shelf (Q)." }
+  - { id: fx_eq_mid_freq, name: EQ Mid Freq, type: float, min: 100.0, max: 10000.0, default: 1000.0, skew: 1000.0, unit: Hz, section: "Layer FX · EQ", description: "Frequenza del Peak." }
+  - { id: fx_eq_mid_gain, name: EQ Mid Gain, type: float, min: -18.0, max: 18.0, default: 0.0, unit: dB, section: "Layer FX · EQ", description: "Guadagno del Peak." }
+  - { id: fx_eq_mid_q, name: EQ Mid Q, type: float, min: 0.1, max: 10.0, default: 0.707, skew: 1.0, unit: "", section: "Layer FX · EQ", description: "Larghezza del Peak (Q)." }
+  - { id: fx_eq_high_freq, name: EQ High Freq, type: float, min: 1000.0, max: 20000.0, default: 6000.0, skew: 5000.0, unit: Hz, section: "Layer FX · EQ", description: "Frequenza dell'High shelf." }
+  - { id: fx_eq_high_gain, name: EQ High Gain, type: float, min: -18.0, max: 18.0, default: 0.0, unit: dB, section: "Layer FX · EQ", description: "Guadagno dell'High shelf." }
+  - { id: fx_eq_high_q, name: EQ High Q, type: float, min: 0.3, max: 2.0, default: 0.707, unit: "", section: "Layer FX · EQ", description: "Pendenza dell'High shelf (Q)." }
+
+  - { id: fx_comp_on, name: Compressor, type: bool, default: false, section: "Layer FX · Compressor", description: "Attiva il compressore (stereo linkato, feed-forward)." }
+  - { id: fx_comp_threshold, name: Comp Threshold, type: float, min: -60.0, max: 0.0, default: -18.0, unit: dB, section: "Layer FX · Compressor", description: "Soglia." }
+  - { id: fx_comp_ratio, name: Comp Ratio, type: float, min: 1.0, max: 20.0, default: 4.0, skew: 4.0, unit: ":1", section: "Layer FX · Compressor", description: "Rapporto di compressione." }
+  - { id: fx_comp_attack, name: Comp Attack, type: float, min: 0.1, max: 100.0, default: 10.0, skew: 10.0, unit: ms, section: "Layer FX · Compressor", description: "Tempo di attacco." }
+  - { id: fx_comp_release, name: Comp Release, type: float, min: 10.0, max: 2000.0, default: 150.0, skew: 200.0, unit: ms, section: "Layer FX · Compressor", description: "Tempo di rilascio." }
+  - { id: fx_comp_knee, name: Comp Knee, type: float, min: 0.0, max: 24.0, default: 6.0, unit: dB, section: "Layer FX · Compressor", description: "Ampiezza del ginocchio morbido." }
+  - { id: fx_comp_makeup, name: Comp Makeup, type: float, min: 0.0, max: 24.0, default: 0.0, unit: dB, section: "Layer FX · Compressor", description: "Guadagno di compensazione." }
+  - { id: fx_comp_mix, name: Comp Mix, type: float, min: 0.0, max: 1.0, default: 1.0, unit: "%", section: "Layer FX · Compressor", description: "Bilanciamento dry/wet (compressione parallela)." }

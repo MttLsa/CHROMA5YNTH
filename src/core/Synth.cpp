@@ -16,6 +16,10 @@ const std::array<const std::array<const char*, numLayers>*, 13> layerIdArrays {
     &ParamIDs::layerSolo, &ParamIDs::layerTranspose, &ParamIDs::layerKeyLo, &ParamIDs::layerKeyHi,
     &ParamIDs::layerVelLo, &ParamIDs::layerVelHi, &ParamIDs::layerMidiChannel, &ParamIDs::layerMaxVoices };
 
+// Master FX host parameters, in the order of params/master_fx.yaml.
+enum MasterFxId { driveOn, driveType, driveDrive, driveTone, driveMix, driveOutput, chorusOn, chorusMode, chorusRate, chorusDepth, chorusMix, delayOn, delayType, delayTimeL, delayTimeR, delaySync, delayDivL, delayDivR, delayFeedback, delayHp, delayLp, delayWidth, delayMod, delayDucking, delayMix, reverbOn, reverbType, reverbSize, reverbDecay, reverbPredelay, reverbDamping, reverbDiffusion, reverbMod, reverbLowcut, reverbHighcut, reverbWidth, reverbMix, filterOn, hpOn, hpFreq, hpRes, bpOn, bpFreq, bpWidth, bpRes, lpOn, lpFreq, lpRes, numMasterFxParams };
+const std::array<const char*, numMasterFxParams> masterFxIds { ParamIDs::mfxDriveOn, ParamIDs::mfxDriveType, ParamIDs::mfxDriveDrive, ParamIDs::mfxDriveTone, ParamIDs::mfxDriveMix, ParamIDs::mfxDriveOutput, ParamIDs::mfxChorusOn, ParamIDs::mfxChorusMode, ParamIDs::mfxChorusRate, ParamIDs::mfxChorusDepth, ParamIDs::mfxChorusMix, ParamIDs::mfxDelayOn, ParamIDs::mfxDelayType, ParamIDs::mfxDelayTimeL, ParamIDs::mfxDelayTimeR, ParamIDs::mfxDelaySync, ParamIDs::mfxDelayDivL, ParamIDs::mfxDelayDivR, ParamIDs::mfxDelayFeedback, ParamIDs::mfxDelayHp, ParamIDs::mfxDelayLp, ParamIDs::mfxDelayWidth, ParamIDs::mfxDelayMod, ParamIDs::mfxDelayDucking, ParamIDs::mfxDelayMix, ParamIDs::mfxReverbOn, ParamIDs::mfxReverbType, ParamIDs::mfxReverbSize, ParamIDs::mfxReverbDecay, ParamIDs::mfxReverbPredelay, ParamIDs::mfxReverbDamping, ParamIDs::mfxReverbDiffusion, ParamIDs::mfxReverbMod, ParamIDs::mfxReverbLowcut, ParamIDs::mfxReverbHighcut, ParamIDs::mfxReverbWidth, ParamIDs::mfxReverbMix, ParamIDs::mfxFilterOn, ParamIDs::mfxHpOn, ParamIDs::mfxHpFreq, ParamIDs::mfxHpRes, ParamIDs::mfxBpOn, ParamIDs::mfxBpFreq, ParamIDs::mfxBpWidth, ParamIDs::mfxBpRes, ParamIDs::mfxLpOn, ParamIDs::mfxLpFreq, ParamIDs::mfxLpRes };
+
 juce::String layerSuffix (const char* id) { return juce::String (id).fromFirstOccurrenceOf ("_", false, false); }
 } // namespace
 
@@ -35,6 +39,7 @@ Synth::Synth (juce::AudioProcessor& p, juce::AudioProcessorValueTreeState& s) : 
     for (size_t i = 0; i < 12; ++i) scaleSlots[i] = get (ParamIDs::scaleSlot[i]);
     for (size_t i = 0; i < numMacros; ++i) macros[i] = get (ParamIDs::macro[i]);
     for (size_t i = 0; i < numAutomationSlots; ++i) autoSlots[i] = get (ParamIDs::automationSlot[i]);
+    for (auto* id : masterFxIds) masterFxParams.push_back (get (id));
 
     for (size_t l = 0; l < numLayers; ++l)
     {
@@ -64,7 +69,6 @@ Synth::~Synth() = default;
 void Synth::prepare (double sr, int maxBlockSize, int numOutputChannels)
 {
     sampleRate = sr;
-    juce::ignoreUnused (maxBlockSize);
     for (size_t l = 0; l < numLayers; ++l)
     {
         analogEngines[l]->prepare (sr, controlBlock, maxPoolVoices);
@@ -93,6 +97,9 @@ void Synth::prepare (double sr, int maxBlockSize, int numOutputChannels)
     paramSmoother.setTime (0.02f, sr);
     masterGain.reset (juce::Decibels::decibelsToGain (masterVolume->convertFrom0to1 (masterVolume->getValue()), -60.0f));
     limiter.prepare (sr, numOutputChannels);
+    for (auto& f : layerFx) f.prepare (sr);
+    masterFx.prepare (sr);
+    monoScratch.assign ((size_t) juce::jmax (maxBlockSize, 512), 0.0f);
     tickRemaining = 0;
     firstBlock = true;
 }
@@ -275,6 +282,109 @@ void Synth::controlTick() noexcept
     for (auto& v : voices)
         if (v.state == Voice::State::Playing)
             v.controlTick (globals, controlBlock);
+
+    updateLayerFx();
+}
+
+// Layer FX parameters: layer base values + the mod matrix offsets of the layer's newest voice
+// (the FX are one insert per layer, so per-voice modulation follows the last played note).
+void Synth::updateLayerFx() noexcept
+{
+    for (size_t l = 0; l < numLayers; ++l)
+    {
+        if (! layers[l].active) continue;
+        const auto& rt = runtime[l];
+        const float* off = nullptr;
+        uint64_t newest = 0;
+        for (const auto& v : voices)
+            if (v.state == Voice::State::Playing && v.layer == (int) l && (off == nullptr || v.startTime >= newest))
+            {
+                off = v.modOffsets();
+                newest = v.startTime;
+            }
+        auto val = [&] (int id)
+        {
+            const float b = rt.base[(size_t) id];
+            if (off == nullptr || off[id] == 0.0f) return b;
+            const auto& r = paramRange (id);
+            return r.fromNorm (r.toNorm (b) + off[id]);
+        };
+        auto sw = [&] (int id) { return on (rt.base[(size_t) id]); };
+        auto ch = [&] (int id) { return idx (rt.base[(size_t) id]); };
+
+        fx::LayerFxParams p;
+        p.distOn = sw (lp::fxDistOn);
+        p.dist = { fx::layerDistType (ch (lp::fxDistType)), val (lp::fxDistDrive), val (lp::fxDistTone), val (lp::fxDistMix), val (lp::fxDistOutput) };
+        p.chorusOn = sw (lp::fxChorusOn);
+        p.chorus = { fx::ChorusMode::Custom, val (lp::fxChorusRate), val (lp::fxChorusDepth), val (lp::fxChorusDelay),
+                     val (lp::fxChorusFeedback), val (lp::fxChorusWidth), val (lp::fxChorusMix) };
+        p.phaserOn = sw (lp::fxPhaserOn);
+        p.phaser = { val (lp::fxPhaserRate), val (lp::fxPhaserDepth), val (lp::fxPhaserFeedback), val (lp::fxPhaserFreq),
+                     val (lp::fxPhaserMix), ch (lp::fxPhaserStages) };
+        p.flangerOn = sw (lp::fxFlangerOn);
+        p.flanger = { val (lp::fxFlangerRate), val (lp::fxFlangerDepth), val (lp::fxFlangerFeedback), val (lp::fxFlangerDelay),
+                      val (lp::fxFlangerStereo), val (lp::fxFlangerMix) };
+        p.delayOn = sw (lp::fxDelayOn);
+        const bool sync = sw (lp::fxDelaySync);
+        p.delay.type = fx::DelayType::Digital;
+        p.delay.timeL = sync ? fx::divisionSeconds (ch (lp::fxDelayDivL), globals.bpm) : val (lp::fxDelayTimeL) * 0.001f;
+        p.delay.timeR = sync ? fx::divisionSeconds (ch (lp::fxDelayDivR), globals.bpm) : val (lp::fxDelayTimeR) * 0.001f;
+        p.delay.feedback = val (lp::fxDelayFeedback);
+        p.delay.hpHz = val (lp::fxDelayHp);
+        p.delay.lpHz = val (lp::fxDelayLp);
+        p.delay.width = val (lp::fxDelayWidth);
+        p.delay.mix = val (lp::fxDelayMix);
+        p.delayPingPong = sw (lp::fxDelayPingpong);
+        p.reverbOn = sw (lp::fxReverbOn);
+        p.reverb = { fx::ReverbType::Hall, val (lp::fxReverbSize), val (lp::fxReverbDecay), val (lp::fxReverbPredelay),
+                     val (lp::fxReverbDamping), val (lp::fxReverbDiffusion), 0.2f, val (lp::fxReverbLowcut),
+                     val (lp::fxReverbHighcut), val (lp::fxReverbWidth), val (lp::fxReverbMix) };
+        p.eqOn = sw (lp::fxEqOn);
+        p.eq = { val (lp::fxEqLowFreq), val (lp::fxEqLowGain), val (lp::fxEqLowQ), val (lp::fxEqMidFreq), val (lp::fxEqMidGain),
+                 val (lp::fxEqMidQ), val (lp::fxEqHighFreq), val (lp::fxEqHighGain), val (lp::fxEqHighQ) };
+        p.compOn = sw (lp::fxCompOn);
+        p.comp = { val (lp::fxCompThreshold), val (lp::fxCompRatio), val (lp::fxCompAttack), val (lp::fxCompRelease),
+                   val (lp::fxCompKnee), val (lp::fxCompMakeup), val (lp::fxCompMix) };
+        layerFx[l].setParams (p);
+    }
+}
+
+void Synth::updateMasterFx() noexcept
+{
+    auto v = [this] (int i) { return hostValue (masterFxParams[(size_t) i]); };
+    auto sw = [&] (int i) { return on (v (i)); };
+    auto ch = [&] (int i) { return idx (v (i)); };
+
+    fx::MasterFxParams p;
+    p.driveOn = sw (driveOn);
+    p.drive = { fx::masterDriveType (ch (driveType)), v (driveDrive), v (driveTone), v (driveMix), v (driveOutput) };
+    p.chorusOn = sw (chorusOn);
+    p.chorus.mode = (fx::ChorusMode) juce::jlimit (0, 6, ch (chorusMode));
+    p.chorus.rateHz = v (chorusRate);
+    p.chorus.depth = v (chorusDepth);
+    p.chorus.delayMs = 7.0f;
+    p.chorus.width = 1.0f;
+    p.chorus.mix = v (chorusMix);
+    p.delayOn = sw (delayOn);
+    p.delay.type = (fx::DelayType) juce::jlimit (0, 5, ch (delayType));
+    const bool sync = sw (delaySync);
+    p.delay.timeL = sync ? fx::divisionSeconds (ch (delayDivL), globals.bpm) : v (delayTimeL) * 0.001f;
+    p.delay.timeR = p.delay.type != fx::DelayType::DualLR ? p.delay.timeL
+                  : sync ? fx::divisionSeconds (ch (delayDivR), globals.bpm) : v (delayTimeR) * 0.001f;
+    p.delay.feedback = v (delayFeedback);
+    p.delay.hpHz = v (delayHp);
+    p.delay.lpHz = v (delayLp);
+    p.delay.width = v (delayWidth);
+    p.delay.modulation = v (delayMod);
+    p.delay.ducking = v (delayDucking);
+    p.delay.mix = v (delayMix);
+    p.reverbOn = sw (reverbOn);
+    p.reverb = { (fx::ReverbType) juce::jlimit (0, 3, ch (reverbType)), v (reverbSize), v (reverbDecay), v (reverbPredelay),
+                 v (reverbDamping), v (reverbDiffusion), v (reverbMod), v (reverbLowcut), v (reverbHighcut),
+                 v (reverbWidth), v (reverbMix) };
+    p.filterOn = sw (filterOn);
+    p.filter = { sw (hpOn), sw (bpOn), sw (lpOn), v (hpFreq), v (hpRes), v (bpFreq), v (bpWidth), v (bpRes), v (lpFreq), v (lpRes) };
+    masterFx.setParams (p);
 }
 
 void Synth::process (juce::AudioBuffer<float>& buffer, const juce::MidiBuffer& midiIn, double bpm) noexcept
@@ -313,6 +423,23 @@ void Synth::process (juce::AudioBuffer<float>& buffer, const juce::MidiBuffer& m
         tickRemaining -= len;
     }
 
+    // Sum -> Master FX (Drive, Chorus, Delay, Reverb, Filter)
+    updateMasterFx();
+    if (masterFx.anyOn())
+    {
+        if (numCh > 1)
+            masterFx.process (buffer.getWritePointer (0), buffer.getWritePointer (1), numSamples);
+        else
+            for (int s = 0; s < numSamples; s += (int) monoScratch.size())
+            {
+                const int len = juce::jmin ((int) monoScratch.size(), numSamples - s);
+                float* m = buffer.getWritePointer (0) + s;
+                std::copy (m, m + len, monoScratch.begin());
+                masterFx.process (m, monoScratch.data(), len);
+                for (int i = 0; i < len; ++i) m[i] = 0.5f * (m[i] + monoScratch[(size_t) i]);
+            }
+    }
+
     // Master Level (smoothed) -> true-peak limiter
     const float db = hostValue (masterVolume);
     masterGain.setTarget (db <= -59.99f ? 0.0f : juce::Decibels::decibelsToGain (db), numSamples);
@@ -342,10 +469,12 @@ void Synth::renderChunk (float* const* out, int numChannels, int start, int n) n
         if (v.state != Voice::State::Free)
             v.render (globals, 0, n);
 
-    for (auto& st : layers)
+    for (size_t l = 0; l < numLayers; ++l)
     {
+        auto& st = layers[l];
         if (st.gainL.current == 0.0f && st.gainR.current == 0.0f && st.gainL.target == 0.0f && st.gainR.target == 0.0f)
             continue;
+        layerFx[l].process (st.bufL.data(), st.bufR.data(), n);   // Engine -> Layer FX -> Layer mixer
         for (int i = 0; i < n; ++i)
         {
             const float a = st.bufL[(size_t) i] * st.gainL.next();

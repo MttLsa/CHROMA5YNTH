@@ -39,3 +39,12 @@
 - IEngine: render → bool (bus Bypass post-filtro), EngineVoiceParams.base/offsets + `engineParam()` (valori modulati per voce). Voice somma il bypass dopo il filtro. Synth: engine Analog preallocati per Layer, cambio engine = kill voci del Layer; altri engine ancora Sine.
 - tests/test_analog.cpp: aliasing a 4× < −80 dB (misurato −106…−167 dB, 8 forme × 440–7040 Hz + Sub), pitch/wave mod, sync, FM, ring, sub, noise, mute/solo, routing, unison/drift, integrazione Synth. 31/31 verdi (Linux).
 - Aperti: SIMD su unison/SuperSaw (3 OSC, SuperSaw 7×8 unison a 4× ≈ 8% core per voce); verifica legale del nome d'onda "SuperSaw" (da SPEC); GUI dedicata in fase GUI.
+
+## FASE 4 – FX ✅
+- params/layer_fx.yaml (scope layer, 70 param: 8 FX con On/Off; float = destinazioni Mod Matrix, aggiunte in coda alla lista) + params/master_fx.yaml (host, 48 param: Drive/Chorus/Delay/Reverb/Filter).
+- src/shared/fx (header-only, un solo DSP per Layer e Master): FxUtil (DelayLine Hermite, SVF/one-pole TPT, biquad RBJ, Bypass 5 ms), Distortion (9 tipi superset, non lineari a 2× halfband, dry allineato alla latenza, compensazione di volume, Tone tilt), Chorus (Custom, Chorus I/II BBD, Dimension 1–4 in controfase), Phaser 2–12 stadi, Flanger, Delay (Digital/Tape/BBD/Ping-Pong/Dual L/R/Multitap, sync, HP/LP in loop, width, modulation, ducking), Reverb (FDN 16 Hadamard + plate Dattorro; Room/Plate/Hall/Large Hall), Eq3, Compressor (soft knee, linkato), MasterFilter (HP/BP/LP 12 dB SVF + res, BP centro/larghezza compensato).
+- FxChain: LayerFxChain (ordine fisso §2) e MasterFxChain (§4); FX spenta = non processata, chain che dorme dopo 2.5 s di silenzio in uscita (zero CPU), switch On/Off senza click.
+- Synth: Engine → Layer FX (per Layer, parametri = base + offset Mod Matrix della voce più recente) → mixer → Somma → Master FX → Master Level/Limiter; Delay sync al tempo host.
+- tests/test_fx.cpp: allineamento dry/wet distorsione, THD, modi chorus, notch phaser, tempi/feedback/ping-pong/multitap delay, RT60 reverb (±35%, 4 tipi) e stabilità a 20 s, EQ/compressore/filtro master, passthrough/sleep/switch delle chain, integrazione Synth. 40/40 verdi (Linux).
+- CPU (Release, Linux): chain Layer completa (8 FX) ≈ 5.5% core @48 kHz; 12 Layer tutto acceso + Master ≈ 69% (caso peggiore). Bench: `chroma_tests "[.bench]"`.
+- Aperti: 4 LFO Master (§4) non implementati; verifica legale del nome modo "Dimension" (da SPEC); SIMD su FDN/upsampler; GUI FX in fase GUI.
