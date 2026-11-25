@@ -9,6 +9,10 @@ lists:
   curves: [Linear, Exponential, Logarithmic]
   sync_divisions: ["1/1", "1/2", "1/4", "1/8", "1/16", "1/32", "1/1T", "1/2T", "1/4T", "1/8T", "1/16T", "1/32T",
                    "1/1D", "1/2D", "1/4D", "1/8D", "1/16D", "1/32D"]
+  filter_models: ["Ladder LP24", "Diode LP", "SVF LP12", "SVF BP12", "SVF HP12", "SVF Notch", "OTA LP24", "Cascade LP24",
+                  "Sallen-Key LP12", "Sallen-Key HP12", "Bridge LP12", "Classic LP24",
+                  "Digital LP12", "Digital LP24", "Digital LP36", "Digital LP48", "Digital HP12", "Digital HP24",
+                  "Digital BP", "Digital Notch", "Comb +", "Comb -", "Formant"]
 
 params:
   - { id: level, name: Level, type: float, min: 0.0, max: 1.0, default: 1.0, unit: "%", section: "Layer · Voice", description: "Livello per voce (destinazione di modulazione)." }
@@ -34,6 +38,20 @@ params:
   - { id: sostenuto_on, name: Sostenuto, type: bool, default: true, section: "Layer · Performance", description: "Risponde al pedale sostenuto (CC66)." }
   - { id: expression_on, name: Expression, type: bool, default: true, section: "Layer · Performance", description: "CC11 scala il volume del Layer." }
   - { id: modwheel_amount, name: Mod Wheel Amount, type: float, min: 0.0, max: 1.0, default: 1.0, unit: "%", section: "Layer · Performance", description: "Scala la sorgente Mod Wheel." }
+
+  - { id: filter_on, name: Filter, type: bool, default: false, section: "Layer · Filter", description: "Attiva il filtro della voce (spento = zero CPU)." }
+  - { id: filter_model, name: Filter Model, type: choice, choices_from: filter_models, default: "Ladder LP24", section: "Layer · Filter", description: "Modello: analogici ZDF non lineari con auto-oscillazione, o digitali." }
+  - { id: filter_cutoff, name: Cutoff, type: float, min: 20.0, max: 20000.0, default: 20000.0, skew: 1000.0, unit: Hz, section: "Layer · Filter", description: "Frequenza di taglio (Formant: posizione vocale A-E-I-O-U; Comb: frequenza del pettine)." }
+  - { id: filter_resonance, name: Resonance, type: float, min: 0.0, max: 1.0, default: 0.0, unit: "%", section: "Layer · Filter", description: "Risonanza; al massimo i modelli analogici auto-oscillano." }
+  - { id: filter_drive, name: Drive, type: float, min: 0.0, max: 1.0, default: 0.0, unit: "%", section: "Layer · Filter", description: "Guadagno in ingresso alla saturazione (0–24 dB)." }
+  - { id: filter_keytrack, name: Filter Key Track, type: float, min: 0.0, max: 1.0, default: 0.0, unit: "%", section: "Layer · Filter", description: "100% = il cutoff segue la nota (1 ottava per ottava, riferimento C3)." }
+  - { id: filter_env_amount, name: Filter Env Amount, type: float, min: -1.0, max: 1.0, default: 0.0, section: "Layer · Filter", description: "Modulazione del cutoff da Mod Env 1 (±100% = ±10 ottave)." }
+  - { id: filter_velocity, name: Filter Velocity, type: float, min: 0.0, max: 1.0, default: 0.0, unit: "%", section: "Layer · Filter", description: "Velocity bassa abbassa il cutoff (100% = fino a −4 ottave)." }
+  - { id: filter_lfo_amount, name: Filter LFO Amount, type: float, min: -1.0, max: 1.0, default: 0.0, section: "Layer · Filter", description: "Modulazione del cutoff da LFO 1 (±100% = ±4 ottave)." }
+
+  - { id: drift_on, name: Drift, type: bool, default: false, section: "Layer · Drift", description: "Micro-variazioni lente e casuali di intonazione per voce/oscillatore e tolleranza dei componenti del filtro." }
+  - { id: drift_amount, name: Drift Amount, type: float, min: 0.0, max: 1.0, default: 0.3, unit: "%", section: "Layer · Drift", description: "Quantità di drift (100% = circa ±12 cent, ±0.25 ottave di cutoff)." }
+  - { id: drift_only, name: Drift Only, type: bool, default: false, section: "Layer · Drift", description: "Filtro bypassato, resta attivo solo il drift di intonazione." }
 
 blocks:
   - repeat:

@@ -25,6 +25,7 @@ struct EngineVoiceParams
     float pitchStart = 60.0f, pitchEnd = 60.0f;   // MIDI note (fractional), interpolated across the call
     int unison = 1;
     float detuneCents = 0.0f, spread = 0.0f, unisonPan = 0.0f;
+    const float* driftSemis = nullptr;            // DRIFT: per-oscillator pitch offset [maxUnison], null = off
 };
 
 // Common engine interface (§1). Engines keep per-voice state indexed by the global voice index.

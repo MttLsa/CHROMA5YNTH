@@ -1,5 +1,7 @@
 #pragma once
+#include "Drift.h"
 #include "Envelope.h"
+#include "Filter.h"
 #include "Smoothing.h"
 #include "VoiceContext.h"
 #include <cstdint>
@@ -67,6 +69,14 @@ private:
     bool havePitch = false;
     int tickLen = controlBlock, tickPos = 0;
     LinearRamp gainL, gainR;
+
+    // FILTER LIBRARY + DRIFT (§2)
+    Filter filter;
+    Drift drift;
+    bool filterActive = false, driftActive = false, haveCutoff = false;
+    float cutStart = 1000.0f, cutEnd = 1000.0f;   // Hz, interpolated across the tick
+    void updateFilter (const LayerRuntime&, float dt) noexcept;
+    void runFilter (float* l, float* r, int n, float p0, float p1) noexcept;
 
     // stealing fade
     VoiceStart pending;

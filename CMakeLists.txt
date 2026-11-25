@@ -72,6 +72,7 @@ set(CHROMA_SOURCES
     src/gui/StyleLookAndFeel.cpp
     src/core/Synth.cpp
     src/shared/Voice.cpp
+    src/shared/Filter.cpp
     src/engines/sine/SineEngine.cpp
     ${CHROMA_GEN_DIR}/ParamLayout.cpp)
 
@@ -131,7 +132,7 @@ if(CHROMA_BUILD_TESTS)
     FetchContent_MakeAvailable(Catch2)
 
     juce_add_console_app(chroma_tests PRODUCT_NAME "chroma_tests")
-    target_sources(chroma_tests PRIVATE tests/test_params.cpp tests/test_processor.cpp tests/test_core.cpp tests/test_limiter.cpp)
+    target_sources(chroma_tests PRIVATE tests/test_params.cpp tests/test_processor.cpp tests/test_core.cpp tests/test_limiter.cpp tests/test_filter.cpp)
     chroma_configure_target(chroma_tests)
     target_link_libraries(chroma_tests PRIVATE Catch2::Catch2WithMain)
 

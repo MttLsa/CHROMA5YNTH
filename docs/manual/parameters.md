@@ -58,6 +58,28 @@
 | Expression | Off / On | On |  | CC11 scala il volume del Layer. |
 | Mod Wheel Amount | 0.0 … 1.0 | 1.0 | % | Scala la sorgente Mod Wheel. |
 
+## Layer · Filter
+
+| Parametro | Range | Default | Unità | Descrizione |
+|---|---|---|---|---|
+| Filter | Off / On | Off |  | Attiva il filtro della voce (spento = zero CPU). |
+| Filter Model | Ladder LP24 / Diode LP / SVF LP12 / SVF BP12 / SVF HP12 / SVF Notch / OTA LP24 / Cascade LP24 / Sallen-Key LP12 / Sallen-Key HP12 / Bridge LP12 / Classic LP24 / Digital LP12 / Digital LP24 / Digital LP36 / Digital LP48 / Digital HP12 / Digital HP24 / Digital BP / Digital Notch / Comb + / Comb - / Formant | Ladder LP24 |  | Modello: analogici ZDF non lineari con auto-oscillazione, o digitali. |
+| Cutoff | 20.0 … 20000.0 | 20000.0 | Hz | Frequenza di taglio (Formant: posizione vocale A-E-I-O-U; Comb: frequenza del pettine). |
+| Resonance | 0.0 … 1.0 | 0.0 | % | Risonanza; al massimo i modelli analogici auto-oscillano. |
+| Drive | 0.0 … 1.0 | 0.0 | % | Guadagno in ingresso alla saturazione (0–24 dB). |
+| Filter Key Track | 0.0 … 1.0 | 0.0 | % | 100% = il cutoff segue la nota (1 ottava per ottava, riferimento C3). |
+| Filter Env Amount | -1.0 … 1.0 | 0.0 |  | Modulazione del cutoff da Mod Env 1 (±100% = ±10 ottave). |
+| Filter Velocity | 0.0 … 1.0 | 0.0 | % | Velocity bassa abbassa il cutoff (100% = fino a −4 ottave). |
+| Filter LFO Amount | -1.0 … 1.0 | 0.0 |  | Modulazione del cutoff da LFO 1 (±100% = ±4 ottave). |
+
+## Layer · Drift
+
+| Parametro | Range | Default | Unità | Descrizione |
+|---|---|---|---|---|
+| Drift | Off / On | Off |  | Micro-variazioni lente e casuali di intonazione per voce/oscillatore e tolleranza dei componenti del filtro. |
+| Drift Amount | 0.0 … 1.0 | 0.3 | % | Quantità di drift (100% = circa ±12 cent, ±0.25 ottave di cutoff). |
+| Drift Only | Off / On | Off |  | Filtro bypassato, resta attivo solo il drift di intonazione. |
+
 ## Layer · Amp Env…Mod Env 3
 
 | Parametro | Range | Default | Unità | Descrizione |
@@ -103,7 +125,7 @@
 | Mod N Enable | Off / On | On |  | Abilita lo slot N. |
 | Mod N Source | 31 voci | Off |  | Sorgente dello slot N. |
 | Mod N CC | 0 … 127 | 1 |  | Numero CC quando la sorgente è MIDI CC. |
-| Mod N Destination | 83 voci | Off |  | Destinazione: qualunque parametro continuo del Layer. |
+| Mod N Destination | 91 voci | Off |  | Destinazione: qualunque parametro continuo del Layer. |
 | Mod N Amount | -1.0 … 1.0 | 0.0 |  | Quantità ±100% del range della destinazione. |
 | Mod N Via | 31 voci | Off |  | Sorgente che scala l'amount (Off = 1). |
 | Mod N Curve | Linear / Exponential / Logarithmic / S-Curve | Linear |  | Curva applicata alla sorgente. |

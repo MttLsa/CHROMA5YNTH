@@ -24,3 +24,10 @@
 - Editor generico: viewport scrollabile, ComboBox per choice > 4. Stato: child CORE (layer interni, macro, automation).
 - Test: SCALE (mappa, slot vuoto), stealing (oldest, quietest), Max Voices, sustain, legato, MPE, automation/macro state, limiter ≤ −1 dBTP (meter 16×). 18/18 verdi (Linux).
 - Aperti: GUI SCALE (tastiera) e assegnazione macro/automation via click destro → fase GUI; Drift con filtri.
+
+## FASE 2 – Filter Library + Drift ✅
+- params/layer_engine.yaml: sezione Filter (On, Model 23 modelli, Cutoff, Resonance, Drive, Key Track, Env Amount→Mod Env 1, Velocity, LFO Amount→LFO 1) + Drift (On, Amount, Drift Only). Filter default Off.
+- src/shared/Filter.{h,cpp}: core ZDF/TPT N-poli risolto implicitamente (I−gA)⁻¹ + saturatore nel loop; modelli Ladder/OTA/Cascade/Classic LP24, Diode LP (ladder accoppiato, k e ω calibrati), Sallen-Key LP/HP12, Bridge LP12, SVF LP/BP/HP/Notch (stato BP saturato). Digitali: LP12–48/HP12–24 Butterworth TPT, BP, Notch, Comb ±, Formant A-E-I-O-U. Cutoff interpolato esponenziale, coeff. ogni 4 campioni, dither −126 dB per l'auto-oscillazione, guardia NaN/denormal.
+- src/shared/Drift.h: random walk lenti per oscillatore (±12 ct) + tolleranza cutoff/res per voce. EngineVoiceParams.driftSemis; SineEngine lo applica.
+- Voice: filtro per voce dopo l'engine (anche nel crossfade di stealing), spento/Drift Only = zero CPU.
+- tests/test_filter.cpp: risposta LP/HP/BP/Notch/Comb/Formant, accuratezza cutoff 44.1–192 kHz, auto-oscillazione intonata (±10%) e limitata, hot input + sweep, no denormal, Drift, integrazione Voice. 26/26 verdi (Linux).

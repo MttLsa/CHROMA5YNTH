@@ -27,7 +27,7 @@ void SineEngine::render (int voice, const EngineVoiceParams& p, float* left, flo
     for (int u = 0; u < count; ++u)
     {
         const float pos = count > 1 ? (float) u / (float) (count - 1) - 0.5f : 0.0f;  // -0.5..0.5
-        const float cents = pos * p.detuneCents;
+        const float cents = pos * p.detuneCents + (p.driftSemis != nullptr ? p.driftSemis[u] * 100.0f : 0.0f);
         const float pan = std::clamp (p.unisonPan + 2.0f * pos * p.spread, -1.0f, 1.0f);
         const float angle = (pan + 1.0f) * 0.25f * 3.14159265f;
         const float gl = std::cos (angle) * norm * 1.41421356f, gr = std::sin (angle) * norm * 1.41421356f;
