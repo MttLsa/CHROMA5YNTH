@@ -31,3 +31,11 @@
 - src/shared/Drift.h: random walk lenti per oscillatore (±12 ct) + tolleranza cutoff/res per voce. EngineVoiceParams.driftSemis; SineEngine lo applica.
 - Voice: filtro per voce dopo l'engine (anche nel crossfade di stealing), spento/Drift Only = zero CPU.
 - tests/test_filter.cpp: risposta LP/HP/BP/Notch/Comb/Formant, accuratezza cutoff 44.1–192 kHz, auto-oscillazione intonata (±10%) e limitata, hot input + sweep, no denormal, Drift, integrazione Voice. 26/26 verdi (Linux).
+
+## FASE 3 – Engine ANALOG ✅
+- params/layer_engine_analog.yaml (scope layer): 3 OSC (On, Wave ×8, Octave, Semitone, Fine, Level, Pan, Phase, Phase Reset, PW, SuperSaw Detune/Spread/Voices, Stereo Width, Wave Mod), Mod (Hard Sync 2→1, FM 3→1/2→1, Ring 1×2), Mixer (Volume/Pan/Mute/Solo/Route per OSC, Sub/Noise Level+Route, Osc Master), Sub, Noise.
+- src/shared/Blep.h (BLEP/BLAMP 4 punti da B-spline cubica), Oversampler.h (decimatore halfband Kaiser 95/23 tap, 2/4/8×).
+- src/engines/analog/AnalogEngine: oscillatori in oversampling interno (default 2×, `setOversampling` 1/2/4/8 → da collegare al Global Settings §5), stepper generico con breakpoint (salti di valore e pendenza), sync band-limited, FM lineare through-zero, ring, SuperSaw 2–7, unison/detune/spread/drift dal Voice; Sub (−1/−2 ott., segue OSC 1), Noise White/Pink + Color + Width a sample rate base; sorgenti inattive = zero CPU.
+- IEngine: render → bool (bus Bypass post-filtro), EngineVoiceParams.base/offsets + `engineParam()` (valori modulati per voce). Voice somma il bypass dopo il filtro. Synth: engine Analog preallocati per Layer, cambio engine = kill voci del Layer; altri engine ancora Sine.
+- tests/test_analog.cpp: aliasing a 4× < −80 dB (misurato −106…−167 dB, 8 forme × 440–7040 Hz + Sub), pitch/wave mod, sync, FM, ring, sub, noise, mute/solo, routing, unison/drift, integrazione Synth. 31/31 verdi (Linux).
+- Aperti: SIMD su unison/SuperSaw (3 OSC, SuperSaw 7×8 unison a 4× ≈ 8% core per voce); verifica legale del nome d'onda "SuperSaw" (da SPEC); GUI dedicata in fase GUI.

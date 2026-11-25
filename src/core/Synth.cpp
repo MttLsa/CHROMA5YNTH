@@ -1,4 +1,5 @@
 #include "Synth.h"
+#include "engines/analog/AnalogEngine.h"
 #include "engines/sine/SineEngine.h"
 #include "shared/ParamRange.h"
 #include "shared/Scale.h"
@@ -43,9 +44,11 @@ Synth::Synth (juce::AudioProcessor& p, juce::AudioProcessorValueTreeState& s) : 
               get (ParamIDs::layerTranspose[l]), get (ParamIDs::layerKeyLo[l]), get (ParamIDs::layerKeyHi[l]),
               get (ParamIDs::layerVelLo[l]), get (ParamIDs::layerVelHi[l]), get (ParamIDs::layerMidiChannel[l]),
               get (ParamIDs::layerMaxVoices[l]) };
-        // Phase 1: every engine slot uses the test sine engine.
-        engines[l] = std::make_unique<SineEngine>();
-        runtime[l].engine = engines[l].get();
+        // Analog (§3A); the engines of later phases use the test sine engine until implemented.
+        analogEngines[l] = std::make_unique<AnalogEngine>();
+        sineEngines[l] = std::make_unique<SineEngine>();
+        engineIndex[l] = 0;
+        runtime[l].engine = analogEngines[l].get();
         for (size_t i = 0; i < 4; ++i)
             runtime[l].custom[i] = &stores[l].customTable ((int) i);
         for (int i = 0; i < lp::count; ++i)
@@ -64,7 +67,8 @@ void Synth::prepare (double sr, int maxBlockSize, int numOutputChannels)
     juce::ignoreUnused (maxBlockSize);
     for (size_t l = 0; l < numLayers; ++l)
     {
-        engines[l]->prepare (sr, controlBlock, maxPoolVoices);
+        analogEngines[l]->prepare (sr, controlBlock, maxPoolVoices);
+        sineEngines[l]->prepare (sr, controlBlock, maxPoolVoices);
         layers[l].bufL.assign (controlBlock, 0.0f);
         layers[l].bufR.assign (controlBlock, 0.0f);
         layers[l].gainL.reset (0.0f);
@@ -78,6 +82,10 @@ void Synth::prepare (double sr, int maxBlockSize, int numOutputChannels)
     scratchR.assign (controlBlock, 0.0f);
     globals.scratchL = scratchL.data();
     globals.scratchR = scratchR.data();
+    bypassL.assign (controlBlock, 0.0f);
+    bypassR.assign (controlBlock, 0.0f);
+    globals.bypassL = bypassL.data();
+    globals.bypassR = bypassR.data();
     globals.sampleRate = sr;
     for (int i = 0; i < maxPoolVoices; ++i)
         voices[(size_t) i].prepare (i, sr);
@@ -150,6 +158,19 @@ void Synth::readHostParams() noexcept
         st.velLo = idx (hostValue (h.velLo)); st.velHi = idx (hostValue (h.velHi));
         st.midiCh = idx (hostValue (h.midiCh));
         st.maxVoices = idx (hostValue (h.maxVoices));
+
+        // Engine change: free the layer's voices, then switch (all engines are preallocated).
+        const int e = juce::jlimit (0, 4, idx (hostValue (h.engine)));
+        if (e != engineIndex[l])
+        {
+            for (auto& v : voices)
+                if (v.state != Voice::State::Free && (v.layer == (int) l))
+                    v.kill (globals);
+            st.stackSize = 0;
+            st.monoVoice = -1;
+            engineIndex[l] = e;
+            runtime[l].engine = e == 0 ? analogEngines[l].get() : sineEngines[l].get();
+        }
     }
 }
 

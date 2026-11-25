@@ -76,6 +76,7 @@ private:
     bool filterActive = false, driftActive = false, haveCutoff = false;
     float cutStart = 1000.0f, cutEnd = 1000.0f;   // Hz, interpolated across the tick
     void updateFilter (const LayerRuntime&, float dt) noexcept;
+    void renderEngine (IEngine&, EngineVoiceParams, VoiceGlobals&, int n, float p0, float p1) noexcept;
     void runFilter (float* l, float* r, int n, float p0, float p1) noexcept;
 
     // stealing fade

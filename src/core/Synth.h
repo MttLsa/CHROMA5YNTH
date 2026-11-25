@@ -115,7 +115,8 @@ private:
     std::array<LayerParamStore, numLayers> stores;
     std::array<LayerRuntime, numLayers> runtime {};
     std::array<LayerState, numLayers> layers;
-    std::array<std::unique_ptr<IEngine>, numLayers> engines;
+    std::array<std::unique_ptr<IEngine>, numLayers> analogEngines, sineEngines;
+    std::array<int, numLayers> engineIndex {};
     std::array<Voice, maxPoolVoices> voices {};
     MidiState midi;
     VoiceGlobals globals;
@@ -131,7 +132,7 @@ private:
     uint16_t scaleMasks[12] {};
     int pool = 24;
     bool anySolo = false;
-    std::vector<float> scratchL, scratchR;
+    std::vector<float> scratchL, scratchR, bypassL, bypassR;
     OnePole paramSmoother;
     LinearRamp masterGain;
     TruePeakLimiter limiter;

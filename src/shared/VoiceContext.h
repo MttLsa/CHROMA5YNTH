@@ -32,6 +32,8 @@ struct VoiceGlobals
     std::array<float*, numLayers> layerL {}, layerR {};   // chunk-relative layer buffers
     float* scratchL = nullptr;
     float* scratchR = nullptr;
+    float* bypassL = nullptr;                             // engine bypass bus (added after the voice filter)
+    float* bypassR = nullptr;
     int tickRemaining = controlBlock;                     // samples left in the current control tick at chunk start
 };
 } // namespace chroma

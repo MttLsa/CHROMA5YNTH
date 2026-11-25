@@ -297,6 +297,8 @@ void Voice::controlTick (VoiceGlobals& G, int n) noexcept
     ep.detuneCents = val (L, lp::unisonDetune);
     ep.spread = val (L, lp::unisonSpread);
     ep.unisonPan = val (L, lp::unisonPan);
+    ep.base = L.base.data();
+    ep.offsets = offsets.data();
     updateFilter (L, dt);
 
     if (L.engine != nullptr)
@@ -319,8 +321,7 @@ void Voice::render (VoiceGlobals& G, int start, int n) noexcept
             const int m = std::min (n, fadeRemaining);
             if (auto* e = (*G.layers)[(size_t) fadeLayer].engine; e != nullptr && m > 0)
             {
-                e->render (index, ep, G.scratchL, G.scratchR, m);
-                runFilter (G.scratchL, G.scratchR, m, 1.0f, 1.0f);
+                renderEngine (*e, ep, G, m, 1.0f, 1.0f);
                 float* outL = G.layerL[(size_t) fadeLayer] + start;
                 float* outR = G.layerR[(size_t) fadeLayer] + start;
                 for (int i = 0; i < m; ++i)
@@ -353,8 +354,7 @@ void Voice::render (VoiceGlobals& G, int start, int n) noexcept
         EngineVoiceParams rp = ep;
         rp.pitchStart = pitchStart + (pitchEnd - pitchStart) * p0;
         rp.pitchEnd = pitchStart + (pitchEnd - pitchStart) * p1;
-        L.engine->render (index, rp, G.scratchL, G.scratchR, n);
-        runFilter (G.scratchL, G.scratchR, n, p0, p1);
+        renderEngine (*L.engine, rp, G, n, p0, p1);
 
         float* outL = G.layerL[(size_t) layer] + start;
         float* outR = G.layerR[(size_t) layer] + start;
@@ -407,6 +407,20 @@ void Voice::updateFilter (const LayerRuntime& L, float dt) noexcept
     cutStart = haveCutoff ? cutEnd : hz;
     cutEnd = hz;
     haveCutoff = true;
+}
+
+void Voice::renderEngine (IEngine& e, EngineVoiceParams p, VoiceGlobals& G, int n, float p0, float p1) noexcept
+{
+    p.bypassL = G.bypassL;
+    p.bypassR = G.bypassR;
+    const bool bypass = e.render (index, p, G.scratchL, G.scratchR, n) && G.bypassL != nullptr;
+    runFilter (G.scratchL, G.scratchR, n, p0, p1);
+    if (bypass)
+        for (int i = 0; i < n; ++i)
+        {
+            G.scratchL[i] += G.bypassL[i];
+            G.scratchR[i] += G.bypassR[i];
+        }
 }
 
 void Voice::runFilter (float* l, float* r, int n, float p0, float p1) noexcept

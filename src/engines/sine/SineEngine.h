@@ -15,7 +15,7 @@ public:
     void noteOn (int voice, const EngineNote& n) override;
     void noteOff (int) override {}
     void kill (int voice) override { voices[(std::size_t) voice] = {}; }
-    void render (int voice, const EngineVoiceParams&, float* left, float* right, int n) noexcept override;
+    bool render (int voice, const EngineVoiceParams&, float* left, float* right, int n) noexcept override;
 
 private:
     struct VoiceState { std::array<double, maxUnison> phase {}; uint32_t seed = 0x9e3779b9u; };

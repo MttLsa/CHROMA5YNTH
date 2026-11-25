@@ -16,7 +16,7 @@ void SineEngine::noteOn (int voice, const EngineNote& n)
     }
 }
 
-void SineEngine::render (int voice, const EngineVoiceParams& p, float* left, float* right, int n) noexcept
+bool SineEngine::render (int voice, const EngineVoiceParams& p, float* left, float* right, int n) noexcept
 {
     auto& v = voices[(size_t) voice];
     std::fill (left, left + n, 0.0f);
@@ -46,5 +46,6 @@ void SineEngine::render (int voice, const EngineVoiceParams& p, float* left, flo
         }
         v.phase[(size_t) u] = ph;
     }
+    return false;
 }
 } // namespace chroma

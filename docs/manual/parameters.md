@@ -125,12 +125,74 @@
 | Mod N Enable | Off / On | On |  | Abilita lo slot N. |
 | Mod N Source | 31 voci | Off |  | Sorgente dello slot N. |
 | Mod N CC | 0 … 127 | 1 |  | Numero CC quando la sorgente è MIDI CC. |
-| Mod N Destination | 91 voci | Off |  | Destinazione: qualunque parametro continuo del Layer. |
+| Mod N Destination | 134 voci | Off |  | Destinazione: qualunque parametro continuo del Layer. |
 | Mod N Amount | -1.0 … 1.0 | 0.0 |  | Quantità ±100% del range della destinazione. |
 | Mod N Via | 31 voci | Off |  | Sorgente che scala l'amount (Off = 1). |
 | Mod N Curve | Linear / Exponential / Logarithmic / S-Curve | Linear |  | Curva applicata alla sorgente. |
 | Mod N Smoothing | 0.0 … 1.0 | 0.0 | % | Smoothing della modulazione (0–500 ms). |
 | Mod N Invert | Off / On | Off |  | Inverte la sorgente. |
+
+## Analog · OSC N
+
+| Parametro | Range | Default | Unità | Descrizione |
+|---|---|---|---|---|
+| OSC N | Off / On | Off |  | Attiva l'oscillatore N (spento = zero CPU; un oscillatore spento non fa sync/FM/ring). Default per indice (1: True). |
+| OSC N Wave | Sine / Triangle / Saw / Square / Pulse / SuperSaw / Half / Narrow | Saw |  | Forma d'onda band-limited. Half = semionda di sinusoide, Narrow = impulso stretto (10%). |
+| OSC N Octave | -4 … 4 | 0 | oct | Trasposizione in ottave. |
+| OSC N Semitone | -12 … 12 | 0 | st | Trasposizione in semitoni. |
+| OSC N Fine | -100.0 … 100.0 | 0.0 | ct | Intonazione fine in cent. |
+| OSC N Level | 0.0 … 1.0 | 0.8 | % | Livello dell'oscillatore. |
+| OSC N Pan | -1.0 … 1.0 | 0.0 |  | Pan dell'oscillatore (sommato al Pan del mixer). |
+| OSC N Phase | 0.0 … 360.0 | 0.0 | ° | Fase iniziale usata con Phase Reset. |
+| OSC N Phase Reset | Off / On | On |  | On = la fase riparte da Phase a ogni nota; Off = fase libera (casuale). |
+| OSC N Pulse Width | 1.0 … 99.0 | 50.0 | % | Larghezza d'impulso della forma Pulse. |
+| OSC N SuperSaw Detune | 0.0 … 1.0 | 0.4 | % | Detune delle saw laterali della SuperSaw (100% = ±1 semitono, curva progressiva). |
+| OSC N SuperSaw Spread | 0.0 … 1.0 | 0.6 | % | Apertura stereo delle voci SuperSaw. |
+| OSC N SuperSaw Voices | 2 … 7 | 7 |  | Numero di saw della SuperSaw. |
+| OSC N Stereo Width | 0.0 … 1.0 | 1.0 | % | Scala l'apertura stereo di unison e SuperSaw di questo oscillatore. |
+| OSC N Wave Mod | 0.0 … 1.0 | 0.0 | % | Morph della forma: Sine → auto-PM; Triangle → Saw; Saw → doppia saw (ottava); Square → Saw; Pulse → impulso stretto; SuperSaw → mix delle saw laterali; Half → raddrizzata intera; Narrow → 10% → 1%. |
+
+## Analog · Mixer
+
+| Parametro | Range | Default | Unità | Descrizione |
+|---|---|---|---|---|
+| Mixer OSC N Volume | 0.0 … 1.0 | 1.0 | % | Volume dell'oscillatore N nel mixer. |
+| Mixer OSC N Pan | -1.0 … 1.0 | 0.0 |  | Pan dell'oscillatore N nel mixer. |
+| Mixer OSC N Mute | Off / On | Off |  | Silenzia l'oscillatore N (continua a fare da sorgente di sync/FM/ring). |
+| Mixer OSC N Solo | Off / On | Off |  | Con un Solo attivo suonano solo gli oscillatori in Solo (Sub e Noise silenziati). |
+| Mixer OSC N Route | Filter / Bypass | Filter |  | Instradamento dell'oscillatore N: nel filtro o in bypass. |
+| Noise Level | 0.0 … 1.0 | 0.0 | % | Livello del generatore Noise (0 = zero CPU). |
+| Noise Route | Filter / Bypass | Filter |  | Instradamento del Noise: nel filtro o in bypass. |
+| Sub Level | 0.0 … 1.0 | 0.5 | % | Livello del Sub. |
+| Sub Route | Filter / Bypass | Filter |  | Instradamento del Sub: nel filtro o in bypass. |
+| Osc Master Level | 0.0 … 1.0 | 0.7 | % | Livello generale di oscillatori, Sub e Noise prima del filtro. |
+
+## Analog · Mod
+
+| Parametro | Range | Default | Unità | Descrizione |
+|---|---|---|---|---|
+| Hard Sync 2→1 | Off / On | Off |  | OSC 2 (master) riavvia la fase di OSC 1 a ogni suo ciclo (band-limited). |
+| FM 3→1 | 0.0 … 1.0 | 0.0 | % | FM lineare audio-rate (through-zero) di OSC 3 su OSC 1 (100% = deviazione 4× la frequenza di OSC 1). |
+| FM 2→1 | 0.0 … 1.0 | 0.0 | % | FM lineare audio-rate (through-zero) di OSC 2 su OSC 1 (100% = deviazione 4× la frequenza di OSC 1). |
+| Ring Mod 1×2 | 0.0 … 1.0 | 0.0 | % | Crossfade di OSC 1 verso il prodotto OSC 1 × OSC 2. |
+
+## Analog · Sub
+
+| Parametro | Range | Default | Unità | Descrizione |
+|---|---|---|---|---|
+| Sub | Off / On | Off |  | Attiva il Sub (segue l'intonazione di OSC 1). |
+| Sub Wave | Sine / Square | Square |  | Forma del Sub. |
+| Sub Octave | -1 / -2 | -1 |  | Una o due ottave sotto OSC 1. |
+| Sub Phase | 0.0 … 360.0 | 0.0 | ° | Fase iniziale del Sub (riparte a ogni nota). |
+
+## Analog · Noise
+
+| Parametro | Range | Default | Unità | Descrizione |
+|---|---|---|---|---|
+| Noise Type | White / Pink | White |  | Rumore bianco o rosa. |
+| Noise Color | -1.0 … 1.0 | 0.0 |  | Tilt spettrale: < 0 più scuro, > 0 più brillante. |
+| Noise Pan | -1.0 … 1.0 | 0.0 |  | Pan del Noise. |
+| Noise Stereo Width | 0.0 … 1.0 | 0.0 | % | 0 = mono, 100% = canali L/R indipendenti. |
 
 ## Macro
 

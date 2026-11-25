@@ -1,0 +1,57 @@
+# Engine ANALOG (§3A). Parametri interni di ogni Layer (attivi quando L{n} Engine = Analog).
+scope: layer
+
+lists:
+  analog_waves: [Sine, Triangle, Saw, Square, Pulse, SuperSaw, Half, Narrow]
+  analog_route: [Filter, Bypass]
+
+blocks:
+  - repeat: { count: 3 }
+    section: "Analog · OSC {n}"
+    params:
+      - { id: "an_osc{n}_on", array: anOscOn, name: "OSC {n}", type: bool, default: false, default_by_index: { 1: true }, description: "Attiva l'oscillatore {n} (spento = zero CPU; un oscillatore spento non fa sync/FM/ring)." }
+      - { id: "an_osc{n}_wave", array: anOscWave, name: "OSC {n} Wave", type: choice, choices_from: analog_waves, default: Saw, description: "Forma d'onda band-limited. Half = semionda di sinusoide, Narrow = impulso stretto (10%)." }
+      - { id: "an_osc{n}_octave", array: anOscOctave, name: "OSC {n} Octave", type: int, min: -4, max: 4, default: 0, unit: oct, description: "Trasposizione in ottave." }
+      - { id: "an_osc{n}_semi", array: anOscSemi, name: "OSC {n} Semitone", type: int, min: -12, max: 12, default: 0, unit: st, description: "Trasposizione in semitoni." }
+      - { id: "an_osc{n}_fine", array: anOscFine, name: "OSC {n} Fine", type: float, min: -100.0, max: 100.0, default: 0.0, unit: ct, description: "Intonazione fine in cent." }
+      - { id: "an_osc{n}_level", array: anOscLevel, name: "OSC {n} Level", type: float, min: 0.0, max: 1.0, default: 0.8, unit: "%", description: "Livello dell'oscillatore." }
+      - { id: "an_osc{n}_pan", array: anOscPan, name: "OSC {n} Pan", type: float, min: -1.0, max: 1.0, default: 0.0, description: "Pan dell'oscillatore (sommato al Pan del mixer)." }
+      - { id: "an_osc{n}_phase", array: anOscPhase, name: "OSC {n} Phase", type: float, min: 0.0, max: 360.0, default: 0.0, unit: "°", description: "Fase iniziale usata con Phase Reset." }
+      - { id: "an_osc{n}_reset", array: anOscReset, name: "OSC {n} Phase Reset", type: bool, default: true, description: "On = la fase riparte da Phase a ogni nota; Off = fase libera (casuale)." }
+      - { id: "an_osc{n}_pw", array: anOscPw, name: "OSC {n} Pulse Width", type: float, min: 1.0, max: 99.0, default: 50.0, unit: "%", description: "Larghezza d'impulso della forma Pulse." }
+      - { id: "an_osc{n}_ss_detune", array: anOscSsDetune, name: "OSC {n} SuperSaw Detune", type: float, min: 0.0, max: 1.0, default: 0.4, unit: "%", description: "Detune delle saw laterali della SuperSaw (100% = ±1 semitono, curva progressiva)." }
+      - { id: "an_osc{n}_ss_spread", array: anOscSsSpread, name: "OSC {n} SuperSaw Spread", type: float, min: 0.0, max: 1.0, default: 0.6, unit: "%", description: "Apertura stereo delle voci SuperSaw." }
+      - { id: "an_osc{n}_ss_voices", array: anOscSsVoices, name: "OSC {n} SuperSaw Voices", type: int, min: 2, max: 7, default: 7, description: "Numero di saw della SuperSaw." }
+      - { id: "an_osc{n}_width", array: anOscWidth, name: "OSC {n} Stereo Width", type: float, min: 0.0, max: 1.0, default: 1.0, unit: "%", description: "Scala l'apertura stereo di unison e SuperSaw di questo oscillatore." }
+      - { id: "an_osc{n}_wave_mod", array: anOscWaveMod, name: "OSC {n} Wave Mod", type: float, min: 0.0, max: 1.0, default: 0.0, unit: "%", description: "Morph della forma: Sine → auto-PM; Triangle → Saw; Saw → doppia saw (ottava); Square → Saw; Pulse → impulso stretto; SuperSaw → mix delle saw laterali; Half → raddrizzata intera; Narrow → 10% → 1%." }
+
+  - repeat: { count: 3 }
+    section: "Analog · Mixer"
+    params:
+      - { id: "an_mix{n}_volume", array: anMixVolume, name: "Mixer OSC {n} Volume", type: float, min: 0.0, max: 1.0, default: 1.0, unit: "%", description: "Volume dell'oscillatore {n} nel mixer." }
+      - { id: "an_mix{n}_pan", array: anMixPan, name: "Mixer OSC {n} Pan", type: float, min: -1.0, max: 1.0, default: 0.0, description: "Pan dell'oscillatore {n} nel mixer." }
+      - { id: "an_mix{n}_mute", array: anMixMute, name: "Mixer OSC {n} Mute", type: bool, default: false, description: "Silenzia l'oscillatore {n} (continua a fare da sorgente di sync/FM/ring)." }
+      - { id: "an_mix{n}_solo", array: anMixSolo, name: "Mixer OSC {n} Solo", type: bool, default: false, description: "Con un Solo attivo suonano solo gli oscillatori in Solo (Sub e Noise silenziati)." }
+      - { id: "an_mix{n}_route", array: anMixRoute, name: "Mixer OSC {n} Route", type: choice, choices_from: analog_route, default: Filter, description: "Instradamento dell'oscillatore {n}: nel filtro o in bypass." }
+
+  - params:
+      - { id: an_sync, name: "Hard Sync 2→1", type: bool, default: false, section: "Analog · Mod", description: "OSC 2 (master) riavvia la fase di OSC 1 a ogni suo ciclo (band-limited)." }
+      - { id: an_fm_3to1, name: "FM 3→1", type: float, min: 0.0, max: 1.0, default: 0.0, unit: "%", section: "Analog · Mod", description: "FM lineare audio-rate (through-zero) di OSC 3 su OSC 1 (100% = deviazione 4× la frequenza di OSC 1)." }
+      - { id: an_fm_2to1, name: "FM 2→1", type: float, min: 0.0, max: 1.0, default: 0.0, unit: "%", section: "Analog · Mod", description: "FM lineare audio-rate (through-zero) di OSC 2 su OSC 1 (100% = deviazione 4× la frequenza di OSC 1)." }
+      - { id: an_ring, name: "Ring Mod 1×2", type: float, min: 0.0, max: 1.0, default: 0.0, unit: "%", section: "Analog · Mod", description: "Crossfade di OSC 1 verso il prodotto OSC 1 × OSC 2." }
+
+      - { id: an_noise_level, name: Noise Level, type: float, min: 0.0, max: 1.0, default: 0.0, unit: "%", section: "Analog · Mixer", description: "Livello del generatore Noise (0 = zero CPU)." }
+      - { id: an_noise_route, name: Noise Route, type: choice, choices_from: analog_route, default: Filter, section: "Analog · Mixer", description: "Instradamento del Noise: nel filtro o in bypass." }
+      - { id: an_sub_level, name: Sub Level, type: float, min: 0.0, max: 1.0, default: 0.5, unit: "%", section: "Analog · Mixer", description: "Livello del Sub." }
+      - { id: an_sub_route, name: Sub Route, type: choice, choices_from: analog_route, default: Filter, section: "Analog · Mixer", description: "Instradamento del Sub: nel filtro o in bypass." }
+      - { id: an_master_level, name: Osc Master Level, type: float, min: 0.0, max: 1.0, default: 0.7, unit: "%", section: "Analog · Mixer", description: "Livello generale di oscillatori, Sub e Noise prima del filtro." }
+
+      - { id: an_sub_on, name: Sub, type: bool, default: false, section: "Analog · Sub", description: "Attiva il Sub (segue l'intonazione di OSC 1)." }
+      - { id: an_sub_wave, name: Sub Wave, type: choice, choices: [Sine, Square], default: Square, section: "Analog · Sub", description: "Forma del Sub." }
+      - { id: an_sub_octave, name: Sub Octave, type: choice, choices: ["-1", "-2"], default: "-1", section: "Analog · Sub", description: "Una o due ottave sotto OSC 1." }
+      - { id: an_sub_phase, name: Sub Phase, type: float, min: 0.0, max: 360.0, default: 0.0, unit: "°", section: "Analog · Sub", description: "Fase iniziale del Sub (riparte a ogni nota)." }
+
+      - { id: an_noise_type, name: Noise Type, type: choice, choices: [White, Pink], default: White, section: "Analog · Noise", description: "Rumore bianco o rosa." }
+      - { id: an_noise_color, name: Noise Color, type: float, min: -1.0, max: 1.0, default: 0.0, section: "Analog · Noise", description: "Tilt spettrale: < 0 più scuro, > 0 più brillante." }
+      - { id: an_noise_pan, name: Noise Pan, type: float, min: -1.0, max: 1.0, default: 0.0, section: "Analog · Noise", description: "Pan del Noise." }
+      - { id: an_noise_width, name: Noise Stereo Width, type: float, min: 0.0, max: 1.0, default: 0.0, unit: "%", section: "Analog · Noise", description: "0 = mono, 100% = canali L/R indipendenti." }
