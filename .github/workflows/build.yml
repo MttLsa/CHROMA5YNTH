@@ -1,0 +1,148 @@
+name: build
+
+on:
+  push:
+    branches: ["**"]
+    tags: ["v*"]
+  pull_request:
+  workflow_dispatch:
+
+env:
+  PLUGIN: CHROMA5YNTH
+  PLUGINVAL_VERSION: v1.0.4
+
+jobs:
+  macos:
+    runs-on: macos-15-intel
+    env:
+      # Optional signing / notarization: active only if these secrets exist.
+      MACOS_CERT_P12: ${{ secrets.MACOS_CERT_P12 }}
+      MACOS_CERT_PASSWORD: ${{ secrets.MACOS_CERT_PASSWORD }}
+      MAC_APP_SIGN_ID: ${{ secrets.MAC_APP_SIGN_ID }}
+      MAC_INSTALLER_SIGN_ID: ${{ secrets.MAC_INSTALLER_SIGN_ID }}
+      NOTARY_APPLE_ID: ${{ secrets.NOTARY_APPLE_ID }}
+      NOTARY_TEAM_ID: ${{ secrets.NOTARY_TEAM_ID }}
+      NOTARY_PASSWORD: ${{ secrets.NOTARY_PASSWORD }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Version
+        run: |
+          if [[ "$GITHUB_REF_TYPE" == "tag" ]]; then V="${GITHUB_REF_NAME#v}"; else V="$(grep -m1 -oE 'project\(CHROMA5YNTH VERSION [0-9.]+' CMakeLists.txt | awk '{print $3}')"; fi
+          echo "VERSION=$V" >> "$GITHUB_ENV"
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Python deps
+        run: python -m pip install pyyaml
+      - name: Configure
+        run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_OSX_ARCHITECTURES="x86_64;arm64" -DPython3_EXECUTABLE="$(python -c 'import sys;print(sys.executable)')"
+      - name: Build
+        run: cmake --build build --config Release -j3
+      - name: Tests
+        run: ctest --test-dir build -C Release --output-on-failure
+      - name: Check Universal binaries
+        run: |
+          lipo -info "build/${PLUGIN}_artefacts/Release/VST3/${PLUGIN}.vst3/Contents/MacOS/${PLUGIN}"
+          lipo -info "build/${PLUGIN}_artefacts/Release/AU/${PLUGIN}.component/Contents/MacOS/${PLUGIN}"
+      - name: Import signing certificate (optional)
+        if: env.MACOS_CERT_P12 != ''
+        run: |
+          KC="$RUNNER_TEMP/sign.keychain-db"
+          echo "$MACOS_CERT_P12" | base64 --decode > "$RUNNER_TEMP/cert.p12"
+          security create-keychain -p ci "$KC"
+          security set-keychain-settings -lut 21600 "$KC"
+          security unlock-keychain -p ci "$KC"
+          security import "$RUNNER_TEMP/cert.p12" -P "$MACOS_CERT_PASSWORD" -A -t cert -f pkcs12 -k "$KC"
+          security set-key-partition-list -S apple-tool:,apple: -k ci "$KC"
+          security list-keychains -d user -s "$KC"
+      - name: Codesign plugins (optional)
+        if: env.MAC_APP_SIGN_ID != ''
+        run: |
+          for b in "build/${PLUGIN}_artefacts/Release/VST3/${PLUGIN}.vst3" "build/${PLUGIN}_artefacts/Release/AU/${PLUGIN}.component"; do
+            codesign --force --deep --timestamp --options runtime --sign "$MAC_APP_SIGN_ID" "$b"
+          done
+      - name: Install plugins for validation
+        run: |
+          mkdir -p ~/Library/Audio/Plug-Ins/Components ~/Library/Audio/Plug-Ins/VST3
+          cp -R "build/${PLUGIN}_artefacts/Release/AU/${PLUGIN}.component" ~/Library/Audio/Plug-Ins/Components/
+          cp -R "build/${PLUGIN}_artefacts/Release/VST3/${PLUGIN}.vst3" ~/Library/Audio/Plug-Ins/VST3/
+          killall -9 AudioComponentRegistrar || true
+      - name: auval
+        run: |
+          auval -a | grep -i "Tmfu" || true
+          auval -strict -v aumu Chr5 Tmfu
+      - name: pluginval
+        run: |
+          curl -sSL -o pluginval.zip "https://github.com/Tracktion/pluginval/releases/download/${PLUGINVAL_VERSION}/pluginval_macOS.zip"
+          unzip -q pluginval.zip
+          ./pluginval.app/Contents/MacOS/pluginval --strictness-level 10 --validate-in-process --skip-gui-tests --timeout-ms 300000 ~/Library/Audio/Plug-Ins/VST3/${PLUGIN}.vst3
+          ./pluginval.app/Contents/MacOS/pluginval --strictness-level 10 --validate-in-process --skip-gui-tests --timeout-ms 300000 ~/Library/Audio/Plug-Ins/Components/${PLUGIN}.component
+      - name: Build .pkg
+        run: installer/macos/build_pkg.sh "build/${PLUGIN}_artefacts/Release" "$VERSION" dist
+      - name: Notarize (optional)
+        if: env.NOTARY_APPLE_ID != '' && env.MAC_INSTALLER_SIGN_ID != ''
+        run: |
+          PKG="dist/${PLUGIN}-${VERSION}-macOS.pkg"
+          xcrun notarytool submit "$PKG" --apple-id "$NOTARY_APPLE_ID" --team-id "$NOTARY_TEAM_ID" --password "$NOTARY_PASSWORD" --wait
+          xcrun stapler staple "$PKG"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: macos-installer
+          path: dist/*.pkg
+
+  windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Version
+        shell: bash
+        run: |
+          if [[ "$GITHUB_REF_TYPE" == "tag" ]]; then V="${GITHUB_REF_NAME#v}"; else V="$(grep -m1 -oE 'project\(CHROMA5YNTH VERSION [0-9.]+' CMakeLists.txt | awk '{print $3}')"; fi
+          echo "VERSION=$V" >> "$GITHUB_ENV"
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Python deps
+        run: python -m pip install pyyaml
+      - name: Configure
+        shell: bash
+        run: cmake -S . -B build -A x64 -DPython3_EXECUTABLE="$(python -c 'import sys;print(sys.executable)')"
+      - name: Build
+        run: cmake --build build --config Release --parallel
+      - name: Tests
+        run: ctest --test-dir build -C Release --output-on-failure
+      - name: pluginval
+        shell: bash
+        run: |
+          curl -sSL -o pluginval.zip "https://github.com/Tracktion/pluginval/releases/download/${PLUGINVAL_VERSION}/pluginval_Windows.zip"
+          7z x -y pluginval.zip > /dev/null
+          ./pluginval.exe --strictness-level 10 --validate-in-process --skip-gui-tests --timeout-ms 300000 "build/${PLUGIN}_artefacts/Release/VST3/${PLUGIN}.vst3"
+      - name: Build installer (Inno Setup)
+        shell: pwsh
+        run: |
+          $find = { Get-ChildItem -Path "${env:ProgramFiles(x86)}","${env:ProgramFiles}" -Filter ISCC.exe -Recurse -Depth 2 -ErrorAction SilentlyContinue | Select-Object -First 1 -ExpandProperty FullName }
+          $iscc = & $find
+          if (-not $iscc) { choco install innosetup -y --no-progress; $iscc = & $find }
+          Write-Host "ISCC: $iscc"
+          & $iscc "/DAppVersion=$env:VERSION" "/DSourceDir=$PWD\build\$env:PLUGIN`_artefacts\Release\VST3" "/DOutDir=$PWD\dist" installer\windows\chroma5ynth.iss
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - uses: actions/upload-artifact@v4
+        with:
+          name: windows-installer
+          path: dist/*.exe
+
+  release:
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: [macos, windows]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: dist
+          merge-multiple: true
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: dist/*
+          generate_release_notes: true

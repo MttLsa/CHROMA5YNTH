@@ -8,6 +8,11 @@
 - Non chiedere conferme per scelte già decise in SPEC.md. Le voci marcate [DEFAULT] sono decise.
 - A fine fase: build verde + test verdi → commit → aggiorna PROGRESS.md (max 10 righe per fase) → STOP.
 
+## Identità plugin (obbligatoria)
+- Nome prodotto: CHROMA5YNTH. Produttore (come appare nelle DAW): "TMFU audiovibe" (scritto esattamente così).
+- JUCE: COMPANY_NAME "TMFU audiovibe", PLUGIN_MANUFACTURER_CODE "Tmfu", PLUGIN_CODE "Chr5", BUNDLE_ID "com.tmfuaudiovibe.chroma5ynth".
+- AU: manufacturer "TMFU audiovibe", nome "TMFU audiovibe: CHROMA5YNTH". VST3 vendor "TMFU audiovibe". Installer, manuale e About usano lo stesso produttore.
+
 ## Stack
 - JUCE 8, C++20, CMake (JUCE via FetchContent), Catch2 per test, pluginval + auval per validazione.
 - Formati: VST3, AU, Standalone (solo per test). macOS Universal (x86_64 + arm64), min macOS 10.13. Windows x64 VST3 (deciso).
