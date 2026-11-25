@@ -12,6 +12,14 @@
 - Nome prodotto: CHROMA5YNTH. Produttore (come appare nelle DAW): "TMFU audiovibe" (scritto esattamente così).
 - JUCE: COMPANY_NAME "TMFU audiovibe", PLUGIN_MANUFACTURER_CODE "Tmfu", PLUGIN_CODE "Chr5", BUNDLE_ID "com.tmfuaudiovibe.chroma5ynth".
 - AU: manufacturer "TMFU audiovibe", nome "TMFU audiovibe: CHROMA5YNTH". VST3 vendor "TMFU audiovibe". Installer, manuale e About usano lo stesso produttore.
+- Release: tag con prefisso del prodotto, es. `chroma5ynth-v1.0.0`.
+
+## Font e lingua dell'interfaccia
+- Font per tutte le scritte: **Inter** (SIL OFL 1.1) — **Regular** testi, **SemiBold** titoli/pulsanti/grassetto. Urbanist non si usa.
+  Incorporato nel binario (`assets/fonts/Inter-Regular.ttf` + `Inter-SemiBold.ttf` in `juce_add_binary_data`, licenza OFL accanto),
+  usato via `Typeface::createSystemTypefaceFor` + `setDefaultSansSerifTypeface`/`getTypefaceForFont` nel LookAndFeel. Anche il manuale PDF usa Inter.
+- GUI: usa sempre STYLE.md e StyleLookAndFeel
+- Nomi di moduli, parametri, pulsanti e titoli in **inglese**; in italiano solo menu contestuali, tooltip, aiuti e manuale.
 
 ## Stack
 - JUCE 8, C++20, CMake (JUCE via FetchContent), Catch2 per test, pluginval + auval per validazione.

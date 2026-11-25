@@ -32,15 +32,65 @@ def fnum(v):
     return f"{float(v)!r}f"
 
 
+def subst(text, env):
+    text = str(text)
+    for k, v in env.items():
+        text = text.replace("{" + k + "}", str(v))
+    return text
+
+
+def expand(data, fname):
+    """Yield (template, instance) pairs: plain params plus repeated blocks."""
+    for p in data.get("params", []):
+        yield p, dict(p), None
+    for b in data.get("blocks", []):
+        rep = b.get("repeat", {})
+        count = int(rep.get("count", 1))
+        vars_ = rep.get("vars", {})
+        for k, v in vars_.items():
+            if len(v) != count:
+                fail(f"{fname}: block var '{k}' needs {count} values")
+        for i in range(count):
+            env = {"n": i + 1}
+            env.update({k: v[i] for k, v in vars_.items()})
+            for t in b.get("params", []):
+                q = {**{k: v for k, v in b.items() if k not in ("repeat", "params")}, **t}
+                for k in ("id", "name", "section", "description"):
+                    if k in q:
+                        q[k] = subst(q[k], env)
+                if "default_by_index" in q:
+                    q["default"] = q["default_by_index"].get(i + 1, q["default"])
+                if count > 1 and "array" not in q:
+                    fail(f"{fname}:{t.get('id')}: repeated params need 'array'")
+                q["_index"], q["_count"] = i, count
+                doc = None
+                if i == 0:
+                    doc = dict(q)
+                    docenv = {"n": "N" if count > 1 else 1}
+                    docenv.update({k: f"{v[0]}…{v[-1]}" for k, v in vars_.items()})
+                    for k in ("name", "section", "description"):
+                        doc[k] = subst({**b, **t}.get(k, ""), docenv)
+                    if "default_by_index" in t:
+                        doc["default"] = t["default"]
+                        extra = ", ".join(f"{k}: {v}" for k, v in t["default_by_index"].items())
+                        doc["description"] += f" Default per indice ({extra})."
+                yield t, q, doc
+
+
 def load(params_dir):
-    out, seen = [], set()
+    out, docs, seen, lists = [], [], set(), {}
     files = sorted(pathlib.Path(params_dir).glob("*.yaml"))
     if not files:
         fail(f"no yaml files in {params_dir}")
-    for f in files:
-        data = yaml.safe_load(f.read_text(encoding="utf-8")) or {}
-        for p in data.get("params", []):
+    raw = [(f, yaml.safe_load(f.read_text(encoding="utf-8")) or {}) for f in files]
+    for f, data in raw:
+        lists.update(data.get("lists", {}))
+    # internal float params are modulation destinations unless mod_dest: false
+    for f, data in raw:
+        scope = data.get("scope", "host")
+        for t, p, doc in expand(data, f.name):
             where = f"{f.name}:{p.get('id', '?')}"
+            p["scope"] = scope
             for k in ("id", "name", "type", "default", "section", "description"):
                 if k not in p:
                     fail(f"{where}: missing '{k}'")
@@ -49,35 +99,60 @@ def load(params_dir):
             if p["id"] in seen:
                 fail(f"{where}: duplicate id")
             seen.add(p["id"])
-            t = p["type"]
-            if t not in TYPES:
-                fail(f"{where}: unknown type '{t}'")
-            if t in ("float", "int"):
+            t_ = p["type"]
+            if t_ not in TYPES:
+                fail(f"{where}: unknown type '{t_}'")
+            if t_ in ("float", "int"):
                 if "min" not in p or "max" not in p:
                     fail(f"{where}: min/max required")
                 if not (p["min"] <= p["default"] <= p["max"]):
                     fail(f"{where}: default out of range")
-            if t == "choice":
-                ch = [str(c) for c in p.get("choices", [])]
-                if not ch:
-                    fail(f"{where}: choices required")
-                d = p["default"]
-                idx = d if isinstance(d, int) and not isinstance(d, bool) else (ch.index(str(d)) if str(d) in ch else -1)
-                if not (0 <= idx < len(ch)):
-                    fail(f"{where}: invalid default")
-                p["choices"], p["default_index"] = ch, idx
             p.setdefault("unit", "")
             p.setdefault("version", 1)
             p.setdefault("automatable", True)
+            p.setdefault("gui", True)
+            p.setdefault("mod_dest", scope == "layer" and t_ == "float")
             out.append(p)
-    return out
+            if doc is not None:
+                doc.update({k: p[k] for k in ("scope", "unit")})
+                docs.append(doc)
+            elif "_index" not in p:
+                docs.append(p)
+    lists["mod_destinations"] = ["Off"] + [p["name"] for p in out if p["scope"] == "layer" and p["mod_dest"]]
+    for p in out + docs:
+        if p["type"] != "choice":
+            continue
+        if "choices_from" in p:
+            if p["choices_from"] not in lists:
+                fail(f"{p['id']}: unknown list '{p['choices_from']}'")
+            p["choices"] = lists[p["choices_from"]]
+        ch = [str(c) for c in p.get("choices", [])]
+        if not ch:
+            fail(f"{p['id']}: choices required")
+        d = p["default"]
+        idx = d if isinstance(d, int) and not isinstance(d, bool) else (ch.index(str(d)) if str(d) in ch else -1)
+        if not (0 <= idx < len(ch)):
+            fail(f"{p['id']}: invalid default")
+        p["choices"], p["default_index"] = ch, idx
+    return out, docs, lists
+
+
+def arrays(params):
+    groups = {}
+    for p in params:
+        if "array" in p:
+            groups.setdefault(p["array"], []).append(p)
+    return groups
 
 
 def gen_ids(params):
-    lines = ["// GENERATED by tools/gen_params.py - do not edit", "#pragma once", "",
+    lines = ["// GENERATED by tools/gen_params.py - do not edit", "#pragma once", "#include <array>", "",
              "namespace chroma::ParamIDs", "{"]
     for p in params:
-        lines.append(f"    inline constexpr const char* {camel(p['id'])} = {cstr(p['id'])};")
+        if "_index" not in p or p.get("_count", 1) == 1:
+            lines.append(f"    inline constexpr const char* {camel(p['id'])} = {cstr(p['id'])};")
+    for name, g in arrays(params).items():
+        lines.append(f"    inline constexpr std::array<const char*, {len(g)}> {name} {{ {', '.join(cstr(p['id']) for p in g)} }};")
     lines += [f"    inline constexpr int count = {len(params)};", "}", ""]
     return "\n".join(lines)
 
@@ -114,15 +189,59 @@ def gen_layout(params):
 
 
 def gen_gui(params):
+    params = [p for p in params if p["gui"]]
     sections = list(dict.fromkeys(p["section"] for p in params))
     L = ["// GENERATED by tools/gen_params.py - do not edit", "#pragma once", "#include <array>", "",
          "namespace chroma::gui", "{",
-         "struct ParamEntry { const char* id; const char* name; const char* section; const char* type; };", "",
+         "struct ParamEntry { const char* id; const char* name; const char* section; const char* type; int numChoices; };", "",
          f"inline constexpr std::array<const char*, {len(sections)}> sections {{ {', '.join(cstr(s) for s in sections)} }};", "",
          f"inline constexpr std::array<ParamEntry, {len(params)}> params {{{{"]
     for p in params:
-        L.append(f"    {{ {cstr(p['id'])}, {cstr(p['name'])}, {cstr(p['section'])}, {cstr(p['type'])} }},")
+        L.append(f"    {{ {cstr(p['id'])}, {cstr(p['name'])}, {cstr(p['section'])}, {cstr(p['type'])}, {len(p.get('choices', []))} }},")
     L += ["}};", "}", ""]
+    return "\n".join(L)
+
+
+def gen_layer(params, lists):
+    L = ["// GENERATED by tools/gen_params.py - do not edit", "#pragma once", "#include <array>", "",
+         "namespace chroma::lp", "{",
+         "enum Id : int", "{"]
+    for p in params:
+        L.append(f"    {camel(p['id'])},")
+    L += ["    count", "};", "",
+          "enum class Type { Float, Int, Bool, Choice };", "",
+          "struct Desc",
+          "{",
+          "    const char* id; const char* name; const char* section; Type type;",
+          "    float min, max, def, skewCentre; bool hasSkew; int numChoices; const char* const* choices; bool modDest;",
+          "};", ""]
+    for p in params:
+        if p["type"] == "choice" and "choices_from" not in p:
+            L.append(f"inline constexpr const char* const choices_{camel(p['id'])}[] {{ {', '.join(cstr(c) for c in p['choices'])} }};")
+    for name, items in lists.items():
+        L.append(f"inline constexpr const char* const list_{camel(name)}[] {{ {', '.join(cstr(c) for c in items)} }};")
+        L.append(f"inline constexpr int list_{camel(name)}_size = {len(items)};")
+    L += ["", "inline constexpr std::array<Desc, count> descs {{"]
+    tmap = {"float": "Float", "int": "Int", "bool": "Bool", "choice": "Choice"}
+    for p in params:
+        t = p["type"]
+        if t == "choice":
+            mn, mx, df = 0, len(p["choices"]) - 1, p["default_index"]
+            ch = f"list_{camel(p['choices_from'])}" if "choices_from" in p else f"choices_{camel(p['id'])}"
+        elif t == "bool":
+            mn, mx, df, ch = 0, 1, 1 if p["default"] else 0, "nullptr"
+        else:
+            mn, mx, df, ch = p["min"], p["max"], p["default"], "nullptr"
+        sk = p.get("skew", 0.0)
+        L.append(f"    Desc {{ {cstr(p['id'])}, {cstr(p['name'])}, {cstr(p['section'])}, Type::{tmap[t]}, {fnum(mn)}, {fnum(mx)}, {fnum(df)}, "
+                 f"{fnum(sk)}, {'true' if 'skew' in p else 'false'}, {len(p.get('choices', []))}, {ch}, {'true' if p['mod_dest'] else 'false'} }},")
+    L += ["}};", ""]
+    dests = [camel(p["id"]) for p in params if p["mod_dest"]]
+    L.append(f"// index 0 of the destination list is 'Off'")
+    L.append(f"inline constexpr std::array<Id, {len(dests)}> modDestinations {{ {', '.join(dests)} }};")
+    for name, g in arrays(params).items():
+        L.append(f"inline constexpr std::array<Id, {len(g)}> {name} {{ {', '.join(camel(p['id']) for p in g)} }};")
+    L += ["} // namespace chroma::lp", ""]
     return "\n".join(L)
 
 
@@ -145,13 +264,15 @@ def fmt_default(p):
 
 
 def gen_docs(params):
+    params = [p for p in params if p.get("gui", True) or p["scope"] == "layer" or p.get("automatable", True)]
     L = ["<!-- GENERATED by tools/gen_params.py from params/*.yaml - do not edit -->", "",
          "# Parametri", ""]
     for s in dict.fromkeys(p["section"] for p in params):
         L += [f"## {s}", "", "| Parametro | Range | Default | Unità | Descrizione |", "|---|---|---|---|---|"]
         for p in params:
             if p["section"] == s:
-                L.append(f"| {p['name']} | {fmt_range(p)} | {fmt_default(p)} | {p['unit']} | {p['description']} |")
+                rng = fmt_range(p) if len(p.get("choices", [])) <= 24 else f"{len(p['choices'])} voci"
+                L.append(f"| {p['name']} | {rng} | {fmt_default(p)} | {p['unit']} | {p['description']} |")
         L.append("")
     return "\n".join(L)
 
@@ -169,13 +290,16 @@ def main():
     ap.add_argument("--out", required=True)
     ap.add_argument("--docs")
     a = ap.parse_args()
-    params = load(a.params)
+    allp, docs, lists = load(a.params)
+    host = [p for p in allp if p["scope"] == "host"]
+    layer = [p for p in allp if p["scope"] == "layer"]
     out = pathlib.Path(a.out)
-    write_if_changed(out / "ParamIDs.h", gen_ids(params))
-    write_if_changed(out / "ParamLayout.cpp", gen_layout(params))
-    write_if_changed(out / "GuiLayout.h", gen_gui(params))
+    write_if_changed(out / "ParamIDs.h", gen_ids(host))
+    write_if_changed(out / "ParamLayout.cpp", gen_layout(host))
+    write_if_changed(out / "GuiLayout.h", gen_gui(host))
+    write_if_changed(out / "LayerParams.h", gen_layer(layer, {k: v for k, v in lists.items()}))
     if a.docs:
-        write_if_changed(a.docs, gen_docs(params))
+        write_if_changed(a.docs, gen_docs(docs))
 
 
 if __name__ == "__main__":

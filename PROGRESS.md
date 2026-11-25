@@ -6,5 +6,21 @@
 - `params/*.yaml` (schema in params/README.md) → `tools/gen_params.py` → build/generated/{ParamIDs.h, ParamLayout.cpp, GuiLayout.h} + docs/manual/parameters.md.
 - Param iniziali: master_volume, master_polyphony. Editor generico da GuiLayout + About.
 - Installer: installer/macos/build_pkg.sh (.pkg VST3+AU), installer/windows/chroma5ynth.iss (Inno, VST3).
-- CI .github/workflows/build.yml: macOS Universal + Win x64, ctest, pluginval (strict 10), auval, artifact installer, release su tag v*, firma/notarizzazione opzionale via secrets.
+- CI .github/workflows/build.yml: macOS Universal + Win x64, ctest, pluginval (strict 10), auval, artifact installer, release su tag chroma5ynth-v*, firma/notarizzazione opzionale via secrets.
 - CI verde (run 45685177069): macOS (macos-15-intel, Universal) build+test+auval+pluginval+.pkg; Windows build+test+pluginval+.exe.
+
+## FASE 0.5 – Stile grafico ✅
+- Riferimento: TMFU-audiovibe/DUALBOX `Source/gui/LookAndFeel` (piatto, scuro, accento blu/lime, Inter).
+- `assets/fonts/` Inter Regular/SemiBold + OFL.txt → `juce_add_binary_data(chroma_assets)` (namespace `ChromaAssets`). Nessuna immagine necessaria.
+- `src/gui/StyleLookAndFeel.{h,cpp}`: `chroma::style` (colori, font, misure), StyleLookAndFeel, FineSlider, Knob, Segmented, Panel, drawHeader.
+- `STYLE.md` (regole), CLAUDE.md: riga "GUI: usa sempre STYLE.md e StyleLookAndFeel"; font in assets/fonts.
+- Editor generico: header wordmark + Panel per sezione, Knob (float/int), Segmented (choice/bool). Build + ctest verdi (Linux).
+
+## FASE 1 – Core ✅
+- params: layer.yaml (12×13 comuni host), macro.yaml (8), automation.yaml (256 slot), master.yaml (+Scale 12 maschere, MPE), layer_engine.yaml (`scope: layer`, interni: Voice, Performance, 4 ENV, 4 LFO, Mod Matrix 16). gen_params: `blocks`+`repeat`, array, `choices_from`, `gui: false` → LayerParams.h.
+- src/shared: Envelope, Lfo, ModMatrix, Voice, MidiState(MPE), Scale, Smoothing, ParamRange, TripleBuffer, Limiter (true-peak 4×, look-ahead, −1 dBTP, latenza riportata).
+- src/core: Synth (pool 12/24/36, stealing più vecchia→più silenziosa con crossfade 2 ms, Max Voices/Layer, mono/legato/glide, sustain/sostenuto, SCALE, MPE, mixer Layer, macro→qualunque param, automation slot), LayerParamStore; copy/paste/init/save/load layer.
+- src/engines: IEngine + SineEngine (test, unison). Tutti gli engine mappati su Sine fino alle fasi §3.
+- Editor generico: viewport scrollabile, ComboBox per choice > 4. Stato: child CORE (layer interni, macro, automation).
+- Test: SCALE (mappa, slot vuoto), stealing (oldest, quietest), Max Voices, sustain, legato, MPE, automation/macro state, limiter ≤ −1 dBTP (meter 16×). 18/18 verdi (Linux).
+- Aperti: GUI SCALE (tastiera) e assegnazione macro/automation via click destro → fase GUI; Drift con filtri.

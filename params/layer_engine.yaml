@@ -1,0 +1,89 @@
+# Parametri interni di ogni Layer (§2). Non esposti all'host: raggiungibili via Automation Slot e Macro.
+scope: layer
+
+lists:
+  mod_sources: ["Off", "LFO 1", "LFO 2", "LFO 3", "LFO 4", "Amp Env", "Mod Env 1", "Mod Env 2", "Mod Env 3",
+                "Velocity", "Release Velocity", "Aftertouch", "MPE Pressure", "MPE Slide", "MPE Pitch",
+                "Mod Wheel", "Pitch Wheel", "Key Track", "Note Number", "Random", "Breath", "Expression", "MIDI CC",
+                "Macro 1", "Macro 2", "Macro 3", "Macro 4", "Macro 5", "Macro 6", "Macro 7", "Macro 8"]
+  curves: [Linear, Exponential, Logarithmic]
+  sync_divisions: ["1/1", "1/2", "1/4", "1/8", "1/16", "1/32", "1/1T", "1/2T", "1/4T", "1/8T", "1/16T", "1/32T",
+                   "1/1D", "1/2D", "1/4D", "1/8D", "1/16D", "1/32D"]
+
+params:
+  - { id: level, name: Level, type: float, min: 0.0, max: 1.0, default: 1.0, unit: "%", section: "Layer · Voice", description: "Livello per voce (destinazione di modulazione)." }
+  - { id: pan_mod, name: Pan Offset, type: float, min: -1.0, max: 1.0, default: 0.0, section: "Layer · Voice", description: "Offset di pan per voce, sommato al Pan del Layer." }
+  - { id: pitch, name: Pitch, type: float, min: -48.0, max: 48.0, default: 0.0, unit: st, section: "Layer · Voice", description: "Intonazione fine per voce in semitoni." }
+  - { id: voice_mode, name: Voice Mode, type: choice, choices: [Mono, Poly, Unison, Legato], default: Poly, section: "Layer · Voice", description: "Mono / Poly / Unison (mono con stack unison) / Legato." }
+  - { id: unison, name: Unison, type: int, min: 1, max: 16, default: 1, section: "Layer · Voice", description: "Voci di unison interne alla voce (non consumano il pool)." }
+  - { id: unison_detune, name: Unison Detune, type: float, min: 0.0, max: 100.0, default: 20.0, unit: ct, section: "Layer · Voice", description: "Detune totale dello stack unison." }
+  - { id: unison_spread, name: Unison Spread, type: float, min: 0.0, max: 1.0, default: 0.5, unit: "%", section: "Layer · Voice", description: "Apertura stereo dello stack unison." }
+  - { id: unison_pan, name: Unison Pan, type: float, min: -1.0, max: 1.0, default: 0.0, section: "Layer · Voice", description: "Centro di pan dello stack unison." }
+  - { id: voice_steal, name: Voice Stealing, type: bool, default: true, section: "Layer · Voice", description: "Ruba voci quando il Layer o il pool sono pieni (più vecchia, poi più silenziosa). Off = nuove note ignorate." }
+  - { id: note_priority, name: Note Priority, type: choice, choices: [Last, First, Lowest, Highest], default: Last, section: "Layer · Voice", description: "Priorità di nota in Mono/Unison/Legato." }
+  - { id: voice_retrigger, name: Retrigger, type: bool, default: true, section: "Layer · Voice", description: "In Mono/Unison riavvia gli inviluppi a ogni nuova nota." }
+  - { id: glide_on, name: Glide, type: bool, default: false, section: "Layer · Voice", description: "Portamento." }
+  - { id: glide_time, name: Glide Time, type: float, min: 0.0, max: 5.0, default: 0.1, skew: 0.5, unit: s, section: "Layer · Voice", description: "Tempo di glide." }
+  - { id: glide_mode, name: Glide Mode, type: choice, choices: [Always, Legato], default: Always, section: "Layer · Voice", description: "Always = sempre; Legato = solo su note legate." }
+  - { id: glide_curve, name: Glide Curve, type: choice, choices: [Linear, Exponential], default: Linear, section: "Layer · Voice", description: "Linear = tempo costante; Exponential = avvicinamento esponenziale." }
+
+  - { id: bend_range, name: Pitch Bend Range, type: int, min: 1, max: 48, default: 2, unit: st, section: "Layer · Performance", description: "Escursione del pitch bend (in MPE vale per il canale master)." }
+  - { id: velocity_curve, name: Velocity Curve, type: float, min: -1.0, max: 1.0, default: 0.0, section: "Layer · Performance", description: "Curva di velocity: < 0 morbida, 0 lineare, > 0 dura." }
+  - { id: aftertouch_sens, name: Aftertouch Sens, type: float, min: 0.0, max: 1.0, default: 1.0, unit: "%", section: "Layer · Performance", description: "Sensibilità aftertouch / pressure." }
+  - { id: sustain_on, name: Sustain, type: bool, default: true, section: "Layer · Performance", description: "Risponde al pedale sustain (CC64)." }
+  - { id: sostenuto_on, name: Sostenuto, type: bool, default: true, section: "Layer · Performance", description: "Risponde al pedale sostenuto (CC66)." }
+  - { id: expression_on, name: Expression, type: bool, default: true, section: "Layer · Performance", description: "CC11 scala il volume del Layer." }
+  - { id: modwheel_amount, name: Mod Wheel Amount, type: float, min: 0.0, max: 1.0, default: 1.0, unit: "%", section: "Layer · Performance", description: "Scala la sorgente Mod Wheel." }
+
+blocks:
+  - repeat:
+      count: 4
+      vars: { env: [Amp Env, Mod Env 1, Mod Env 2, Mod Env 3] }
+    section: "Layer · {env}"
+    params:
+      - { id: "env{n}_attack", array: envAttack, name: "{env} Attack", type: float, min: 0.0, max: 10.0, default: 0.005, skew: 0.5, unit: s, description: "Attacco." }
+      - { id: "env{n}_hold", array: envHold, name: "{env} Hold", type: float, min: 0.0, max: 10.0, default: 0.0, skew: 0.5, unit: s, description: "Hold al picco." }
+      - { id: "env{n}_decay", array: envDecay, name: "{env} Decay", type: float, min: 0.0, max: 10.0, default: 0.3, skew: 0.5, unit: s, description: "Decadimento." }
+      - { id: "env{n}_sustain", array: envSustain, name: "{env} Sustain", type: float, min: 0.0, max: 1.0, default: 0.8, unit: "%", description: "Livello di sustain." }
+      - { id: "env{n}_release", array: envRelease, name: "{env} Release", type: float, min: 0.0, max: 20.0, default: 0.3, skew: 1.0, unit: s, description: "Rilascio." }
+      - { id: "env{n}_attack_curve", array: envAttackCurve, name: "{env} Attack Curve", type: choice, choices_from: curves, default: Linear, description: "Curva dell'attacco (lin/exp/log)." }
+      - { id: "env{n}_decay_curve", array: envDecayCurve, name: "{env} Decay Curve", type: choice, choices_from: curves, default: Exponential, description: "Curva del decay." }
+      - { id: "env{n}_release_curve", array: envReleaseCurve, name: "{env} Release Curve", type: choice, choices_from: curves, default: Exponential, description: "Curva del release." }
+      - { id: "env{n}_velocity", array: envVelocity, name: "{env} Velocity", type: float, min: 0.0, max: 1.0, default: 0.0, unit: "%", description: "Quanto la velocity scala il livello." }
+      - { id: "env{n}_keytrack", array: envKeyTrack, name: "{env} Key Track", type: float, min: -1.0, max: 1.0, default: 0.0, description: "Le note alte accorciano (> 0) o allungano (< 0) i tempi." }
+      - { id: "env{n}_loop", array: envLoop, name: "{env} Loop", type: bool, default: false, description: "Ripete Attack-Hold-Decay finché la nota è tenuta." }
+      - { id: "env{n}_retrigger", array: envRetrigger, name: "{env} Retrigger", type: bool, default: true, description: "Al retrigger riparte da zero (Off = dal livello corrente)." }
+      - { id: "env{n}_time_scale", array: envTimeScale, name: "{env} Time Scale", type: float, min: 0.1, max: 10.0, default: 1.0, skew: 1.0, unit: x, description: "Moltiplica tutti i tempi." }
+      - { id: "env{n}_amount", array: envAmount, name: "{env} Amount", type: float, min: -1.0, max: 1.0, default: 1.0, description: "Ampiezza dell'uscita (±100%)." }
+
+  - repeat: { count: 4 }
+    section: "Layer · LFO {n}"
+    params:
+      - { id: "lfo{n}_shape", array: lfoShape, name: "LFO {n} Shape", type: choice, choices: [Sine, Triangle, Square, Saw Up, Saw Down, S&H, Random Smooth, Custom], default: Sine, description: "Forma d'onda." }
+      - { id: "lfo{n}_rate", array: lfoRate, name: "LFO {n} Rate", type: float, min: 0.01, max: 30.0, default: 2.0, skew: 2.0, unit: Hz, description: "Frequenza (Sync Off)." }
+      - { id: "lfo{n}_sync", array: lfoSync, name: "LFO {n} Sync", type: bool, default: false, description: "Sincronizza al tempo dell'host." }
+      - { id: "lfo{n}_division", array: lfoDivision, name: "LFO {n} Division", type: choice, choices_from: sync_divisions, default: "1/4", description: "Divisione in Sync (terzine T, puntate D)." }
+      - { id: "lfo{n}_phase", array: lfoPhase, name: "LFO {n} Phase", type: float, min: 0.0, max: 360.0, default: 0.0, unit: "°", description: "Fase iniziale." }
+      - { id: "lfo{n}_offset", array: lfoOffset, name: "LFO {n} Offset", type: float, min: -1.0, max: 1.0, default: 0.0, description: "Offset DC dell'uscita." }
+      - { id: "lfo{n}_delay", array: lfoDelay, name: "LFO {n} Delay", type: float, min: 0.0, max: 10.0, default: 0.0, skew: 1.0, unit: s, description: "Ritardo dall'inizio della nota." }
+      - { id: "lfo{n}_fade_in", array: lfoFadeIn, name: "LFO {n} Fade In", type: float, min: 0.0, max: 10.0, default: 0.0, skew: 1.0, unit: s, description: "Fade-in dopo il delay." }
+      - { id: "lfo{n}_fade_out", array: lfoFadeOut, name: "LFO {n} Fade Out", type: float, min: 0.0, max: 10.0, default: 0.0, skew: 1.0, unit: s, description: "Fade-out dal rilascio della nota (0 = nessuno)." }
+      - { id: "lfo{n}_mode", array: lfoMode, name: "LFO {n} Mode", type: choice, choices: [Free, Retrigger, One-shot], default: Retrigger, description: "Free = fase libera; Retrigger = riparte a ogni nota; One-shot = un solo ciclo." }
+      - { id: "lfo{n}_smooth", array: lfoSmooth, name: "LFO {n} Smooth", type: float, min: 0.0, max: 1.0, default: 0.0, unit: "%", description: "Smussa l'uscita." }
+      - { id: "lfo{n}_stereo", array: lfoStereoPhase, name: "LFO {n} Stereo Phase", type: float, min: 0.0, max: 180.0, default: 0.0, unit: "°", description: "Sfasamento del canale destro." }
+      - { id: "lfo{n}_unipolar", array: lfoUnipolar, name: "LFO {n} Unipolar", type: bool, default: false, description: "Polarità: Off = bipolare (−1…1), On = unipolare (0…1)." }
+      - { id: "lfo{n}_amount", array: lfoAmount, name: "LFO {n} Amount", type: float, min: -1.0, max: 1.0, default: 1.0, description: "Ampiezza dell'uscita (±100%)." }
+
+  - repeat: { count: 16 }
+    section: "Layer · Mod Matrix"
+    mod_dest: false
+    params:
+      - { id: "mm{n}_enable", array: mmEnable, name: "Mod {n} Enable", type: bool, default: true, description: "Abilita lo slot {n}." }
+      - { id: "mm{n}_source", array: mmSource, name: "Mod {n} Source", type: choice, choices_from: mod_sources, default: "Off", description: "Sorgente dello slot {n}." }
+      - { id: "mm{n}_cc", array: mmCC, name: "Mod {n} CC", type: int, min: 0, max: 127, default: 1, description: "Numero CC quando la sorgente è MIDI CC." }
+      - { id: "mm{n}_dest", array: mmDest, name: "Mod {n} Destination", type: choice, choices_from: mod_destinations, default: "Off", description: "Destinazione: qualunque parametro continuo del Layer." }
+      - { id: "mm{n}_amount", array: mmAmount, name: "Mod {n} Amount", type: float, min: -1.0, max: 1.0, default: 0.0, description: "Quantità ±100% del range della destinazione." }
+      - { id: "mm{n}_via", array: mmVia, name: "Mod {n} Via", type: choice, choices_from: mod_sources, default: "Off", description: "Sorgente che scala l'amount (Off = 1)." }
+      - { id: "mm{n}_curve", array: mmCurve, name: "Mod {n} Curve", type: choice, choices: [Linear, Exponential, Logarithmic, S-Curve], default: Linear, description: "Curva applicata alla sorgente." }
+      - { id: "mm{n}_smooth", array: mmSmooth, name: "Mod {n} Smoothing", type: float, min: 0.0, max: 1.0, default: 0.0, unit: "%", description: "Smoothing della modulazione (0–500 ms)." }
+      - { id: "mm{n}_invert", array: mmInvert, name: "Mod {n} Invert", type: bool, default: false, description: "Inverte la sorgente." }

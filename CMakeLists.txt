@@ -43,7 +43,8 @@ set(CHROMA_GEN_DIR ${CMAKE_BINARY_DIR}/generated)
 set(CHROMA_GEN_FILES
     ${CHROMA_GEN_DIR}/ParamIDs.h
     ${CHROMA_GEN_DIR}/ParamLayout.cpp
-    ${CHROMA_GEN_DIR}/GuiLayout.h)
+    ${CHROMA_GEN_DIR}/GuiLayout.h
+    ${CHROMA_GEN_DIR}/LayerParams.h)
 add_custom_command(
     OUTPUT ${CHROMA_GEN_FILES}
     COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tools/gen_params.py
@@ -54,12 +55,24 @@ add_custom_command(
     COMMENT "Generating parameter code from params/*.yaml")
 add_custom_target(chroma_gen_params DEPENDS ${CHROMA_GEN_FILES})
 
+# ---------------------------------------------------------------- GUI assets (Inter, SIL OFL 1.1: assets/fonts/OFL.txt)
+juce_add_binary_data(chroma_assets
+    HEADER_NAME BinaryData.h
+    NAMESPACE   ChromaAssets
+    SOURCES     assets/fonts/Inter-Regular.ttf
+                assets/fonts/Inter-SemiBold.ttf)
+set_target_properties(chroma_assets PROPERTIES POSITION_INDEPENDENT_CODE ON)
+
 # ---------------------------------------------------------------- Shared sources (plugin + tests)
 # JUCE modules are compiled per-target, so sources are added to each target
 # instead of a static library (avoids duplicate JUCE symbols).
 set(CHROMA_SOURCES
     src/PluginProcessor.cpp
     src/PluginEditor.cpp
+    src/gui/StyleLookAndFeel.cpp
+    src/core/Synth.cpp
+    src/shared/Voice.cpp
+    src/engines/sine/SineEngine.cpp
     ${CHROMA_GEN_DIR}/ParamLayout.cpp)
 
 function(chroma_configure_target tgt)
@@ -75,6 +88,7 @@ function(chroma_configure_target tgt)
         CHROMA_PRODUCT_NAME="${CHROMA_PRODUCT_NAME}"
         CHROMA_VERSION_STRING="${PROJECT_VERSION}")
     target_link_libraries(${tgt} PRIVATE
+        chroma_assets
         juce::juce_audio_utils
         juce::juce_dsp
         juce::juce_recommended_config_flags
@@ -117,7 +131,7 @@ if(CHROMA_BUILD_TESTS)
     FetchContent_MakeAvailable(Catch2)
 
     juce_add_console_app(chroma_tests PRODUCT_NAME "chroma_tests")
-    target_sources(chroma_tests PRIVATE tests/test_params.cpp tests/test_processor.cpp)
+    target_sources(chroma_tests PRIVATE tests/test_params.cpp tests/test_processor.cpp tests/test_core.cpp tests/test_limiter.cpp)
     chroma_configure_target(chroma_tests)
     target_link_libraries(chroma_tests PRIVATE Catch2::Catch2WithMain)
 

@@ -1,0 +1,13 @@
+blocks:
+  - repeat: { count: 256 }
+    params:
+      - id: auto{n}
+        array: automationSlot
+        name: Automation {n}
+        type: float
+        min: 0.0
+        max: 1.0
+        default: 0.0
+        section: Automation
+        gui: false
+        description: "Automation Slot {n}: guida il parametro interno assegnato con click destro → Assign to automation. ID stabile."

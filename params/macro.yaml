@@ -1,0 +1,12 @@
+blocks:
+  - repeat: { count: 8 }
+    params:
+      - id: macro{n}
+        array: macro
+        name: Macro {n}
+        type: float
+        min: 0.0
+        max: 1.0
+        default: 0.0
+        section: Macro
+        description: Macro globale {n}. Assegnabile a qualunque parametro di qualunque Layer o del Master (Min/Max per assegnazione) e sorgente della Mod Matrix.
