@@ -54,12 +54,21 @@ add_custom_command(
     COMMENT "Generating parameter code from params/*.yaml")
 add_custom_target(chroma_gen_params DEPENDS ${CHROMA_GEN_FILES})
 
+# ---------------------------------------------------------------- GUI assets (Inter, SIL OFL 1.1: assets/fonts/OFL.txt)
+juce_add_binary_data(chroma_assets
+    HEADER_NAME BinaryData.h
+    NAMESPACE   ChromaAssets
+    SOURCES     assets/fonts/Inter-Regular.ttf
+                assets/fonts/Inter-SemiBold.ttf)
+set_target_properties(chroma_assets PROPERTIES POSITION_INDEPENDENT_CODE ON)
+
 # ---------------------------------------------------------------- Shared sources (plugin + tests)
 # JUCE modules are compiled per-target, so sources are added to each target
 # instead of a static library (avoids duplicate JUCE symbols).
 set(CHROMA_SOURCES
     src/PluginProcessor.cpp
     src/PluginEditor.cpp
+    src/gui/StyleLookAndFeel.cpp
     ${CHROMA_GEN_DIR}/ParamLayout.cpp)
 
 function(chroma_configure_target tgt)
@@ -75,6 +84,7 @@ function(chroma_configure_target tgt)
         CHROMA_PRODUCT_NAME="${CHROMA_PRODUCT_NAME}"
         CHROMA_VERSION_STRING="${PROJECT_VERSION}")
     target_link_libraries(${tgt} PRIVATE
+        chroma_assets
         juce::juce_audio_utils
         juce::juce_dsp
         juce::juce_recommended_config_flags

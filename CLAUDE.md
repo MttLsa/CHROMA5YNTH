@@ -16,8 +16,9 @@
 
 ## Font e lingua dell'interfaccia
 - Font per tutte le scritte: **Inter** (SIL OFL 1.1) — **Regular** testi, **SemiBold** titoli/pulsanti/grassetto. Urbanist non si usa.
-  Incorporato nel binario (`resources/fonts/Inter-Regular.ttf` + `Inter-SemiBold.ttf` in `juce_add_binary_data`, licenza OFL accanto),
+  Incorporato nel binario (`assets/fonts/Inter-Regular.ttf` + `Inter-SemiBold.ttf` in `juce_add_binary_data`, licenza OFL accanto),
   usato via `Typeface::createSystemTypefaceFor` + `setDefaultSansSerifTypeface`/`getTypefaceForFont` nel LookAndFeel. Anche il manuale PDF usa Inter.
+- GUI: usa sempre STYLE.md e StyleLookAndFeel
 - Nomi di moduli, parametri, pulsanti e titoli in **inglese**; in italiano solo menu contestuali, tooltip, aiuti e manuale.
 
 ## Stack
