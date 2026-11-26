@@ -125,7 +125,7 @@
 | Mod N Enable | Off / On | On |  | Abilita lo slot N. |
 | Mod N Source | 31 voci | Off |  | Sorgente dello slot N. |
 | Mod N CC | 0 … 127 | 1 |  | Numero CC quando la sorgente è MIDI CC. |
-| Mod N Destination | 364 voci | Off |  | Destinazione: qualunque parametro continuo del Layer. |
+| Mod N Destination | 391 voci | Off |  | Destinazione: qualunque parametro continuo del Layer. |
 | Mod N Amount | -1.0 … 1.0 | 0.0 |  | Quantità ±100% del range della destinazione. |
 | Mod N Via | 31 voci | Off |  | Sorgente che scala l'amount (Off = 1). |
 | Mod N Curve | Linear / Exponential / Logarithmic / S-Curve | Linear |  | Curva applicata alla sorgente. |
@@ -360,6 +360,55 @@
 | Pitch Env Velocity | 0.0 … 1.0 | 0.0 | % | Quanto la velocity scala l'escursione. |
 | Pitch Env Key Track | -1.0 … 1.0 | 0.0 |  | Le note alte accorciano (> 0) o allungano (< 0) i tempi. |
 | Pitch Env Retrigger | Off / On | On |  | Al retrigger riparte da zero (Off = dal livello corrente). |
+
+## PD · Line N
+
+| Parametro | Range | Default | Unità | Descrizione |
+|---|---|---|---|---|
+| Line N | Off / On | Off |  | Attiva la linea oscillatore N (spenta = zero CPU). Default per indice (1: True). |
+| Line N Wave | Saw / Square / Pulse / Double Sine / Saw-Pulse / Reso 1 / Reso 2 / Reso 3 | Saw |  | Forma base: la mappa di fase che PD Amount porta dalla sinusoide (0%) alla forma piena. Reso 1/2/3 = risonanza finestrata Saw/Triangle/Trapezoid (PD Amount = frequenza della risonanza). |
+| Line N Octave | -3 … 3 | 0 | oct | Trasposizione in ottave. |
+| Line N Coarse | -12 … 12 | 0 | st | Trasposizione in semitoni. |
+| Line N Fine | -100.0 … 100.0 | 0.0 | ct | Intonazione fine in cent (detune tra le linee). |
+| Line N Pitch | -24.0 … 24.0 | 0.0 | st | Pitch continuo in semitoni. Destinazione Mod Matrix "Pitch". |
+| Line N Phase | 0.0 … 360.0 | 0.0 | ° | Offset di fase dell'oscillatore (la fase riparte da 0 a ogni nota; l'offset si somma senza salti). |
+| Line N Level | 0.0 … 1.0 | 0.8 | % | Livello della linea. Destinazione "Amp". |
+| Line N Pan | -1.0 … 1.0 | 0.0 |  | Pan della linea. Destinazione "Pan". |
+
+## PD · Line N Distortion
+
+| Parametro | Range | Default | Unità | Descrizione |
+|---|---|---|---|---|
+| Line N PD Amount | 0.0 … 1.0 | 0.5 | % | Profondità della distorsione di fase: 0% = sinusoide pura, 100% = forma piena (Reso: frequenza della risonanza 1–16×). Sommato al PD ENV. |
+| Line N Shape | Linear / Smooth / Ripple / Steps / Custom | Linear |  | Come la fase percorre i segmenti della mappa: Linear (classico), Smooth (raccordi morbidi), Ripple (ondulazione, armoniche extra), Steps (gradini morbidi), Custom (curva a punti del Layer). |
+| Line N Shape Morph | 0.0 … 1.0 | 0.0 | % | Morph continuo (nel dominio della fase) dalla Shape scelta alla successiva (Custom → Linear). |
+| Line N Curve | -1.0 … 1.0 | 0.0 |  | Curvatura di ogni segmento della mappa (curva razionale, pendenza ai capi da ×1/8 a ×8): < 0 rapida all'inizio, > 0 lenta all'inizio. |
+| Line N Symmetry | 0.0 … 1.0 | 0.0 | % | Punto di piega della mappa: 0% = forma classica, 50% = simmetrica, 100% = specchiata (Square: larghezza del fronte; Pulse: larghezza; Saw-Pulse: punto di divisione; Reso: inclinazione della finestra). |
+| Line N Asymmetry | -1.0 … 1.0 | 0.0 |  | Piega lineare della fase prima della mappa (indipendente da PD Amount): sbilancia le due metà del ciclo. |
+| Line N Offset | -1.0 … 1.0 | 0.0 |  | Offset della fase di lettura dopo la distorsione (±mezzo ciclo): sposta la parte della sinusoide che viene compressa. Nessun effetto su Reso. |
+| Line N Warp | -1.0 … 1.0 | 0.0 |  | Warp della fase prima della mappa (curva razionale, pendenza ai capi da ×1/4 a ×4): > 0 rallenta l'inizio del ciclo, < 0 lo accelera. Indipendente da PD Amount. |
+| Line N Window | 0.0 … 1.0 | 0.0 | % | Finestra d'ampiezza a coseno rialzato su ogni ciclo (zero agli estremi): timbri formantici e più morbidi. |
+| Line N PD Mix | 0.0 … 1.0 | 1.0 | % | Miscela tra sinusoide non distorta (0%) e uscita PD (100%). |
+
+## PD · Line N PD Env
+
+| Parametro | Range | Default | Unità | Descrizione |
+|---|---|---|---|---|
+| Line N PD Env Amount | -1.0 … 1.0 | 0.0 |  | Quanto l'inviluppo PD si somma a PD Amount (±100%). |
+| Line N PD Env Attack | 0.0 … 10.0 | 0.005 | s | Attacco dell'inviluppo PD. |
+| Line N PD Env Decay | 0.0 … 10.0 | 0.4 | s | Decadimento. |
+| Line N PD Env Sustain | 0.0 … 1.0 | 0.3 | % | Livello di sustain. |
+| Line N PD Env Release | 0.0 … 20.0 | 0.3 | s | Rilascio. |
+| Line N PD Env Velocity | 0.0 … 1.0 | 0.0 | % | Quanto la velocity scala l'inviluppo. |
+| Line N PD Env Key Track | -1.0 … 1.0 | 0.0 |  | Le note alte accorciano (> 0) o allungano (< 0) i tempi. |
+
+## PD · Lines
+
+| Parametro | Range | Default | Unità | Descrizione |
+|---|---|---|---|---|
+| Ring Mod | 0.0 … 1.0 | 0.0 | % | Modulazione ad anello della Linea 2 da parte della Linea 1 (serve la Linea 1 accesa). |
+| Noise Mod | 0.0 … 1.0 | 0.0 | % | Modulazione ad anello della Linea 2 con rumore filtrato attorno alla sua frequenza (timbri soffiati/percussivi). |
+| PD Output | 0.0 … 1.0 | 0.7 | % | Livello d'uscita delle linee prima del filtro. |
 
 ## Wavetable · OSC N
 

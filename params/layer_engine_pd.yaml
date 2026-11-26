@@ -1,0 +1,54 @@
+# Engine PHASE DISTORTION (§3E). Parametri interni di ogni Layer (attivi quando L{n} Engine = PD).
+# Il timbro nasce dalla distorsione di fase (nessun filtro necessario): 2 linee oscillatore con Ring/Noise
+# mod tra le linee, un PD ENV per linea. ENV 2/3 liberi, LFO, Amp Env e Mod Matrix sono quelli del Layer.
+# La curva di fase Custom (editor a punti) non è un parametro: è una tabella del Layer salvata nello stato.
+scope: layer
+
+lists:
+  pd_waves: [Saw, Square, Pulse, Double Sine, Saw-Pulse, Reso 1, Reso 2, Reso 3]
+  pd_shapes: [Linear, Smooth, Ripple, Steps, Custom]
+
+blocks:
+  - repeat: { count: 2 }
+    section: "PD · Line {n}"
+    params:
+      - { id: "pd_l{n}_on", array: pdLineOn, name: "Line {n}", type: bool, default: false, default_by_index: { 1: true }, description: "Attiva la linea oscillatore {n} (spenta = zero CPU)." }
+      - { id: "pd_l{n}_wave", array: pdLineWave, name: "Line {n} Wave", type: choice, choices_from: pd_waves, default: Saw, description: "Forma base: la mappa di fase che PD Amount porta dalla sinusoide (0%) alla forma piena. Reso 1/2/3 = risonanza finestrata Saw/Triangle/Trapezoid (PD Amount = frequenza della risonanza)." }
+      - { id: "pd_l{n}_octave", array: pdLineOctave, name: "Line {n} Octave", type: int, min: -3, max: 3, default: 0, unit: oct, description: "Trasposizione in ottave." }
+      - { id: "pd_l{n}_coarse", array: pdLineCoarse, name: "Line {n} Coarse", type: int, min: -12, max: 12, default: 0, unit: st, description: "Trasposizione in semitoni." }
+      - { id: "pd_l{n}_fine", array: pdLineFine, name: "Line {n} Fine", type: float, min: -100.0, max: 100.0, default: 0.0, unit: ct, mod_dest: false, description: "Intonazione fine in cent (detune tra le linee)." }
+      - { id: "pd_l{n}_pitch", array: pdLinePitch, name: "Line {n} Pitch", type: float, min: -24.0, max: 24.0, default: 0.0, unit: st, description: "Pitch continuo in semitoni. Destinazione Mod Matrix \"Pitch\"." }
+      - { id: "pd_l{n}_phase", array: pdLinePhase, name: "Line {n} Phase", type: float, min: 0.0, max: 360.0, default: 0.0, unit: "°", mod_dest: false, description: "Offset di fase dell'oscillatore (la fase riparte da 0 a ogni nota; l'offset si somma senza salti)." }
+      - { id: "pd_l{n}_level", array: pdLineLevel, name: "Line {n} Level", type: float, min: 0.0, max: 1.0, default: 0.8, unit: "%", description: "Livello della linea. Destinazione \"Amp\"." }
+      - { id: "pd_l{n}_pan", array: pdLinePan, name: "Line {n} Pan", type: float, min: -1.0, max: 1.0, default: 0.0, description: "Pan della linea. Destinazione \"Pan\"." }
+
+  - repeat: { count: 2 }
+    section: "PD · Line {n} Distortion"
+    params:
+      - { id: "pd_l{n}_amount", array: pdAmount, name: "Line {n} PD Amount", type: float, min: 0.0, max: 1.0, default: 0.5, unit: "%", description: "Profondità della distorsione di fase: 0% = sinusoide pura, 100% = forma piena (Reso: frequenza della risonanza 1–16×). Sommato al PD ENV." }
+      - { id: "pd_l{n}_shape", array: pdShape, name: "Line {n} Shape", type: choice, choices_from: pd_shapes, default: Linear, description: "Come la fase percorre i segmenti della mappa: Linear (classico), Smooth (raccordi morbidi), Ripple (ondulazione, armoniche extra), Steps (gradini morbidi), Custom (curva a punti del Layer)." }
+      - { id: "pd_l{n}_morph", array: pdMorph, name: "Line {n} Shape Morph", type: float, min: 0.0, max: 1.0, default: 0.0, unit: "%", description: "Morph continuo (nel dominio della fase) dalla Shape scelta alla successiva (Custom → Linear)." }
+      - { id: "pd_l{n}_curve", array: pdCurve, name: "Line {n} Curve", type: float, min: -1.0, max: 1.0, default: 0.0, description: "Curvatura di ogni segmento della mappa (curva razionale, pendenza ai capi da ×1/8 a ×8): < 0 rapida all'inizio, > 0 lenta all'inizio." }
+      - { id: "pd_l{n}_symmetry", array: pdSymmetry, name: "Line {n} Symmetry", type: float, min: 0.0, max: 1.0, default: 0.0, unit: "%", description: "Punto di piega della mappa: 0% = forma classica, 50% = simmetrica, 100% = specchiata (Square: larghezza del fronte; Pulse: larghezza; Saw-Pulse: punto di divisione; Reso: inclinazione della finestra)." }
+      - { id: "pd_l{n}_asymmetry", array: pdAsymmetry, name: "Line {n} Asymmetry", type: float, min: -1.0, max: 1.0, default: 0.0, description: "Piega lineare della fase prima della mappa (indipendente da PD Amount): sbilancia le due metà del ciclo." }
+      - { id: "pd_l{n}_offset", array: pdOffset, name: "Line {n} Offset", type: float, min: -1.0, max: 1.0, default: 0.0, description: "Offset della fase di lettura dopo la distorsione (±mezzo ciclo): sposta la parte della sinusoide che viene compressa. Nessun effetto su Reso." }
+      - { id: "pd_l{n}_warp", array: pdWarp, name: "Line {n} Warp", type: float, min: -1.0, max: 1.0, default: 0.0, description: "Warp della fase prima della mappa (curva razionale, pendenza ai capi da ×1/4 a ×4): > 0 rallenta l'inizio del ciclo, < 0 lo accelera. Indipendente da PD Amount." }
+      - { id: "pd_l{n}_window", array: pdWindow, name: "Line {n} Window", type: float, min: 0.0, max: 1.0, default: 0.0, unit: "%", description: "Finestra d'ampiezza a coseno rialzato su ogni ciclo (zero agli estremi): timbri formantici e più morbidi." }
+      - { id: "pd_l{n}_mix", array: pdMix, name: "Line {n} PD Mix", type: float, min: 0.0, max: 1.0, default: 1.0, unit: "%", description: "Miscela tra sinusoide non distorta (0%) e uscita PD (100%)." }
+
+  - repeat: { count: 2 }
+    section: "PD · Line {n} PD Env"
+    mod_dest: false
+    params:
+      - { id: "pd_l{n}_env_amount", array: pdEnvAmount, name: "Line {n} PD Env Amount", type: float, min: -1.0, max: 1.0, default: 0.0, description: "Quanto l'inviluppo PD si somma a PD Amount (±100%)." }
+      - { id: "pd_l{n}_env_attack", array: pdEnvAttack, name: "Line {n} PD Env Attack", type: float, min: 0.0, max: 10.0, default: 0.005, skew: 0.5, unit: s, description: "Attacco dell'inviluppo PD." }
+      - { id: "pd_l{n}_env_decay", array: pdEnvDecay, name: "Line {n} PD Env Decay", type: float, min: 0.0, max: 10.0, default: 0.4, skew: 0.5, unit: s, description: "Decadimento." }
+      - { id: "pd_l{n}_env_sustain", array: pdEnvSustain, name: "Line {n} PD Env Sustain", type: float, min: 0.0, max: 1.0, default: 0.3, unit: "%", description: "Livello di sustain." }
+      - { id: "pd_l{n}_env_release", array: pdEnvRelease, name: "Line {n} PD Env Release", type: float, min: 0.0, max: 20.0, default: 0.3, skew: 1.0, unit: s, description: "Rilascio." }
+      - { id: "pd_l{n}_env_velocity", array: pdEnvVelocity, name: "Line {n} PD Env Velocity", type: float, min: 0.0, max: 1.0, default: 0.0, unit: "%", description: "Quanto la velocity scala l'inviluppo." }
+      - { id: "pd_l{n}_env_keytrack", array: pdEnvKeytrack, name: "Line {n} PD Env Key Track", type: float, min: -1.0, max: 1.0, default: 0.0, description: "Le note alte accorciano (> 0) o allungano (< 0) i tempi." }
+
+  - params:
+      - { id: pd_ring, name: Ring Mod, type: float, min: 0.0, max: 1.0, default: 0.0, unit: "%", section: "PD · Lines", description: "Modulazione ad anello della Linea 2 da parte della Linea 1 (serve la Linea 1 accesa)." }
+      - { id: pd_noise, name: Noise Mod, type: float, min: 0.0, max: 1.0, default: 0.0, unit: "%", section: "PD · Lines", description: "Modulazione ad anello della Linea 2 con rumore filtrato attorno alla sua frequenza (timbri soffiati/percussivi)." }
+      - { id: pd_output, name: PD Output, type: float, min: 0.0, max: 1.0, default: 0.7, unit: "%", section: "PD · Lines", description: "Livello d'uscita delle linee prima del filtro." }
