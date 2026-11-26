@@ -75,6 +75,14 @@ ChromaEditor::ChromaEditor (ChromaProcessor& p) : AudioProcessorEditor (p)
     };
     addAndMakeVisible (aboutButton);
 
+    wtEditor = std::make_unique<WavetableEditor> (p.getSynth());
+    wtEditor->onClose = [this] { wtEditor->setVisible (false); wtButton.setToggleState (false, juce::dontSendNotification); };
+    addChildComponent (*wtEditor);
+    wtButton.setTooltip ("Editor delle wavetable utente (engine Wavetable).");
+    wtButton.setClickingTogglesState (true);
+    wtButton.onClick = [this] { wtEditor->setVisible (wtButton.getToggleState()); };
+    addAndMakeVisible (wtButton);
+
     viewport.setViewedComponent (&content, false);
     viewport.setScrollBarsShown (true, false);
     addAndMakeVisible (viewport);
@@ -91,7 +99,7 @@ ChromaEditor::~ChromaEditor()
 void ChromaEditor::paint (juce::Graphics& g)
 {
     g.fillAll (style::bg);
-    const auto bar = juce::Rectangle<float> ((float) style::margin, 6.0f, (float) (getWidth() - 2 * style::margin - 90),
+    const auto bar = juce::Rectangle<float> ((float) style::margin, 6.0f, (float) (getWidth() - 2 * style::margin - 190),
                                              (float) style::titleH - 12.0f);
     drawHeader (g, bar, "multi-engine layered synth", juce::String ("v") + CHROMA_VERSION_STRING);
 }
@@ -99,6 +107,8 @@ void ChromaEditor::paint (juce::Graphics& g)
 void ChromaEditor::resized()
 {
     aboutButton.setBounds (getWidth() - style::margin - 80, (style::titleH - 24) / 2, 80, 24);
+    wtButton.setBounds (aboutButton.getX() - style::margin - 90, aboutButton.getY(), 90, 24);
+    wtEditor->setBounds (getLocalBounds().withTrimmedTop (style::titleH));
     viewport.setBounds (getLocalBounds().withTrimmedTop (style::titleH));
     const int w = viewport.getWidth() - viewport.getScrollBarThickness();
     content.setSize (w, layoutContent (w));

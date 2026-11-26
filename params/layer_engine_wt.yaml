@@ -1,0 +1,77 @@
+# Engine WAVETABLE (§3D). Parametri interni di ogni Layer (attivi quando L{n} Engine = Wavetable).
+scope: layer
+
+lists:
+  # Ordine = src/engines/wavetable/WavetableFactory.cpp (tabelle di fabbrica procedurali) + 3 slot utente.
+  wt_tables: ["Basic Shapes", "Sine Harmonics", "PWM", "Saw Sync", "Square Sync", "Sine Sync", "Vowels", "Formant Sweep",
+              "Odd Harmonics", "Even Harmonics", "Harmonic Sweep", "Spectral Comb", "Bell", "Drawbars",
+              "FM 1:1", "FM 2:1", "FM 3:2", "FM Feedback", "PD Saw", "PD Reso", "Wavefolder", "Triangle Fold",
+              "Drive", "Chebyshev", "Bitcrush", "Saw Stack", "Spectral Tilt", "Band Noise", "Random Harmonics",
+              "Steps", "Windowed Sine", "Sine Pairs", "Hollow", "Choir", "Brass", "Strings", "Reed", "Metallic",
+              "Glass", "Growl", "Pulse Train", "Curved Saw", "Skewed Sine", "Rectifier", "Octave Bands",
+              "Phase Shift Saw", "User 1", "User 2", "User 3"]
+  wt_warp: ["Off", "Bend +", "Bend -", "Bend +/-", "PWM", "Sync", "Mirror", "Asym", "Quantize", "FM", "AM", "Ring"]
+  wt_warp_src: ["OSC 1", "OSC 2", "OSC 3", "Sub"]
+
+blocks:
+  - repeat: { count: 3 }
+    section: "Wavetable · OSC {n}"
+    params:
+      - { id: "wt_osc{n}_on", array: wtOscOn, name: "WT OSC {n}", type: bool, default: false, default_by_index: { 1: true }, description: "Attiva l'oscillatore wavetable {n} (spento = zero CPU)." }
+      - { id: "wt_osc{n}_table", array: wtOscTable, name: "WT OSC {n} Table", type: choice, choices_from: wt_tables, default: "Basic Shapes", description: "Wavetable: 46 tabelle di fabbrica generate proceduralmente o uno dei 3 slot User (editor)." }
+      - { id: "wt_osc{n}_pos", array: wtOscPos, name: "WT OSC {n} Position", type: float, min: 0.0, max: 1.0, default: 0.0, unit: "%", description: "Posizione nella tabella (interpolazione lineare tra frame adiacenti)." }
+      - { id: "wt_osc{n}_scan", array: wtOscScan, name: "WT OSC {n} Scan", type: float, min: -1.0, max: 1.0, default: 0.0, description: "Scansione automatica della tabella dall'inizio della nota (ping-pong; ±100% = 4 attraversamenti al secondo, curva quadratica)." }
+      - { id: "wt_osc{n}_volume", array: wtOscVolume, name: "WT OSC {n} Volume", type: float, min: 0.0, max: 1.0, default: 0.8, unit: "%", description: "Volume dell'oscillatore." }
+      - { id: "wt_osc{n}_octave", array: wtOscOctave, name: "WT OSC {n} Octave", type: int, min: -4, max: 4, default: 0, unit: oct, description: "Trasposizione in ottave." }
+      - { id: "wt_osc{n}_semi", array: wtOscSemi, name: "WT OSC {n} Semitone", type: int, min: -12, max: 12, default: 0, unit: st, description: "Trasposizione in semitoni." }
+      - { id: "wt_osc{n}_fine", array: wtOscFine, name: "WT OSC {n} Fine", type: float, min: -100.0, max: 100.0, default: 0.0, unit: ct, description: "Intonazione fine in cent." }
+      - { id: "wt_osc{n}_detune", array: wtOscDetune, name: "WT OSC {n} Detune", type: float, min: -10.0, max: 10.0, default: 0.0, unit: Hz, description: "Scostamento lineare in Hz (battimento costante su tutta la tastiera)." }
+      - { id: "wt_osc{n}_phase", array: wtOscPhase, name: "WT OSC {n} Phase", type: float, min: 0.0, max: 360.0, default: 0.0, unit: "°", description: "Fase iniziale." }
+      - { id: "wt_osc{n}_rand_phase", array: wtOscRandPhase, name: "WT OSC {n} Random Phase", type: float, min: 0.0, max: 1.0, default: 0.0, unit: "%", description: "Quantità di fase casuale aggiunta alla fase iniziale (per voce di unison)." }
+      - { id: "wt_osc{n}_reset", array: wtOscReset, name: "WT OSC {n} Phase Reset", type: bool, default: true, description: "On = la fase riparte a ogni nota; Off = fase libera." }
+      - { id: "wt_osc{n}_unison", array: wtOscUnison, name: "WT OSC {n} Unison", type: int, min: 1, max: 16, default: 1, description: "Voci di unison dell'oscillatore (sostituisce l'Unison del Layer per questo engine)." }
+      - { id: "wt_osc{n}_uni_detune", array: wtOscUniDetune, name: "WT OSC {n} Unison Detune", type: float, min: 0.0, max: 100.0, default: 20.0, unit: ct, description: "Detune totale dello stack unison." }
+      - { id: "wt_osc{n}_uni_spread", array: wtOscUniSpread, name: "WT OSC {n} Unison Spread", type: float, min: 0.0, max: 1.0, default: 0.5, unit: "%", description: "Apertura stereo (pan) delle voci di unison." }
+      - { id: "wt_osc{n}_uni_width", array: wtOscUniWidth, name: "WT OSC {n} Unison Width", type: float, min: 0.0, max: 2.0, default: 1.0, unit: x, description: "Larghezza stereo M/S dell'oscillatore (0 = mono, 1 = invariata, 2 = allargata)." }
+      - { id: "wt_osc{n}_pan", array: wtOscPan, name: "WT OSC {n} Pan", type: float, min: -1.0, max: 1.0, default: 0.0, description: "Pan dell'oscillatore." }
+      - { id: "wt_osc{n}_warp", array: wtOscWarp, name: "WT OSC {n} Warp", type: choice, choices_from: wt_warp, default: "Off", description: "Warp della lettura: Bend (curva di fase), PWM, Sync (ratio 1–16), Mirror, Asym, Quantize (fase a gradini), FM (modulazione di fase), AM, Ring. FM/AM/Ring usano Warp Source." }
+      - { id: "wt_osc{n}_warp_amount", array: wtOscWarpAmount, name: "WT OSC {n} Warp Amount", type: float, min: 0.0, max: 1.0, default: 0.0, unit: "%", description: "Quantità del warp." }
+      - { id: "wt_osc{n}_warp_src", array: wtOscWarpSrc, name: "WT OSC {n} Warp Source", type: choice, choices_from: wt_warp_src, default: "Sub", description: "Modulatore per FM/AM/Ring: un OSC (un OSC successivo o se stesso arriva con un blocco di ritardo) o il Sub." }
+
+  - repeat: { count: 3 }
+    section: "Wavetable · OSC {n} Advanced"
+    params:
+      - { id: "wt_osc{n}_freeze", array: wtOscFreeze, name: "WT OSC {n} Spectral Freeze", type: float, min: 0.0, max: 1.0, default: 0.0, unit: "%", description: "Blend delle ampiezze spettrali verso lo spettro catturato all'inizio della nota." }
+      - { id: "wt_osc{n}_blur", array: wtOscBlur, name: "WT OSC {n} Spectral Blur", type: float, min: 0.0, max: 1.0, default: 0.0, unit: "%", description: "Media delle ampiezze spettrali su frame vicini (fino a ±25% della tabella)." }
+      - { id: "wt_osc{n}_tilt", array: wtOscTilt, name: "WT OSC {n} Spectral Tilt", type: float, min: -1.0, max: 1.0, default: 0.0, description: "Inclinazione spettrale ±12 dB/ottava (volume RMS compensato)." }
+      - { id: "wt_osc{n}_formant", array: wtOscFormant, name: "WT OSC {n} Formant Shift", type: float, min: -1.0, max: 1.0, default: 0.0, description: "Sposta l'inviluppo spettrale di ±2 ottave mantenendo l'intonazione." }
+      - { id: "wt_osc{n}_stretch", array: wtOscStretch, name: "WT OSC {n} Harmonic Stretch", type: float, min: -1.0, max: 1.0, default: 0.0, description: "Rimappa l'armonica k sull'armonica più vicina a k^(1 ± 0.5)." }
+      - { id: "wt_osc{n}_pd", array: wtOscPd, name: "WT OSC {n} Phase Distortion", type: float, min: 0.0, max: 1.0, default: 0.0, unit: "%", description: "Distorsione di fase sinusoidale della lettura (continua al giro di fase)." }
+      - { id: "wt_osc{n}_bits", array: wtOscBits, name: "WT OSC {n} Bit Depth", type: float, min: 1.0, max: 16.0, default: 16.0, unit: bit, description: "Quantizzazione d'ampiezza (16 = spenta)." }
+      - { id: "wt_osc{n}_srr", array: wtOscSrr, name: "WT OSC {n} SR Reduction", type: float, min: 0.0, max: 1.0, default: 0.0, unit: "%", description: "Riduzione della frequenza di campionamento (sample & hold, 100% = 1/64)." }
+      - { id: "wt_osc{n}_grain", array: wtOscGrain, name: "WT OSC {n} Granular", type: float, min: 0.0, max: 1.0, default: 0.0, unit: "%", description: "Riproduzione granulare: grani sovrapposti con posizione casuale attorno a Position (100% = tutta la tabella)." }
+      - { id: "wt_osc{n}_grain_size", array: wtOscGrainSize, name: "WT OSC {n} Grain Size", type: float, min: 5.0, max: 500.0, default: 60.0, skew: 60.0, unit: ms, description: "Durata dei grani." }
+
+  - params:
+      - { id: wt_sub_on, name: WT Sub, type: bool, default: false, section: "Wavetable · Sub/Noise", description: "Attiva il Sub OSC (segue la nota)." }
+      - { id: wt_sub_wave, name: WT Sub Wave, type: choice, choices: [Sine, Triangle, Saw, Square], default: Sine, section: "Wavetable · Sub/Noise", description: "Forma del Sub (band-limited)." }
+      - { id: wt_sub_octave, name: WT Sub Octave, type: int, min: -3, max: 0, default: -1, unit: oct, section: "Wavetable · Sub/Noise", description: "Ottava del Sub rispetto alla nota." }
+      - { id: wt_sub_level, name: WT Sub Level, type: float, min: 0.0, max: 1.0, default: 0.5, unit: "%", section: "Wavetable · Sub/Noise", description: "Livello del Sub (anche come sorgente di warp resta attivo a livello 0 se richiesto)." }
+      - { id: wt_sub_pan, name: WT Sub Pan, type: float, min: -1.0, max: 1.0, default: 0.0, section: "Wavetable · Sub/Noise", description: "Pan del Sub." }
+      - { id: wt_noise_type, name: WT Noise Type, type: choice, choices: [White, Pink], default: White, section: "Wavetable · Sub/Noise", description: "Rumore bianco o rosa." }
+      - { id: wt_noise_level, name: WT Noise Level, type: float, min: 0.0, max: 1.0, default: 0.0, unit: "%", section: "Wavetable · Sub/Noise", description: "Livello del Noise OSC (0 = zero CPU)." }
+      - { id: wt_noise_pan, name: WT Noise Pan, type: float, min: -1.0, max: 1.0, default: 0.0, section: "Wavetable · Sub/Noise", description: "Pan del Noise." }
+
+      - { id: wt_f2_on, name: Filter 2, type: bool, default: false, section: "Wavetable · Filter 2", description: "Attiva il secondo filtro della voce (Filter Library). Filter 1 = filtro del Layer." }
+      - { id: wt_f2_model, name: Filter 2 Model, type: choice, choices_from: filter_models, default: "SVF LP12", section: "Wavetable · Filter 2", description: "Modello del Filter 2." }
+      - { id: wt_f2_cutoff, name: Filter 2 Cutoff, type: float, min: 20.0, max: 20000.0, default: 20000.0, skew: 1000.0, unit: Hz, section: "Wavetable · Filter 2", description: "Frequenza di taglio del Filter 2." }
+      - { id: wt_f2_resonance, name: Filter 2 Resonance, type: float, min: 0.0, max: 1.0, default: 0.0, unit: "%", section: "Wavetable · Filter 2", description: "Risonanza del Filter 2." }
+      - { id: wt_f2_drive, name: Filter 2 Drive, type: float, min: 0.0, max: 1.0, default: 0.0, unit: "%", section: "Wavetable · Filter 2", description: "Drive del Filter 2 (0–24 dB)." }
+      - { id: wt_f2_keytrack, name: Filter 2 Key Track, type: float, min: 0.0, max: 1.0, default: 0.0, unit: "%", section: "Wavetable · Filter 2", description: "100% = il cutoff segue la nota." }
+      - { id: wt_f2_env_amount, name: Filter 2 Env Amount, type: float, min: -1.0, max: 1.0, default: 0.0, section: "Wavetable · Filter 2", description: "Modulazione del cutoff da Mod Env 2 (±100% = ±10 ottave)." }
+      - { id: wt_f2_velocity, name: Filter 2 Velocity, type: float, min: 0.0, max: 1.0, default: 0.0, unit: "%", section: "Wavetable · Filter 2", description: "Velocity bassa abbassa il cutoff (100% = fino a −4 ottave)." }
+      - { id: wt_f2_lfo_amount, name: Filter 2 LFO Amount, type: float, min: -1.0, max: 1.0, default: 0.0, section: "Wavetable · Filter 2", description: "Modulazione del cutoff da LFO 2 (±100% = ±4 ottave)." }
+      - { id: wt_filter_routing, name: Filter Routing, type: choice, choices: [Serial, Parallel], default: Serial, section: "Wavetable · Filter 2", description: "Serial = Filter 1 → Filter 2; Parallel = i due filtri sullo stesso ingresso." }
+      - { id: wt_filter_mix, name: Filter Mix, type: float, min: 0.0, max: 1.0, default: 0.5, unit: "%", section: "Wavetable · Filter 2", description: "Serial: dry/wet del Filter 2 dopo il Filter 1. Parallel: bilanciamento a potenza costante Filter 1 ↔ Filter 2." }
+      - { id: wt_filter_pan, name: Filter Pan, type: float, min: -1.0, max: 1.0, default: 0.0, section: "Wavetable · Filter 2", description: "Parallel: Filter 1 verso sinistra e Filter 2 verso destra (valori > 0) o viceversa." }
+      - { id: wt_filter_stereo, name: Filter Stereo, type: float, min: 0.0, max: 2.0, default: 1.0, unit: x, section: "Wavetable · Filter 2", description: "Larghezza stereo M/S dopo i filtri (0 = mono, 1 = invariata, 2 = allargata)." }

@@ -2,6 +2,7 @@
 #include "engines/analog/AnalogEngine.h"
 #include "engines/fm/FmEngine.h"
 #include "engines/sine/SineEngine.h"
+#include "engines/wavetable/WavetableEngine.h"
 #include "shared/ParamRange.h"
 #include "shared/Scale.h"
 
@@ -50,9 +51,14 @@ Synth::Synth (juce::AudioProcessor& p, juce::AudioProcessorValueTreeState& s) : 
               get (ParamIDs::layerTranspose[l]), get (ParamIDs::layerKeyLo[l]), get (ParamIDs::layerKeyHi[l]),
               get (ParamIDs::layerVelLo[l]), get (ParamIDs::layerVelHi[l]), get (ParamIDs::layerMidiChannel[l]),
               get (ParamIDs::layerMaxVoices[l]) };
-        // Analog (§3A), FM6 (§3C); the engines of later phases use the test sine engine until implemented.
+        // Analog (§3A), FM6 (§3C), Wavetable (§3D); later engines use the test sine engine until implemented.
         analogEngines[l] = std::make_unique<AnalogEngine>();
         fmEngines[l] = std::make_unique<FmEngine>();
+        {
+            auto w = std::make_unique<WavetableEngine>();
+            w->setUserSlots (stores[l].userTableSlots());
+            wtEngines[l] = std::move (w);
+        }
         sineEngines[l] = std::make_unique<SineEngine>();
         engineIndex[l] = 0;
         runtime[l].engine = analogEngines[l].get();
@@ -75,6 +81,7 @@ void Synth::prepare (double sr, int maxBlockSize, int numOutputChannels)
     {
         analogEngines[l]->prepare (sr, controlBlock, maxPoolVoices);
         fmEngines[l]->prepare (sr, controlBlock, maxPoolVoices);
+        wtEngines[l]->prepare (sr, controlBlock, maxPoolVoices);
         sineEngines[l]->prepare (sr, controlBlock, maxPoolVoices);
         layers[l].bufL.assign (controlBlock, 0.0f);
         layers[l].bufR.assign (controlBlock, 0.0f);
@@ -179,7 +186,8 @@ void Synth::readHostParams() noexcept
             st.stackSize = 0;
             st.monoVoice = -1;
             engineIndex[l] = e;
-            runtime[l].engine = e == 0 ? analogEngines[l].get() : e == 2 ? fmEngines[l].get() : sineEngines[l].get();
+            runtime[l].engine = e == 0 ? analogEngines[l].get() : e == 2 ? fmEngines[l].get()
+                             : e == 3 ? wtEngines[l].get() : sineEngines[l].get();
         }
     }
 }
@@ -458,6 +466,7 @@ void Synth::process (juce::AudioBuffer<float>& buffer, const juce::MidiBuffer& m
     for (int ch = 2; ch < buffer.getNumChannels(); ++ch)
         buffer.clear (ch, 0, numSamples);
     sampleClock += (uint64_t) numSamples;
+    wt::TableSlot::audioBlockDone();   // user wavetables replaced before this block can now be freed
 }
 
 void Synth::renderChunk (float* const* out, int numChannels, int start, int n) noexcept
@@ -815,6 +824,12 @@ void Synth::pasteLayer (int l, const juce::ValueTree& t)
             if (t.hasProperty (key)) p->setValueNotifyingHost ((float) t.getProperty (key));
         }
     stores[(size_t) l].fromTree (t.getChildWithName ("ENGINE"));
+}
+
+void Synth::setUserWavetable (int layer, int slot, std::vector<float> frames, int numFrames)
+{
+    if (layer >= 0 && layer < numLayers && slot >= 0 && slot < wt::numUserSlots)
+        stores[(size_t) layer].setUserTable (slot, std::move (frames), numFrames);
 }
 
 void Synth::initLayer (int l)

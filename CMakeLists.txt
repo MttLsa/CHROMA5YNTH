@@ -70,6 +70,7 @@ set(CHROMA_SOURCES
     src/PluginProcessor.cpp
     src/PluginEditor.cpp
     src/gui/StyleLookAndFeel.cpp
+    src/gui/WavetableEditor.cpp
     src/core/Synth.cpp
     src/shared/Voice.cpp
     src/shared/Filter.cpp
@@ -77,6 +78,10 @@ set(CHROMA_SOURCES
     src/engines/analog/AnalogEngine.cpp
     src/engines/fm/FmEngine.cpp
     src/engines/fm/FmSysex.cpp
+    src/engines/wavetable/Wavetable.cpp
+    src/engines/wavetable/WavetableFactory.cpp
+    src/engines/wavetable/WavetableEngine.cpp
+    src/engines/wavetable/WavetableDoc.cpp
     ${CHROMA_GEN_DIR}/ParamLayout.cpp)
 
 function(chroma_configure_target tgt)
@@ -135,7 +140,7 @@ if(CHROMA_BUILD_TESTS)
     FetchContent_MakeAvailable(Catch2)
 
     juce_add_console_app(chroma_tests PRODUCT_NAME "chroma_tests")
-    target_sources(chroma_tests PRIVATE tests/test_params.cpp tests/test_processor.cpp tests/test_core.cpp tests/test_limiter.cpp tests/test_filter.cpp tests/test_analog.cpp tests/test_fx.cpp tests/test_fm.cpp)
+    target_sources(chroma_tests PRIVATE tests/test_params.cpp tests/test_processor.cpp tests/test_core.cpp tests/test_limiter.cpp tests/test_filter.cpp tests/test_analog.cpp tests/test_fx.cpp tests/test_fm.cpp tests/test_wavetable.cpp)
     chroma_configure_target(chroma_tests)
     target_link_libraries(chroma_tests PRIVATE Catch2::Catch2WithMain)
 

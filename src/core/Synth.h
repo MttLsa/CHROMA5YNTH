@@ -43,6 +43,8 @@ public:
 
     // ---- message thread
     LayerParamStore& layerStore (int layer) noexcept { return stores[(size_t) layer]; }
+    // §3D editor: publish a user wavetable (frames of wt::frameSize samples) to slot 0..2 of a layer.
+    void setUserWavetable (int layer, int slot, std::vector<float> frames, int numFrames);
     bool assignMacro (int macro, ParamTarget, float minNorm, float maxNorm);
     void clearMacroAssignments (int macro);
     const MacroMap& getMacroMap() const noexcept { return macroMap.latest(); }
@@ -118,7 +120,7 @@ private:
     std::array<LayerParamStore, numLayers> stores;
     std::array<LayerRuntime, numLayers> runtime {};
     std::array<LayerState, numLayers> layers;
-    std::array<std::unique_ptr<IEngine>, numLayers> analogEngines, fmEngines, sineEngines;
+    std::array<std::unique_ptr<IEngine>, numLayers> analogEngines, fmEngines, wtEngines, sineEngines;
     std::array<int, numLayers> engineIndex {};
     std::array<Voice, maxPoolVoices> voices {};
     MidiState midi;

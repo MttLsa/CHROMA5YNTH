@@ -58,3 +58,12 @@
 - CPU (Release, Linux): voce 6 Op con feedback a 2× ≈ 1.7% core @48 kHz. Bench: `chroma_tests "[.bench]"`.
 - Windows annullato (richiesta utente): rimossi job CI windows e installer Inno; CLAUDE.md aggiornato (solo macOS).
 - Aperti: GUI FM6 + selezione file .syx (fase GUI); Op Env a 4 rate/level non nativi (approssimazione ADSR); SIMD su unison.
+
+## FASE 6 – Engine WAVETABLE + editor ✅
+- params/layer_engine_wt.yaml (scope layer): 3 OSC (On, Table 46 fabbrica + User 1–3, Position, Scan, Volume, Octave/Semi/Fine, Detune Hz, Phase, Random Phase, Reset, Unison 1–16 + Detune/Spread/Width, Pan, Warp ×11 + Amount + Source OSC/Sub) + Advanced (Freeze, Blur, Tilt, Formant, Stretch, PD, Bit Depth, SR Reduction, Granular + Grain Size), Sub, Noise, Filter 2 + Routing Serial/Parallel, Mix, Pan, Stereo.
+- src/engines/wavetable: Wavetable (mipmap 10 ottave band-limited via FFT, guard per Hermite, spettri per frame, TableSlot lock-free per tabelle utente), WavetableFactory (46 tabelle procedurali × 32 frame, nomi generici), WavetableEngine (lettura Hermite 4 punti + lineare tra frame, oversampling 2× default, warp, path spettrale = tabella per voce risintetizzata ogni 64 campioni con crossfade, granulare a 2 teste, sorgenti spente = zero CPU), WavetableDoc (modello editor).
+- Voice: Filter 2 + routing Serial/Parallel/Mix/Pan/Stereo per engine con `dualFilter()` (F2: Env = Mod Env 2, LFO = LFO 2). Unison per-OSC sostituisce l'Unison del Layer per questo engine.
+- Editor (src/gui/WavetableEditor, pulsante "WT Editor"): Import/Export WAV (2048/frame, ≤256), Add/Remove/Duplicate, Resample/Morph con interpolazione None/Linear/Spectral, Smooth, Normalize, Draw mode, editor armonico FFT ampiezza/fase, vista 3D, Apply → slot User del Layer (salvato nello stato e in copy/paste del Layer).
+- tests/test_wavetable.cpp: banco/nomi, mipmap band-limited, pitch/morph, aliasing (< −65 dB a 2×, < −80 dB a 4×), warp, spettrali, unison/advanced, sub/noise/zero CPU, editor model, user table + stato, Filter 2 routing. 70/70 verdi (Linux).
+- CPU (Release, Linux): voce 3 OSC × 4 unison (1 spettrale) a 2× ≈ 4.6% core @48 kHz. Memoria banco di fabbrica ≈ 38 MB (statico, condiviso).
+- Aperti: SIMD su unison; Bend/Sync/Asym aliasing solo contenuto dall'oversampling (no BLEP); GUI definitiva in fase GUI.
