@@ -3,6 +3,7 @@
 #include "shared/Lfo.h"
 #include "engines/wavetable/Wavetable.h"
 #include "engines/additive/AdditiveSpectrum.h"
+#include "engines/pd/PdCurve.h"
 #include <juce_data_structures/juce_data_structures.h>
 #include <array>
 #include <atomic>
@@ -25,6 +26,7 @@ public:
             setUserTable (u, {}, 0);
         for (auto& s : addSpectra)
             s.load (add::shapeTable (add::Saw));
+        phaseCurve.reset();
         for (int i = 0; i < lp::count; ++i)
             values[(size_t) i].store (lp::descs[(size_t) i].def, std::memory_order_relaxed);
         for (auto& t : custom)
@@ -62,6 +64,11 @@ public:
     add::CustomSpectrum& additiveSpectrum (int ab) noexcept { return addSpectra[(size_t) (ab != 0)]; }
     const add::CustomSpectrum& additiveSpectrum (int ab) const noexcept { return addSpectra[(size_t) (ab != 0)]; }
 
+    // Phase Distortion custom phase curve (§3E point editor), read lock-free by the engine.
+    // setPoints() from the message thread only.
+    pd::PhaseCurve& pdCurve() noexcept { return phaseCurve; }
+    const pd::PhaseCurve& pdCurve() const noexcept { return phaseCurve; }
+
     juce::ValueTree toTree (const juce::Identifier& type) const
     {
         juce::ValueTree t (type);
@@ -97,6 +104,15 @@ public:
             a.setProperty ("data", mb.toBase64Encoding(), nullptr);
             t.appendChild (a, nullptr);
         }
+        {
+            juce::ValueTree c ("PD_CURVE");
+            c.setProperty ("interp", phaseCurve.interpolation(), nullptr);
+            juce::StringArray pts;
+            for (const auto& q : phaseCurve.points())
+                pts.add (juce::String (q.x, 5) + " " + juce::String (q.y, 5));
+            c.setProperty ("points", pts.joinIntoString (" "), nullptr);
+            t.appendChild (c, nullptr);
+        }
         return t;
     }
 
@@ -127,6 +143,17 @@ public:
                 for (int k = 0; k < add::maxPartials; ++k)
                     addSpectra[(size_t) s].set (f, k, d[(size_t) (f * add::maxPartials + k)]);
         }
+        {
+            const auto c = t.getChildWithName ("PD_CURVE");
+            if (c.isValid())
+            {
+                auto v = juce::StringArray::fromTokens (c.getProperty ("points").toString(), " ", "");
+                std::vector<pd::PhaseCurve::Point> pts;
+                for (int i = 0; i + 1 < v.size(); i += 2)
+                    pts.push_back ({ v[i].getFloatValue(), v[i + 1].getFloatValue() });
+                phaseCurve.setPoints (std::move (pts), (int) c.getProperty ("interp", 0));
+            }
+        }
         for (auto w : t)
         {
             if (! w.hasType ("WT_USER")) continue;
@@ -147,5 +174,6 @@ private:
     std::array<UserTable, wt::numUserSlots> userRaw;
     std::array<wt::TableSlot, wt::numUserSlots> userSlots;
     std::array<add::CustomSpectrum, 2> addSpectra;
+    pd::PhaseCurve phaseCurve;
 };
 } // namespace chroma

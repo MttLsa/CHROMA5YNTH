@@ -120,7 +120,7 @@ private:
     std::array<LayerParamStore, numLayers> stores;
     std::array<LayerRuntime, numLayers> runtime {};
     std::array<LayerState, numLayers> layers;
-    std::array<std::unique_ptr<IEngine>, numLayers> analogEngines, addEngines, fmEngines, wtEngines, sineEngines;
+    std::array<std::unique_ptr<IEngine>, numLayers> analogEngines, addEngines, fmEngines, wtEngines, pdEngines;
     std::array<int, numLayers> engineIndex {};
     std::array<Voice, maxPoolVoices> voices {};
     MidiState midi;
