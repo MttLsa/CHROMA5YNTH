@@ -2,7 +2,7 @@
 
 # Preset di fabbrica
 
-Normalizzati con `tools/presetnorm`: nota C3, velocity 100, 4 s, render offline; trim per â14 LUFS short-term max, mai sopra â1 dBTP.
+Normalizzati con `tools/presetnorm`: nota C3, velocity 100, 4 s, render offline; trim per −14 LUFS short-term max, mai sopra −1 dBTP.
 
 | Preset | Categoria | Engine | Tag | LUFS (short-term max) | True peak | Trim |
 |---|---|---|---|---|---|---|

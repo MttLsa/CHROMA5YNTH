@@ -1,6 +1,6 @@
 # Preset, impostazioni globali e MIDI
 
-## Preset (§6)
+## Preset
 - **Multi preset** (`.c5multi`): stato completo (Layer, Master, Macro, Automation Slot). Non contiene le impostazioni
   globali: Master Tune, Oversampling, MPE, mappature MIDI learn e microtuning restano quelli correnti.
 - **Layer preset** (`.c5layer`): un singolo synth (parametri comuni + engine), caricabile in qualunque slot 1–12.
@@ -14,7 +14,7 @@
   per arrivare a −14 LUFS short-term max, mai sopra −1 dBTP: **Preset Trim** (Multi, sommato al Master Volume) e
   **Trim** del Layer (Layer preset, dopo le Layer FX). Strumento: `tools/presetnorm` (vedi `presets/README.md`).
 
-## Undo/Redo, A/B, Randomize, Init (§5)
+## Undo/Redo, A/B, Randomize, Init
 - **Undo/Redo**: ogni modifica (anche dei parametri interni dei Layer) diventa un passo dopo 0.4 s di inattività;
   caricamento preset, A/B, Randomize e Init sono annullabili. Le impostazioni globali sono escluse.
 - **A/B**: due stati indipendenti; B alla prima apertura è una copia di A. **A>B** copia lo stato corrente nell'altro slot.
