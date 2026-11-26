@@ -68,6 +68,8 @@ public:
     bool loadLayerPreset (int layer, const juce::File&);
     const juce::String& getCurrentPresetName() const noexcept { return currentPresetName; }
 
+    juce::Point<int> editorSize;                     // last editor size (saved with the host state)
+
 private:
     void audioProcessorParameterChanged (juce::AudioProcessor*, int, float) override { ++paramEdits; }
     void audioProcessorChanged (juce::AudioProcessor*, const juce::AudioProcessorListener::ChangeDetails&) override {}

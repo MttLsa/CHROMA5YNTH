@@ -39,6 +39,30 @@ inline constexpr float controlRadius = 2.5f;
 
 namespace chroma
 {
+// UTF-8 C string (source literals, generated tables) -> juce::String. juce::String (const char*) assumes ASCII.
+inline juce::String utf8 (const char* s) { return juce::String (juce::CharPointer_UTF8 (s)); }
+
+// Generic parameter binding used by the final GUI: host parameters (APVTS) or internal layer
+// parameters (LayerParamStore). Values are plain (not normalised). get() must be lock-free.
+struct Binding
+{
+    enum class Kind { Float, Int, Bool, Choice };
+    juce::String name, unit, tooltip;
+    Kind kind = Kind::Float;
+    float min = 0.0f, max = 1.0f, def = 0.0f, skewCentre = 0.0f;
+    bool hasSkew = false;
+    juce::StringArray choices;                 // Choice labels (Bool: Off/On)
+    juce::StringArray groups;                  // optional sub-menu per choice (long lists)
+    juce::NormalisableRange<float> hostRange;  // used when hasHostRange (host parameters)
+    bool hasHostRange = false;
+    std::function<float()> get;
+    std::function<void (float)> set;
+    std::function<void()> beginGesture, endGesture;
+    juce::String format (float v) const;       // value + unit for readouts
+    juce::NormalisableRange<double> range() const;
+};
+using BindingPtr = std::shared_ptr<Binding>;
+
 class StyleLookAndFeel : public juce::LookAndFeel_V4
 {
 public:
@@ -81,6 +105,8 @@ class Knob : public juce::Component
 public:
     explicit Knob (const juce::String& caption = {}, juce::Colour accent = style::accent);
     void attach (juce::AudioProcessorValueTreeState&, const juce::String& paramId);
+    void bind (BindingPtr);
+    void refresh();                                // pulls the bound value (GUI timer)
     void setAccent (juce::Colour);
     void resized() override;
     void paint (juce::Graphics&) override;
@@ -90,6 +116,7 @@ private:
     juce::String caption;
     juce::Colour accent;
     juce::RangedAudioParameter* param = nullptr;
+    BindingPtr binding;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> att;
 };
 
@@ -99,6 +126,8 @@ class Segmented : public juce::Component, public juce::SettableTooltipClient
 public:
     explicit Segmented (juce::Colour accentColour = style::accent) : accent (accentColour) {}
     void attach (juce::AudioProcessorValueTreeState&, const juce::String& paramId, juce::StringArray labels = {});
+    void bind (BindingPtr);
+    void refresh();
     void setCaption (const juce::String& c) { caption = c; repaint(); }
     void paint (juce::Graphics&) override;
     void mouseDown (const juce::MouseEvent&) override;
@@ -109,6 +138,7 @@ private:
     juce::String caption;
     juce::StringArray labels;
     int index = 0;
+    BindingPtr binding;
     juce::RangedAudioParameter* param = nullptr;
     std::unique_ptr<juce::ParameterAttachment> att;
 };

@@ -104,6 +104,11 @@ public:
     int activeVoiceCount() const noexcept;
     int poolSize() const noexcept { return pool; }
 
+    // GUI meters (lock-free): peaks held by the audio thread until the GUI takes them.
+    float takeLayerPeak (int layer) noexcept { return meterLayer[(size_t) layer].exchange (0.0f, std::memory_order_relaxed); }
+    float takeMasterPeak (int ch) noexcept { return meterMaster[(size_t) (ch != 0)].exchange (0.0f, std::memory_order_relaxed); }
+    int meterVoiceCount (int layer) const noexcept { return meterVoices[(size_t) layer].load (std::memory_order_relaxed); }
+
 private:
     struct HostLayer
     {
@@ -139,6 +144,7 @@ private:
     int pickSteal (int layer) const noexcept;
     void startVoice (int v, const VoiceStart&) noexcept;
     void renderChunk (float* const* out, int numChannels, int start, int n) noexcept;
+    void updateMeters (const juce::AudioBuffer<float>&, int numCh, int numSamples) noexcept;
     void updateLayerFx() noexcept;
     void updateMasterFx() noexcept;
     int layerVoiceCount (int layer) const noexcept;
@@ -157,6 +163,10 @@ private:
     std::array<LayerParamStore, numLayers> stores;
     std::array<LayerRuntime, numLayers> runtime {};
     std::array<LayerState, numLayers> layers;
+    std::array<float, numLayers> blockPeak {};
+    std::array<std::atomic<float>, numLayers> meterLayer {};
+    std::array<std::atomic<float>, 2> meterMaster {};
+    std::array<std::atomic<int>, numLayers> meterVoices {};
     std::array<std::unique_ptr<IEngine>, numLayers> analogEngines, addEngines, fmEngines, wtEngines, pdEngines;
     std::array<int, numLayers> engineIndex {};
     std::array<Voice, maxPoolVoices> voices {};

@@ -54,7 +54,14 @@ juce::AudioProcessorEditor* ChromaProcessor::createEditor()
 void ChromaProcessor::getStateInformation (juce::MemoryBlock& destData)
 {
     if (auto xml = captureState (true).createXml())
+    {
+        if (editorSize.x > 0)
+        {
+            xml->setAttribute ("uiWidth", editorSize.x);
+            xml->setAttribute ("uiHeight", editorSize.y);
+        }
         copyXmlToBinary (*xml, destData);
+    }
 }
 
 void ChromaProcessor::setStateInformation (const void* data, int sizeInBytes)
@@ -62,6 +69,10 @@ void ChromaProcessor::setStateInformation (const void* data, int sizeInBytes)
     if (auto xml = getXmlFromBinary (data, sizeInBytes))
         if (xml->hasTagName (state.state.getType()))
         {
+            if (xml->hasAttribute ("uiWidth"))
+                editorSize = { xml->getIntAttribute ("uiWidth"), xml->getIntAttribute ("uiHeight") };
+            xml->removeAttribute ("uiWidth");
+            xml->removeAttribute ("uiHeight");
             restoreState (juce::ValueTree::fromXml (*xml), false);
             history.reset();
             markClean();

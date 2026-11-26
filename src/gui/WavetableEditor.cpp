@@ -132,7 +132,7 @@ struct WavetableEditor::HarmonicView final : public juce::Component
     void paint (juce::Graphics& g) override
     {
         const auto r = getLocalBounds().toFloat();
-        framePanel (g, r, showPhase ? "Harmonics · Phase" : "Harmonics · Amplitude");
+        framePanel (g, r, showPhase ? utf8 ("Harmonics · Phase") : utf8 ("Harmonics · Amplitude"));
         const auto b = body (r);
         if (amp.empty()) return;
         const float bw = b.getWidth() / (float) viewHarmonics;
@@ -185,7 +185,7 @@ WavetableEditor::WavetableEditor (Synth& s) : synth (s)
 
     for (int l = 1; l <= numLayers; ++l) layerBox.addItem ("Layer " + juce::String (l), l);
     for (int u = 1; u <= wt::numUserSlots; ++u) slotBox.addItem ("User " + juce::String (u), u);
-    factoryBox.setTextWhenNothingSelected ("Factory…");
+    factoryBox.setTextWhenNothingSelected (utf8 ("Factory…"));
     for (int i = 0; i < wt::numFactoryTables(); ++i) factoryBox.addItem (wt::factoryName (i), i + 1);
     interpBox.addItemList ({ "None", "Linear", "Spectral" }, 1);
     interpBox.setSelectedId (3, juce::dontSendNotification);
@@ -224,7 +224,7 @@ WavetableEditor::WavetableEditor (Synth& s) : synth (s)
     setupSlider (frameSlider, frameLabel, "Frame", 1, 1, 1, "Frame corrente.");
     setupSlider (countSlider, countLabel, "Frames", 1, wt::maxFrames, 32, "Numero di frame per Resample.");
     setupSlider (morphSlider, morphLabel, "Morph To", 1, 1, 1, "Frame di arrivo del Morph (dal frame corrente).");
-    setupSlider (smoothSlider, smoothLabel, "Smooth", 1, 100, 30, "Quantità di smoothing (%).");
+    setupSlider (smoothSlider, smoothLabel, "Smooth", 1, 100, 30, utf8 ("Quantità di smoothing (%)."));
     frameSlider.onValueChange = [this]
     {
         current = juce::jlimit (0, doc.numFrames() - 1, (int) frameSlider.getValue() - 1);
