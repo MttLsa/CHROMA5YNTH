@@ -1,5 +1,6 @@
 #include "Synth.h"
 #include "engines/analog/AnalogEngine.h"
+#include "engines/additive/AdditiveEngine.h"
 #include "engines/fm/FmEngine.h"
 #include "engines/sine/SineEngine.h"
 #include "engines/wavetable/WavetableEngine.h"
@@ -51,8 +52,13 @@ Synth::Synth (juce::AudioProcessor& p, juce::AudioProcessorValueTreeState& s) : 
               get (ParamIDs::layerTranspose[l]), get (ParamIDs::layerKeyLo[l]), get (ParamIDs::layerKeyHi[l]),
               get (ParamIDs::layerVelLo[l]), get (ParamIDs::layerVelHi[l]), get (ParamIDs::layerMidiChannel[l]),
               get (ParamIDs::layerMaxVoices[l]) };
-        // Analog (§3A), FM6 (§3C), Wavetable (§3D); later engines use the test sine engine until implemented.
+        // Analog (§3A), Additive (§3B), FM6 (§3C), Wavetable (§3D); PD uses the test sine engine until implemented.
         analogEngines[l] = std::make_unique<AnalogEngine>();
+        {
+            auto a = std::make_unique<AdditiveEngine>();
+            a->setCustomSpectra (&stores[l].additiveSpectrum (0), &stores[l].additiveSpectrum (1));
+            addEngines[l] = std::move (a);
+        }
         fmEngines[l] = std::make_unique<FmEngine>();
         {
             auto w = std::make_unique<WavetableEngine>();
@@ -81,6 +87,7 @@ void Synth::prepare (double sr, int maxBlockSize, int numOutputChannels)
     {
         analogEngines[l]->prepare (sr, controlBlock, maxPoolVoices);
         fmEngines[l]->prepare (sr, controlBlock, maxPoolVoices);
+        addEngines[l]->prepare (sr, controlBlock, maxPoolVoices);
         wtEngines[l]->prepare (sr, controlBlock, maxPoolVoices);
         sineEngines[l]->prepare (sr, controlBlock, maxPoolVoices);
         layers[l].bufL.assign (controlBlock, 0.0f);
@@ -186,7 +193,7 @@ void Synth::readHostParams() noexcept
             st.stackSize = 0;
             st.monoVoice = -1;
             engineIndex[l] = e;
-            runtime[l].engine = e == 0 ? analogEngines[l].get() : e == 2 ? fmEngines[l].get()
+            runtime[l].engine = e == 0 ? analogEngines[l].get() : e == 1 ? addEngines[l].get() : e == 2 ? fmEngines[l].get()
                              : e == 3 ? wtEngines[l].get() : sineEngines[l].get();
         }
     }

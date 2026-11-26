@@ -1,0 +1,77 @@
+# Engine ADDITIVE (§3B). Parametri interni di ogni Layer (attivi quando L{n} Engine = Additive).
+# I dati per parziale (Ratio, Amp, Phase, Detune, Fine, Pan, Polarity, Mute, Solo) degli spettri
+# Custom A/B non sono parametri: sono tabelle del Layer (editor a barre), salvate nello stato.
+scope: layer
+
+lists:
+  add_shapes: [Custom, Sine, Saw, Square, Triangle, Pulse 25%, Flat, Organ, Hollow, Bell, Vocal A, Vocal O, Strings, Glass]
+  add_distributions: [Spectrum, Harmonic, Odd, Octaves]
+  add_am_waves: [Sine, Triangle, Square, Saw]
+
+blocks:
+  - section: "Additive · Spectrum"
+    params:
+      - { id: add_partials, name: Partials, type: int, min: 1, max: 256, default: 64, description: "Numero di parziali (1–256). Le parziali oltre Nyquist vengono mutate automaticamente; quelle a livello 0 non costano CPU." }
+      - { id: add_spectrum_a, name: Spectrum A, type: choice, choices_from: add_shapes, default: Saw, description: "Spettro A: forma di fabbrica o Custom (tabella per parziale disegnata nell'editor a barre)." }
+      - { id: add_spectrum_b, name: Spectrum B, type: choice, choices_from: add_shapes, default: Square, description: "Spettro B, destinazione del Morph." }
+      - { id: add_morph, name: Morph, type: float, min: 0.0, max: 1.0, default: 0.0, unit: "%", description: "Interpola ampiezza (con polarità), rapporto, pan, detune e fine di ogni parziale da A (0%) a B (100%)." }
+      - { id: add_distribution, name: Distribution, type: choice, choices_from: add_distributions, default: Spectrum, description: "Disposizione in frequenza: Spectrum = rapporti degli spettri A/B; Harmonic = 1, 2, 3…; Odd = 1, 3, 5…; Octaves = 1, 2, 4, 8…" }
+      - { id: add_tilt, name: Tilt, type: float, min: -24.0, max: 24.0, default: 0.0, unit: dB/oct, description: "Inclinazione dello spettro in dB per ottava rispetto alla fondamentale." }
+      - { id: add_odd, name: Odd Level, type: float, min: 0.0, max: 1.0, default: 1.0, unit: "%", description: "Livello delle parziali dispari (3, 5, 7…; la fondamentale non è toccata)." }
+      - { id: add_even, name: Even Level, type: float, min: 0.0, max: 1.0, default: 1.0, unit: "%", description: "Livello delle parziali pari (2, 4, 6…)." }
+      - { id: add_balance, name: Balance, type: float, min: -1.0, max: 1.0, default: 0.0, description: "Bilanciamento lineare tra parziali basse (−) e alte (+) sull'insieme delle parziali." }
+      - { id: add_brightness, name: Brightness, type: float, min: 0.0, max: 1.0, default: 1.0, unit: "%", description: "Punto (in numero di parziale, 1…256 logaritmico) oltre il quale agisce lo Slope." }
+      - { id: add_slope, name: Slope, type: float, min: 0.0, max: 48.0, default: 12.0, unit: dB/oct, description: "Pendenza dell'attenuazione oltre il punto di Brightness (filtro spettrale che segue la tastiera)." }
+      - { id: add_density, name: Density, type: float, min: 0.0, max: 1.0, default: 1.0, unit: "%", description: "Diradamento: sotto il 100% le parziali spariscono in un ordine pseudo-casuale fisso (la fondamentale resta)." }
+      - { id: add_inharm, name: Inharmonicity, type: float, min: 0.0, max: 1.0, default: 0.0, unit: "%", description: "Inarmonicità tipo corda rigida: f·√(1+B·r²), le parziali alte salgono progressivamente." }
+      - { id: add_stretch, name: Stretch, type: float, min: -1.0, max: 1.0, default: 0.0, description: "Stira (+) o comprime (−) i rapporti: r^(1 + 0.1·Stretch)." }
+      - { id: add_shift, name: Shift, type: float, min: -2000.0, max: 2000.0, default: 0.0, unit: Hz, description: "Spostamento lineare in Hz di tutte le parziali (spettri inarmonici); le parziali a frequenza ≤ 0 vengono mutate." }
+      - { id: add_phase_reset, name: Phase Reset, type: bool, default: true, description: "On = le fasi ripartono dai valori Phase dello spettro a ogni nota; Off = fasi casuali per nota." }
+      - { id: add_output, name: Additive Output, type: float, min: 0.0, max: 1.0, default: 0.7, unit: "%", description: "Livello d'uscita prima del filtro." }
+
+  - section: "Additive · Partial Env"
+    params:
+      - { id: add_penv_amount, name: Partial Env Amount, type: float, min: 0.0, max: 1.0, default: 0.0, unit: "%", description: "Profondità dell'inviluppo per parziale (0 = spento, zero CPU). Ogni parziale ha il proprio inviluppo con tempi scalati." }
+      - { id: add_penv_attack, name: Partial Env Attack, type: float, min: 0.0, max: 10.0, default: 0.005, skew: 0.5, unit: s, mod_dest: false, description: "Attacco (della fondamentale; le altre parziali seguono Scaling)." }
+      - { id: add_penv_decay, name: Partial Env Decay, type: float, min: 0.0, max: 10.0, default: 1.0, skew: 0.5, unit: s, mod_dest: false, description: "Decadimento." }
+      - { id: add_penv_sustain, name: Partial Env Sustain, type: float, min: 0.0, max: 1.0, default: 0.0, unit: "%", mod_dest: false, description: "Livello di sustain." }
+      - { id: add_penv_release, name: Partial Env Release, type: float, min: 0.0, max: 20.0, default: 0.5, skew: 1.0, unit: s, mod_dest: false, description: "Rilascio (la voce termina con l'Amp Env del Layer)." }
+      - { id: add_penv_curve, name: Partial Env Curve, type: choice, choices_from: curves, default: Exponential, description: "Curva di tutti i segmenti." }
+      - { id: add_penv_scaling, name: Partial Env Scaling, type: float, min: -1.0, max: 1.0, default: 0.5, description: "Scala i tempi con il numero di parziale: + = parziali alte più rapide (tempo / n^Scaling), − = più lente." }
+      - { id: add_penv_dist, name: Partial Env Distribution, type: float, min: -1.0, max: 1.0, default: 0.5, description: "Distribuzione della profondità: + = più effetto sulle parziali alte, − = sulle basse, 0 = uguale." }
+
+  - section: "Additive · Spectral Env"
+    params:
+      - { id: add_senv_amount, name: Spectral Env Amount, type: float, min: -1.0, max: 1.0, default: 0.0, description: "Profondità dell'inviluppo spettrale su Tilt e Position (bipolare)." }
+      - { id: add_senv_attack, name: Spectral Env Attack, type: float, min: 0.0, max: 10.0, default: 0.005, skew: 0.5, unit: s, mod_dest: false, description: "Attacco." }
+      - { id: add_senv_decay, name: Spectral Env Decay, type: float, min: 0.0, max: 10.0, default: 0.5, skew: 0.5, unit: s, mod_dest: false, description: "Decadimento." }
+      - { id: add_senv_sustain, name: Spectral Env Sustain, type: float, min: 0.0, max: 1.0, default: 0.0, unit: "%", mod_dest: false, description: "Livello di sustain." }
+      - { id: add_senv_release, name: Spectral Env Release, type: float, min: 0.0, max: 20.0, default: 0.5, skew: 1.0, unit: s, mod_dest: false, description: "Rilascio." }
+      - { id: add_senv_curve, name: Spectral Env Curve, type: choice, choices_from: curves, default: Exponential, description: "Curva di decay e release." }
+      - { id: add_senv_tilt, name: Spectral Env Tilt, type: float, min: -24.0, max: 24.0, default: 12.0, unit: dB/oct, description: "Tilt aggiunto al picco dell'inviluppo (× Amount)." }
+      - { id: add_senv_position, name: Spectral Env Position, type: float, min: -1.0, max: 1.0, default: 0.0, description: "Spostamento del Morph A↔B al picco dell'inviluppo (× Amount)." }
+
+  - section: "Additive · FM"
+    params:
+      - { id: add_fm_amount, name: FM Amount, type: float, min: 0.0, max: 1.0, default: 0.0, unit: "%", description: "Deviazione di frequenza delle parziali (100% = ±100% della frequenza alla Depth massima). 0 = spento." }
+      - { id: add_fm_ratio, name: FM Ratio, type: float, min: 0.0625, max: 16.0, default: 1.0, skew: 2.0, unit: x, description: "Frequenza del modulatore rispetto alla nota." }
+      - { id: add_fm_freq, name: FM Frequency, type: float, min: 0.0, max: 2000.0, default: 0.0, skew: 200.0, unit: Hz, description: "Frequenza fissa sommata a quella del modulatore (da sola = vibrato/modulazione non intonata)." }
+      - { id: add_fm_feedback, name: FM Feedback, type: float, min: 0.0, max: 1.0, default: 0.0, unit: "%", description: "Auto-modulazione del modulatore (da sinusoide verso dente di sega)." }
+      - { id: add_fm_depth, name: FM Depth, type: float, min: 0.0, max: 1.0, default: 1.0, unit: "%", description: "Come la deviazione segue il rapporto della parziale: 100% = proporzionale (struttura armonica conservata), 0% = uguale in Hz per tutte (alone inarmonico)." }
+      - { id: add_fm_env, name: FM Env Amount, type: float, min: -1.0, max: 1.0, default: 0.0, description: "Inviluppo spettrale sommato a FM Amount." }
+
+  - section: "Additive · AM"
+    params:
+      - { id: add_am_amount, name: AM Amount, type: float, min: 0.0, max: 1.0, default: 0.0, unit: "%", description: "Profondità della modulazione d'ampiezza (0 = spento)." }
+      - { id: add_am_freq, name: AM Freq, type: float, min: 0.1, max: 5000.0, default: 5.0, skew: 50.0, unit: Hz, description: "Frequenza del modulatore AM (lenta = tremolo, audio = bande laterali)." }
+      - { id: add_am_depth, name: AM Depth, type: float, min: 0.0, max: 1.0, default: 0.0, unit: "%", description: "Controfase tra parziali dispari e pari: 0% = tutte insieme, 100% = le pari in opposizione (lo spettro alterna tra dispari e pari)." }
+      - { id: add_am_wave, name: AM Wave, type: choice, choices_from: add_am_waves, default: Sine, description: "Forma del modulatore AM (Square e Saw band-limited)." }
+      - { id: add_am_env, name: AM Env Amount, type: float, min: -1.0, max: 1.0, default: 0.0, description: "Inviluppo spettrale sommato ad AM Amount." }
+
+  - section: "Additive · Stereo"
+    params:
+      - { id: add_width, name: Width, type: float, min: 0.0, max: 1.0, default: 1.0, unit: "%", description: "Ampiezza stereo complessiva delle parziali (0 = mono)." }
+      - { id: add_spread, name: Spread, type: float, min: 0.0, max: 1.0, default: 0.0, unit: "%", description: "Alterna le parziali tra sinistra e destra (la fondamentale resta al centro)." }
+      - { id: add_stereo_pos, name: Partial Stereo Position, type: float, min: -1.0, max: 1.0, default: 0.0, description: "Distribuisce le parziali da un lato all'altro secondo la frequenza (− basse a sinistra, + basse a destra)." }
+      - { id: add_stereo_mod, name: Stereo Modulation, type: float, min: 0.0, max: 1.0, default: 0.0, unit: "%", description: "Movimento lento e indipendente del pan di ogni parziale." }
+      - { id: add_ms_balance, name: Mid/Side Balance, type: float, min: -1.0, max: 1.0, default: 0.0, description: "− = più Mid (verso mono), + = più Side." }
