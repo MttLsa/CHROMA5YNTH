@@ -2,6 +2,7 @@
 #include "LayerParams.h"
 #include "shared/Lfo.h"
 #include "engines/wavetable/Wavetable.h"
+#include "engines/additive/AdditiveSpectrum.h"
 #include <juce_data_structures/juce_data_structures.h>
 #include <array>
 #include <atomic>
@@ -22,6 +23,8 @@ public:
     {
         for (int u = 0; u < wt::numUserSlots; ++u)
             setUserTable (u, {}, 0);
+        for (auto& s : addSpectra)
+            s.load (add::shapeTable (add::Saw));
         for (int i = 0; i < lp::count; ++i)
             values[(size_t) i].store (lp::descs[(size_t) i].def, std::memory_order_relaxed);
         for (auto& t : custom)
@@ -55,6 +58,10 @@ public:
     const UserTable& userTable (int slot) const noexcept { return userRaw[(size_t) slot]; }
     const wt::TableSlot* userTableSlots() const noexcept { return userSlots.data(); }
 
+    // Additive Custom spectra A (0) / B (1) (§3B bar editor), read lock-free by the engine.
+    add::CustomSpectrum& additiveSpectrum (int ab) noexcept { return addSpectra[(size_t) (ab != 0)]; }
+    const add::CustomSpectrum& additiveSpectrum (int ab) const noexcept { return addSpectra[(size_t) (ab != 0)]; }
+
     juce::ValueTree toTree (const juce::Identifier& type) const
     {
         juce::ValueTree t (type);
@@ -77,6 +84,19 @@ public:
             w.setProperty ("data", mb.toBase64Encoding(), nullptr);
             t.appendChild (w, nullptr);
         }
+        for (size_t s = 0; s < addSpectra.size(); ++s)
+        {
+            std::vector<float> d ((size_t) add::numFields * add::maxPartials);
+            for (int f = 0; f < add::numFields; ++f)
+                for (int k = 0; k < add::maxPartials; ++k)
+                    d[(size_t) (f * add::maxPartials + k)] = addSpectra[s].get (f, k);
+            juce::ValueTree a ("ADD_SPECTRUM");
+            a.setProperty ("slot", (int) s, nullptr);
+            a.setProperty ("fields", add::numFields, nullptr);
+            juce::MemoryBlock mb (d.data(), d.size() * sizeof (float));
+            a.setProperty ("data", mb.toBase64Encoding(), nullptr);
+            t.appendChild (a, nullptr);
+        }
         return t;
     }
 
@@ -93,6 +113,19 @@ public:
             auto pts = juce::StringArray::fromTokens (t.getProperty (key).toString(), " ", "");
             for (int i = 0; i < juce::jmin (pts.size(), lfoCustomPoints); ++i)
                 custom[l][(size_t) i].store (juce::jlimit (-1.0f, 1.0f, pts[i].getFloatValue()));
+        }
+        for (auto a : t)
+        {
+            if (! a.hasType ("ADD_SPECTRUM")) continue;
+            const int s = a.getProperty ("slot", -1), nf = a.getProperty ("fields", 0);
+            juce::MemoryBlock mb;
+            if (s < 0 || s > 1 || nf <= 0 || ! mb.fromBase64Encoding (a.getProperty ("data").toString())
+                || mb.getSize() < (size_t) nf * add::maxPartials * sizeof (float))
+                continue;
+            const auto* d = static_cast<const float*> (mb.getData());
+            for (int f = 0; f < juce::jmin (nf, (int) add::numFields); ++f)
+                for (int k = 0; k < add::maxPartials; ++k)
+                    addSpectra[(size_t) s].set (f, k, d[(size_t) (f * add::maxPartials + k)]);
         }
         for (auto w : t)
         {
@@ -113,5 +146,6 @@ private:
     std::array<LfoCustomTable, 4> custom;
     std::array<UserTable, wt::numUserSlots> userRaw;
     std::array<wt::TableSlot, wt::numUserSlots> userSlots;
+    std::array<add::CustomSpectrum, 2> addSpectra;
 };
 } // namespace chroma

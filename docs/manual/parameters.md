@@ -125,12 +125,91 @@
 | Mod N Enable | Off / On | On |  | Abilita lo slot N. |
 | Mod N Source | 31 voci | Off |  | Sorgente dello slot N. |
 | Mod N CC | 0 … 127 | 1 |  | Numero CC quando la sorgente è MIDI CC. |
-| Mod N Destination | 331 voci | Off |  | Destinazione: qualunque parametro continuo del Layer. |
+| Mod N Destination | 364 voci | Off |  | Destinazione: qualunque parametro continuo del Layer. |
 | Mod N Amount | -1.0 … 1.0 | 0.0 |  | Quantità ±100% del range della destinazione. |
 | Mod N Via | 31 voci | Off |  | Sorgente che scala l'amount (Off = 1). |
 | Mod N Curve | Linear / Exponential / Logarithmic / S-Curve | Linear |  | Curva applicata alla sorgente. |
 | Mod N Smoothing | 0.0 … 1.0 | 0.0 | % | Smoothing della modulazione (0–500 ms). |
 | Mod N Invert | Off / On | Off |  | Inverte la sorgente. |
+
+## Additive · Spectrum
+
+| Parametro | Range | Default | Unità | Descrizione |
+|---|---|---|---|---|
+| Partials | 1 … 256 | 64 |  | Numero di parziali (1–256). Le parziali oltre Nyquist vengono mutate automaticamente; quelle a livello 0 non costano CPU. |
+| Spectrum A | Custom / Sine / Saw / Square / Triangle / Pulse 25% / Flat / Organ / Hollow / Bell / Vocal A / Vocal O / Strings / Glass | Saw |  | Spettro A: forma di fabbrica o Custom (tabella per parziale disegnata nell'editor a barre). |
+| Spectrum B | Custom / Sine / Saw / Square / Triangle / Pulse 25% / Flat / Organ / Hollow / Bell / Vocal A / Vocal O / Strings / Glass | Square |  | Spettro B, destinazione del Morph. |
+| Morph | 0.0 … 1.0 | 0.0 | % | Interpola ampiezza (con polarità), rapporto, pan, detune e fine di ogni parziale da A (0%) a B (100%). |
+| Distribution | Spectrum / Harmonic / Odd / Octaves | Spectrum |  | Disposizione in frequenza: Spectrum = rapporti degli spettri A/B; Harmonic = 1, 2, 3…; Odd = 1, 3, 5…; Octaves = 1, 2, 4, 8… |
+| Tilt | -24.0 … 24.0 | 0.0 | dB/oct | Inclinazione dello spettro in dB per ottava rispetto alla fondamentale. |
+| Odd Level | 0.0 … 1.0 | 1.0 | % | Livello delle parziali dispari (3, 5, 7…; la fondamentale non è toccata). |
+| Even Level | 0.0 … 1.0 | 1.0 | % | Livello delle parziali pari (2, 4, 6…). |
+| Balance | -1.0 … 1.0 | 0.0 |  | Bilanciamento lineare tra parziali basse (−) e alte (+) sull'insieme delle parziali. |
+| Brightness | 0.0 … 1.0 | 1.0 | % | Punto (in numero di parziale, 1…256 logaritmico) oltre il quale agisce lo Slope. |
+| Slope | 0.0 … 48.0 | 12.0 | dB/oct | Pendenza dell'attenuazione oltre il punto di Brightness (filtro spettrale che segue la tastiera). |
+| Density | 0.0 … 1.0 | 1.0 | % | Diradamento: sotto il 100% le parziali spariscono in un ordine pseudo-casuale fisso (la fondamentale resta). |
+| Inharmonicity | 0.0 … 1.0 | 0.0 | % | Inarmonicità tipo corda rigida: f·√(1+B·r²), le parziali alte salgono progressivamente. |
+| Stretch | -1.0 … 1.0 | 0.0 |  | Stira (+) o comprime (−) i rapporti: r^(1 + 0.1·Stretch). |
+| Shift | -2000.0 … 2000.0 | 0.0 | Hz | Spostamento lineare in Hz di tutte le parziali (spettri inarmonici); le parziali a frequenza ≤ 0 vengono mutate. |
+| Phase Reset | Off / On | On |  | On = le fasi ripartono dai valori Phase dello spettro a ogni nota; Off = fasi casuali per nota. |
+| Additive Output | 0.0 … 1.0 | 0.7 | % | Livello d'uscita prima del filtro. |
+
+## Additive · Partial Env
+
+| Parametro | Range | Default | Unità | Descrizione |
+|---|---|---|---|---|
+| Partial Env Amount | 0.0 … 1.0 | 0.0 | % | Profondità dell'inviluppo per parziale (0 = spento, zero CPU). Ogni parziale ha il proprio inviluppo con tempi scalati. |
+| Partial Env Attack | 0.0 … 10.0 | 0.005 | s | Attacco (della fondamentale; le altre parziali seguono Scaling). |
+| Partial Env Decay | 0.0 … 10.0 | 1.0 | s | Decadimento. |
+| Partial Env Sustain | 0.0 … 1.0 | 0.0 | % | Livello di sustain. |
+| Partial Env Release | 0.0 … 20.0 | 0.5 | s | Rilascio (la voce termina con l'Amp Env del Layer). |
+| Partial Env Curve | Linear / Exponential / Logarithmic | Exponential |  | Curva di tutti i segmenti. |
+| Partial Env Scaling | -1.0 … 1.0 | 0.5 |  | Scala i tempi con il numero di parziale: + = parziali alte più rapide (tempo / n^Scaling), − = più lente. |
+| Partial Env Distribution | -1.0 … 1.0 | 0.5 |  | Distribuzione della profondità: + = più effetto sulle parziali alte, − = sulle basse, 0 = uguale. |
+
+## Additive · Spectral Env
+
+| Parametro | Range | Default | Unità | Descrizione |
+|---|---|---|---|---|
+| Spectral Env Amount | -1.0 … 1.0 | 0.0 |  | Profondità dell'inviluppo spettrale su Tilt e Position (bipolare). |
+| Spectral Env Attack | 0.0 … 10.0 | 0.005 | s | Attacco. |
+| Spectral Env Decay | 0.0 … 10.0 | 0.5 | s | Decadimento. |
+| Spectral Env Sustain | 0.0 … 1.0 | 0.0 | % | Livello di sustain. |
+| Spectral Env Release | 0.0 … 20.0 | 0.5 | s | Rilascio. |
+| Spectral Env Curve | Linear / Exponential / Logarithmic | Exponential |  | Curva di decay e release. |
+| Spectral Env Tilt | -24.0 … 24.0 | 12.0 | dB/oct | Tilt aggiunto al picco dell'inviluppo (× Amount). |
+| Spectral Env Position | -1.0 … 1.0 | 0.0 |  | Spostamento del Morph A↔B al picco dell'inviluppo (× Amount). |
+
+## Additive · FM
+
+| Parametro | Range | Default | Unità | Descrizione |
+|---|---|---|---|---|
+| FM Amount | 0.0 … 1.0 | 0.0 | % | Deviazione di frequenza delle parziali (100% = ±100% della frequenza alla Depth massima). 0 = spento. |
+| FM Ratio | 0.0625 … 16.0 | 1.0 | x | Frequenza del modulatore rispetto alla nota. |
+| FM Frequency | 0.0 … 2000.0 | 0.0 | Hz | Frequenza fissa sommata a quella del modulatore (da sola = vibrato/modulazione non intonata). |
+| FM Feedback | 0.0 … 1.0 | 0.0 | % | Auto-modulazione del modulatore (da sinusoide verso dente di sega). |
+| FM Depth | 0.0 … 1.0 | 1.0 | % | Come la deviazione segue il rapporto della parziale: 100% = proporzionale (struttura armonica conservata), 0% = uguale in Hz per tutte (alone inarmonico). |
+| FM Env Amount | -1.0 … 1.0 | 0.0 |  | Inviluppo spettrale sommato a FM Amount. |
+
+## Additive · AM
+
+| Parametro | Range | Default | Unità | Descrizione |
+|---|---|---|---|---|
+| AM Amount | 0.0 … 1.0 | 0.0 | % | Profondità della modulazione d'ampiezza (0 = spento). |
+| AM Freq | 0.1 … 5000.0 | 5.0 | Hz | Frequenza del modulatore AM (lenta = tremolo, audio = bande laterali). |
+| AM Depth | 0.0 … 1.0 | 0.0 | % | Controfase tra parziali dispari e pari: 0% = tutte insieme, 100% = le pari in opposizione (lo spettro alterna tra dispari e pari). |
+| AM Wave | Sine / Triangle / Square / Saw | Sine |  | Forma del modulatore AM (Square e Saw band-limited). |
+| AM Env Amount | -1.0 … 1.0 | 0.0 |  | Inviluppo spettrale sommato ad AM Amount. |
+
+## Additive · Stereo
+
+| Parametro | Range | Default | Unità | Descrizione |
+|---|---|---|---|---|
+| Width | 0.0 … 1.0 | 1.0 | % | Ampiezza stereo complessiva delle parziali (0 = mono). |
+| Spread | 0.0 … 1.0 | 0.0 | % | Alterna le parziali tra sinistra e destra (la fondamentale resta al centro). |
+| Partial Stereo Position | -1.0 … 1.0 | 0.0 |  | Distribuisce le parziali da un lato all'altro secondo la frequenza (− basse a sinistra, + basse a destra). |
+| Stereo Modulation | 0.0 … 1.0 | 0.0 | % | Movimento lento e indipendente del pan di ogni parziale. |
+| Mid/Side Balance | -1.0 … 1.0 | 0.0 |  | − = più Mid (verso mono), + = più Side. |
 
 ## Analog · OSC N
 
