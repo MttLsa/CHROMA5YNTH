@@ -103,3 +103,12 @@
 - Fix: stringhe UTF-8 (sezioni "·", tooltip italiani) via `utf8()`.
 - tests/test_gui.cpp: scala/limiti/stato, tutte le pagine engine, meter; snapshot dev `"GUI: snapshots"`. 116/116 verdi (Linux, xvfb).
 - Aperti: editor tabella LFO Custom; GUI tuning/MPE avanzata solo via menu.
+
+## FASE 11 – Preset di fabbrica + normalizzazione LUFS ✅
+- Trim come parametri: `preset_trim` (host, Master, gui/automazione off, sommato al Master Volume) e `layer_trim` (Layer · Voice, dopo le Layer FX).
+- src/preset/Loudness.h (BS.1770-4: K-weighting a qualunque fs, short-term 3 s/100 ms, true peak 4×) + PresetNormalizer (render offline su processor nuovo, C3 vel 100, 4 s @48 kHz, trim iterativo → −14 LUFS short-term max, picchi sotto la soglia del limiter: max −1.8 dBTP, limiter mai attivo; `compact` = solo valori ≠ default). Limiter: `takeMinGain()`.
+- tools/presetnorm (`-DCHROMA_BUILD_TOOLS=ON`): `build` da ricette testuali `presets/recipes/*.txt` (chiavi Layer/host, `L<n> = @patch`, `scale.L1+L2 = note`, macro), `norm`, `measure`; report docs/manual/factory-presets.md.
+- 64 Multi: 40 patch a un Layer (8 per engine, anche come 40 Layer preset) + 24 Multi SCALE (scale-locked, split tasti bianchi/neri, accordi diatonici via transpose). Nomi originali. Risultato: −16.4…−14.0 LUFS (13 limitati dal picco), ≤ −1.8 dBTP.
+- Preset in `presets/factory/` (430 KB) → `juce_add_binary_data(chroma_factory)` → installati in `{Multi,Layer}/Factory` al primo uso (marker `.factory`, reinstallo se cambia il set).
+- tests/test_presets.cpp: misure BS.1770/true peak, trim, normalize/compact, set di fabbrica (conteggi, SCALE, categorie, caricamento); loudness completa in `"[.slow]"`. 119/119 verdi (Linux).
+- Aperti: tool non compilato in CI (opzione OFF); preset solo a −14 LUFS su C3 (note diverse possono variare).

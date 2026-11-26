@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<CHROMA5YNTH_PRESET kind="multi" name="Odd Lead" category="Lead" author="TMFU audiovibe"
+                    tags="additive,hollow,mono" format="1">
+  <CHROMA5YNTH>
+    <PARAM id="layer1_engine" value="1.0"/>
+    <PARAM id="preset_trim" value="0.0"/>
+    <CORE>
+      <LAYER layer_trim="-4.21999979019165" voice_mode="3.0" glide_on="1.0"
+             glide_time="0.07000000029802322" env1_attack="0.006000000052154064"
+             env1_sustain="1.0" env1_release="0.25" lfo1_rate="5.0" lfo1_delay="0.3499999940395355"
+             mm1_source="1.0" mm1_dest="3.0" mm1_amount="0.003000000026077032"
+             add_partials="48.0" add_spectrum_a="3.0" add_even="0.25" add_fm_amount="0.07999999821186066"
+             add_fm_ratio="2.0" fx_delay_on="1.0" fx_delay_sync="1.0" fx_delay_div_l="2.0"
+             fx_delay_feedback="0.300000011920929" fx_delay_mix="0.2000000029802322"
+             index="0"/>
+      <MACROS/>
+      <AUTOMATION/>
+    </CORE>
+  </CHROMA5YNTH>
+</CHROMA5YNTH_PRESET>

@@ -13,6 +13,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
 option(CHROMA_BUILD_TESTS "Build Catch2 tests" ON)
+option(CHROMA_BUILD_TOOLS "Build tools/presetnorm (factory preset builder / loudness normaliser)" OFF)
 
 # ---------------------------------------------------------------- Plugin identity
 # Single source of truth: CLAUDE.md "Identità plugin".
@@ -63,6 +64,18 @@ juce_add_binary_data(chroma_assets
                 assets/fonts/Inter-SemiBold.ttf)
 set_target_properties(chroma_assets PROPERTIES POSITION_INDEPENDENT_CODE ON)
 
+# ---------------------------------------------------------------- Factory presets (§6, built by tools/presetnorm)
+file(GLOB CHROMA_FACTORY_PRESETS CONFIGURE_DEPENDS
+    ${CMAKE_SOURCE_DIR}/presets/factory/Multi/*.c5multi
+    ${CMAKE_SOURCE_DIR}/presets/factory/Layer/*.c5layer)
+if(CHROMA_FACTORY_PRESETS)
+    juce_add_binary_data(chroma_factory
+        HEADER_NAME FactoryPresets.h
+        NAMESPACE   ChromaFactory
+        SOURCES     ${CHROMA_FACTORY_PRESETS})
+    set_target_properties(chroma_factory PROPERTIES POSITION_INDEPENDENT_CODE ON)
+endif()
+
 # ---------------------------------------------------------------- Shared sources (plugin + tests)
 # JUCE modules are compiled per-target, so sources are added to each target
 # instead of a static library (avoids duplicate JUCE symbols).
@@ -105,6 +118,10 @@ function(chroma_configure_target tgt)
         CHROMA_COMPANY_NAME="${CHROMA_COMPANY_NAME}"
         CHROMA_PRODUCT_NAME="${CHROMA_PRODUCT_NAME}"
         CHROMA_VERSION_STRING="${PROJECT_VERSION}")
+    if(TARGET chroma_factory)
+        target_link_libraries(${tgt} PRIVATE chroma_factory)
+        target_compile_definitions(${tgt} PRIVATE CHROMA_HAS_FACTORY=1)
+    endif()
     target_link_libraries(${tgt} PRIVATE
         chroma_assets
         juce::juce_audio_utils
@@ -149,7 +166,8 @@ if(CHROMA_BUILD_TESTS)
     FetchContent_MakeAvailable(Catch2)
 
     juce_add_console_app(chroma_tests PRODUCT_NAME "chroma_tests")
-    target_sources(chroma_tests PRIVATE tests/test_params.cpp tests/test_processor.cpp tests/test_core.cpp tests/test_limiter.cpp tests/test_filter.cpp tests/test_analog.cpp tests/test_fx.cpp tests/test_fm.cpp tests/test_wavetable.cpp tests/test_additive.cpp tests/test_pd.cpp tests/test_global.cpp tests/test_gui.cpp)
+    target_sources(chroma_tests PRIVATE tests/test_params.cpp tests/test_processor.cpp tests/test_core.cpp tests/test_limiter.cpp tests/test_filter.cpp tests/test_analog.cpp tests/test_fx.cpp tests/test_fm.cpp tests/test_wavetable.cpp tests/test_additive.cpp tests/test_pd.cpp tests/test_global.cpp tests/test_gui.cpp tests/test_presets.cpp
+        src/preset/PresetNormalizer.cpp)
     chroma_configure_target(chroma_tests)
     target_link_libraries(chroma_tests PRIVATE Catch2::Catch2WithMain)
 
@@ -157,4 +175,11 @@ if(CHROMA_BUILD_TESTS)
     list(APPEND CMAKE_MODULE_PATH ${catch2_SOURCE_DIR}/extras)
     include(Catch)
     catch_discover_tests(chroma_tests)
+endif()
+
+# ---------------------------------------------------------------- Tools
+if(CHROMA_BUILD_TOOLS)
+    juce_add_console_app(presetnorm PRODUCT_NAME "presetnorm")
+    target_sources(presetnorm PRIVATE tools/presetnorm/main.cpp src/preset/PresetNormalizer.cpp)
+    chroma_configure_target(presetnorm)
 endif()

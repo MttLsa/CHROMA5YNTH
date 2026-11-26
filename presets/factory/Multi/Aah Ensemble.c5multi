@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<CHROMA5YNTH_PRESET kind="multi" name="Aah Ensemble" category="Pad" author="TMFU audiovibe"
+                    tags="additive,vocal,choir" format="1">
+  <CHROMA5YNTH>
+    <PARAM id="layer1_engine" value="1.0"/>
+    <PARAM id="preset_trim" value="0.0"/>
+    <CORE>
+      <LAYER layer_trim="-2.160000085830688" unison="3.0" unison_detune="14.0"
+             unison_spread="0.8999999761581421" env1_attack="0.800000011920929"
+             env1_sustain="1.0" env1_release="1.799999952316284" lfo2_rate="0.2000000029802322"
+             lfo2_mode="0.0" lfo2_unipolar="1.0" mm1_source="2.0" mm1_dest="91.0"
+             mm1_amount="0.5" add_partials="96.0" add_spectrum_a="10.0" add_spectrum_b="11.0"
+             fx_reverb_on="1.0" fx_reverb_size="0.8999999761581421" fx_reverb_mix="0.4000000059604645"
+             index="0"/>
+      <MACROS/>
+      <AUTOMATION/>
+    </CORE>
+  </CHROMA5YNTH>
+</CHROMA5YNTH_PRESET>

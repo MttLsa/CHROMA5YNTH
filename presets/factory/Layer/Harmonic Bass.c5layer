@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<CHROMA5YNTH_PRESET kind="layer" name="Harmonic Bass" category="Bass" author="TMFU audiovibe"
+                    tags="additive,mono,plucky" format="1">
+  <LAYER_PRESET on="1.0" engine="0.25" volume="0.8126519918441772" pan="0.5"
+                mute="0.0" solo="0.0" transpose="0.5" key_lo="0.0" key_hi="1.0"
+                vel_lo="0.0" vel_hi="1.0" midi_ch="0.0" max_voices="1.0">
+    <ENGINE layer_trim="-2.930000066757202" voice_mode="0.0" env1_attack="0.002000000094994903"
+            env1_sustain="0.8500000238418579" env1_release="0.119999997317791"
+            add_partials="32.0" add_senv_amount="-1.0" add_senv_attack="0.001000000047497451"
+            add_senv_decay="0.3499999940395355" add_senv_sustain="0.300000011920929"
+            add_senv_tilt="24.0"/>
+  </LAYER_PRESET>
+</CHROMA5YNTH_PRESET>

@@ -16,6 +16,7 @@ lists:
 
 params:
   - { id: level, name: Level, type: float, min: 0.0, max: 1.0, default: 1.0, unit: "%", section: "Layer · Voice", description: "Livello per voce (destinazione di modulazione)." }
+  - { id: layer_trim, name: Trim, type: float, min: -24.0, max: 24.0, default: 0.0, unit: dB, mod_dest: false, section: "Layer · Voice", description: "Trim di loudness del Layer preset (scritto da tools/presetnorm), applicato dopo le Layer FX." }
   - { id: pan_mod, name: Pan Offset, type: float, min: -1.0, max: 1.0, default: 0.0, section: "Layer · Voice", description: "Offset di pan per voce, sommato al Pan del Layer." }
   - { id: pitch, name: Pitch, type: float, min: -48.0, max: 48.0, default: 0.0, unit: st, section: "Layer · Voice", description: "Intonazione fine per voce in semitoni." }
   - { id: voice_mode, name: Voice Mode, type: choice, choices: [Mono, Poly, Unison, Legato], default: Poly, section: "Layer · Voice", description: "Mono / Poly / Unison (mono con stack unison) / Legato." }

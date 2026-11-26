@@ -39,6 +39,7 @@
 | Parametro | Range | Default | Unità | Descrizione |
 |---|---|---|---|---|
 | Level | 0.0 … 1.0 | 1.0 | % | Livello per voce (destinazione di modulazione). |
+| Trim | -24.0 … 24.0 | 0.0 | dB | Trim di loudness del Layer preset (scritto da tools/presetnorm), applicato dopo le Layer FX. |
 | Pan Offset | -1.0 … 1.0 | 0.0 |  | Offset di pan per voce, sommato al Pan del Layer. |
 | Pitch | -48.0 … 48.0 | 0.0 | st | Intonazione fine per voce in semitoni. |
 | Voice Mode | Mono / Poly / Unison / Legato | Poly |  | Mono / Poly / Unison (mono con stack unison) / Legato. |

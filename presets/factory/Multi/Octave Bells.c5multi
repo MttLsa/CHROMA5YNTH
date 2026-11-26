@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<CHROMA5YNTH_PRESET kind="multi" name="Octave Bells" category="Bell" author="TMFU audiovibe"
+                    tags="scale,major,bells" format="1">
+  <CHROMA5YNTH>
+    <PARAM id="layer1_engine" value="1.0"/>
+    <PARAM id="layer2_engine" value="2.0"/>
+    <PARAM id="layer2_on" value="1.0"/>
+    <PARAM id="layer2_transpose" value="12.0"/>
+    <PARAM id="layer2_volume" value="-7.0"/>
+    <PARAM id="preset_trim" value="0.7599999904632568"/>
+    <PARAM id="scale_as" value="0.0"/>
+    <PARAM id="scale_c" value="3.0"/>
+    <PARAM id="scale_cs" value="0.0"/>
+    <PARAM id="scale_ds" value="0.0"/>
+    <PARAM id="scale_e" value="3.0"/>
+    <PARAM id="scale_fs" value="0.0"/>
+    <PARAM id="scale_g" value="3.0"/>
+    <PARAM id="scale_gs" value="0.0"/>
+    <PARAM id="scale_on" value="1.0"/>
+    <CORE>
+      <LAYER env1_attack="0.001000000047497451" env1_sustain="1.0" env1_release="3.0"
+             add_spectrum_a="9.0" add_inharm="0.25" add_penv_amount="1.0"
+             add_penv_attack="0.001000000047497451" add_penv_decay="4.0" add_penv_scaling="0.699999988079071"
+             fx_reverb_on="1.0" fx_reverb_size="0.8500000238418579" fx_reverb_decay="5.0"
+             fx_reverb_mix="0.300000011920929" index="0"/>
+      <LAYER env1_attack="0.001000000047497451" env1_sustain="1.0" env1_release="3.0"
+             fm_op2_ratio="3.5" fm_op2_level="0.75" fm_op3_ratio="2.0" fm_op3_level="0.75"
+             fm_op4_ratio="5.190000057220459" fm_op4_level="0.6600000262260437"
+             fm_op5_on="0.0" fm_op6_on="0.0" fm_op1_decay="6.0" fm_op1_sustain="0.0"
+             fm_op1_release="3.0" fm_op2_decay="3.0" fm_op2_sustain="0.0"
+             fm_op3_decay="4.0" fm_op3_sustain="0.0" fm_op3_release="2.0"
+             fm_op4_decay="1.5" fm_op4_sustain="0.0" fm_algorithm="4.0" fx_reverb_on="1.0"
+             fx_reverb_size="0.800000011920929" fx_reverb_decay="4.5" fx_reverb_mix="0.300000011920929"
+             index="1"/>
+      <MACROS/>
+      <AUTOMATION/>
+    </CORE>
+  </CHROMA5YNTH>
+</CHROMA5YNTH_PRESET>

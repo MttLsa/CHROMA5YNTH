@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<CHROMA5YNTH_PRESET kind="multi" name="Reso Whistle" category="Lead" author="TMFU audiovibe"
+                    tags="pd,resonant,mono" format="1">
+  <CHROMA5YNTH>
+    <PARAM id="layer1_engine" value="4.0"/>
+    <PARAM id="preset_trim" value="0.0"/>
+    <CORE>
+      <LAYER layer_trim="-6.380000114440918" voice_mode="3.0" glide_on="1.0"
+             glide_time="0.05999999865889549" env1_attack="0.009999999776482582"
+             env1_sustain="1.0" env1_release="0.25" lfo1_rate="5.199999809265137"
+             lfo1_delay="0.300000011920929" mm1_source="1.0" mm1_dest="231.0"
+             mm1_amount="0.006000000052154064" pd_l1_wave="6.0" pd_l1_amount="0.4000000059604645"
+             pd_l1_env_amount="0.449999988079071" pd_l1_env_attack="0.05000000074505806"
+             pd_l1_env_decay="0.699999988079071" pd_l1_env_sustain="0.4000000059604645"
+             fx_delay_on="1.0" fx_delay_sync="1.0" fx_delay_div_r="2.0" fx_delay_feedback="0.300000011920929"
+             fx_delay_mix="0.2000000029802322" index="0"/>
+      <MACROS/>
+      <AUTOMATION/>
+    </CORE>
+  </CHROMA5YNTH>
+</CHROMA5YNTH_PRESET>

@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<CHROMA5YNTH_PRESET kind="multi" name="Desert Veil" category="Pad" author="TMFU audiovibe"
+                    tags="scale,harmonic minor,exotic" format="1">
+  <CHROMA5YNTH>
+    <PARAM id="layer1_engine" value="3.0"/>
+    <PARAM id="layer2_engine" value="2.0"/>
+    <PARAM id="layer2_on" value="1.0"/>
+    <PARAM id="layer2_volume" value="-6.0"/>
+    <PARAM id="mfx_delay_div_l" value="14.0"/>
+    <PARAM id="mfx_delay_div_r" value="1.0"/>
+    <PARAM id="mfx_delay_mix" value="0.1500000059604645"/>
+    <PARAM id="mfx_delay_on" value="1.0"/>
+    <PARAM id="mfx_delay_sync" value="1.0"/>
+    <PARAM id="mfx_delay_type" value="1.0"/>
+    <PARAM id="preset_trim" value="-4.550000190734863"/>
+    <PARAM id="scale_a" value="0.0"/>
+    <PARAM id="scale_as" value="0.0"/>
+    <PARAM id="scale_c" value="3.0"/>
+    <PARAM id="scale_cs" value="0.0"/>
+    <PARAM id="scale_ds" value="3.0"/>
+    <PARAM id="scale_e" value="0.0"/>
+    <PARAM id="scale_fs" value="0.0"/>
+    <PARAM id="scale_g" value="3.0"/>
+    <PARAM id="scale_on" value="1.0"/>
+    <CORE>
+      <LAYER env1_attack="1.200000047683716" env1_decay="1.0" env1_sustain="0.8999999761581421"
+             env1_release="2.5" lfo1_rate="0.119999997317791" lfo1_mode="0.0"
+             mm1_source="1.0" mm1_dest="258.0" mm1_amount="0.3499999940395355"
+             wt_osc1_table="6.0" wt_osc1_pos="0.300000011920929" wt_osc1_rand_phase="1.0"
+             wt_osc1_unison="4.0" wt_osc1_uni_detune="15.0" wt_osc2_on="1.0"
+             wt_osc2_table="1.0" wt_osc2_volume="0.4000000059604645" wt_osc2_octave="-1.0"
+             fx_chorus_on="1.0" fx_chorus_mix="0.300000011920929" fx_reverb_on="1.0"
+             fx_reverb_size="0.800000011920929" fx_reverb_decay="5.0" fx_reverb_mix="0.3499999940395355"
+             index="0"/>
+      <LAYER env1_attack="1.5" env1_sustain="1.0" env1_release="2.5" lfo1_rate="0.4000000059604645"
+             fm_op2_ratio="2.0" fm_op2_level="0.6200000047683716" fm_op3_detune="6.0"
+             fm_op3_level="0.8999999761581421" fm_op4_ratio="3.0" fm_op4_level="0.550000011920929"
+             fm_op5_ratio="2.0" fm_op5_detune="-6.0" fm_op5_level="0.800000011920929"
+             fm_op6_level="0.5" fm_op2_attack="1.200000047683716" fm_op4_attack="2.0"
+             fm_lfo1_amp="0.1500000059604645" fm_algorithm="4.0" fx_chorus_on="1.0"
+             fx_chorus_mix="0.4000000059604645" fx_reverb_on="1.0" fx_reverb_size="0.8500000238418579"
+             fx_reverb_decay="6.0" fx_reverb_mix="0.4000000059604645" index="1"/>
+      <MACROS/>
+      <AUTOMATION/>
+    </CORE>
+  </CHROMA5YNTH>
+</CHROMA5YNTH_PRESET>

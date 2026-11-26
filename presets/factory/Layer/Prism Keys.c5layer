@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<CHROMA5YNTH_PRESET kind="layer" name="Prism Keys" category="Keys" author="TMFU audiovibe"
+                    tags="wavetable,glassy,bright" format="1">
+  <LAYER_PRESET on="1.0" engine="0.75" volume="0.8126519918441772" pan="0.5"
+                mute="0.0" solo="0.0" transpose="0.5" key_lo="0.0" key_hi="1.0"
+                vel_lo="0.0" vel_hi="1.0" midi_ch="0.0" max_voices="1.0">
+    <ENGINE layer_trim="2.599999904632568" filter_on="1.0" filter_model="2.0"
+            filter_cutoff="2500.0" filter_keytrack="0.5" filter_env_amount="0.300000011920929"
+            filter_velocity="0.5" env1_attack="0.002000000094994903" env1_decay="1.799999952316284"
+            env1_sustain="0.300000011920929" env1_release="0.6000000238418579"
+            env1_velocity="0.4000000059604645" env2_decay="1.200000047683716"
+            env2_sustain="0.1000000014901161" wt_osc1_table="38.0" wt_osc1_pos="0.2000000029802322"
+            wt_osc2_on="1.0" wt_osc2_table="12.0" wt_osc2_pos="0.1000000014901161"
+            wt_osc2_volume="0.3499999940395355" wt_osc2_octave="1.0" fx_chorus_on="1.0"
+            fx_chorus_mix="0.3499999940395355" fx_reverb_on="1.0" fx_reverb_mix="0.2000000029802322"/>
+  </LAYER_PRESET>
+</CHROMA5YNTH_PRESET>

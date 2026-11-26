@@ -11,6 +11,19 @@ params:
     section: Master
     description: Livello di uscita finale, prima del limiter.
 
+  - id: preset_trim
+    name: Preset Trim
+    type: float
+    min: -24.0
+    max: 24.0
+    default: 0.0
+    step: 0.01
+    unit: dB
+    section: Master
+    description: "Trim di loudness del Multi preset (scritto da tools/presetnorm: −14 LUFS short-term max, mai sopra −1 dBTP). Sommato al Master Volume."
+    automatable: false
+    gui: false
+
   - id: master_polyphony
     name: Polyphony
     type: choice

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<CHROMA5YNTH_PRESET kind="layer" name="Spectral Lead" category="Lead" author="TMFU audiovibe"
+                    tags="wavetable,sweep,unison" format="1">
+  <LAYER_PRESET on="1.0" engine="0.75" volume="0.8126519918441772" pan="0.5"
+                mute="0.0" solo="0.0" transpose="0.5" key_lo="0.0" key_hi="1.0"
+                vel_lo="0.0" vel_hi="1.0" midi_ch="0.0" max_voices="1.0">
+    <ENGINE layer_trim="-7.050000190734863" voice_mode="3.0" glide_on="1.0"
+            glide_time="0.05000000074505806" env1_attack="0.004000000189989805"
+            env1_sustain="1.0" env1_release="0.25" env2_attack="0.009999999776482582"
+            env2_decay="0.800000011920929" env2_sustain="0.300000011920929"
+            mm1_source="6.0" mm1_dest="258.0" mm1_amount="0.5" mm2_source="15.0"
+            mm2_dest="269.0" mm2_amount="0.6000000238418579" wt_osc1_table="10.0"
+            wt_osc1_pos="0.25" wt_osc1_unison="3.0" wt_osc1_uni_detune="12.0"
+            wt_osc1_warp="1.0" fx_delay_on="1.0" fx_delay_sync="1.0" fx_delay_div_r="3.0"
+            fx_delay_mix="0.2000000029802322"/>
+  </LAYER_PRESET>
+</CHROMA5YNTH_PRESET>

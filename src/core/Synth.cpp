@@ -34,6 +34,7 @@ Synth::Synth (juce::AudioProcessor& p, juce::AudioProcessorValueTreeState& s) : 
 
     auto get = [this] (const char* id) { auto* r = apvts.getParameter (id); jassert (r != nullptr); return r; };
     masterVolume = get (ParamIDs::masterVolume);
+    presetTrim = get (ParamIDs::presetTrim);
     polyphony = get (ParamIDs::masterPolyphony);
     scaleOn = get (ParamIDs::scaleOn);
     mpeOn = get (ParamIDs::mpeOn);
@@ -123,7 +124,8 @@ void Synth::prepare (double sr, int maxBlockSize, int numOutputChannels)
         voices[(size_t) i].prepare (i, sr);
     midi.reset();
     paramSmoother.setTime (0.02f, sr);
-    masterGain.reset (juce::Decibels::decibelsToGain (masterVolume->convertFrom0to1 (masterVolume->getValue()), -60.0f));
+    masterGain.reset (juce::Decibels::decibelsToGain (masterVolume->convertFrom0to1 (masterVolume->getValue()), -60.0f)
+                      * juce::Decibels::decibelsToGain (presetTrim->convertFrom0to1 (presetTrim->getValue())));
     limiter.prepare (sr, numOutputChannels);
     for (auto& f : layerFx) f.prepare (sr);
     masterFx.prepare (sr);
@@ -211,7 +213,7 @@ void Synth::readHostParams() noexcept
         st.on = on (hostValue (h.on));
         st.audible = st.on && ! on (hostValue (h.mute)) && (! anySolo || on (hostValue (h.solo)));
         const float db = hostValue (h.volume);
-        st.volumeGain = db <= -59.99f ? 0.0f : juce::Decibels::decibelsToGain (db);
+        st.volumeGain = db <= -59.99f ? 0.0f : juce::Decibels::decibelsToGain (db + stores[l].get (lp::layerTrim));
         st.pan = hostValue (h.pan);
         runtime[l].transpose = (float) idx (hostValue (h.transpose));
         st.keyLo = idx (hostValue (h.keyLo)); st.keyHi = idx (hostValue (h.keyHi));
@@ -496,7 +498,7 @@ void Synth::process (juce::AudioBuffer<float>& buffer, const juce::MidiBuffer& m
 
     // Master Level (smoothed) -> true-peak limiter
     const float db = hostValue (masterVolume);
-    masterGain.setTarget (db <= -59.99f ? 0.0f : juce::Decibels::decibelsToGain (db), numSamples);
+    masterGain.setTarget (db <= -59.99f ? 0.0f : juce::Decibels::decibelsToGain (db + hostValue (presetTrim)), numSamples);
     auto* l = buffer.getWritePointer (0);
     auto* r = numCh > 1 ? buffer.getWritePointer (1) : nullptr;
     for (int i = 0; i < numSamples; ++i)

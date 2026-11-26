@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<CHROMA5YNTH_PRESET kind="multi" name="Grey Strings" category="Strings" author="TMFU audiovibe"
+                    tags="scale,minor,ensemble" format="1">
+  <CHROMA5YNTH>
+    <PARAM id="layer2_engine" value="3.0"/>
+    <PARAM id="layer2_on" value="1.0"/>
+    <PARAM id="layer2_volume" value="-4.0"/>
+    <PARAM id="layer3_engine" value="4.0"/>
+    <PARAM id="layer3_on" value="1.0"/>
+    <PARAM id="layer3_transpose" value="-12.0"/>
+    <PARAM id="layer3_volume" value="-6.0"/>
+    <PARAM id="preset_trim" value="-2.559999942779541"/>
+    <PARAM id="scale_a" value="7.0"/>
+    <PARAM id="scale_as" value="0.0"/>
+    <PARAM id="scale_b" value="3.0"/>
+    <PARAM id="scale_c" value="7.0"/>
+    <PARAM id="scale_cs" value="0.0"/>
+    <PARAM id="scale_d" value="3.0"/>
+    <PARAM id="scale_ds" value="0.0"/>
+    <PARAM id="scale_e" value="7.0"/>
+    <PARAM id="scale_f" value="3.0"/>
+    <PARAM id="scale_fs" value="0.0"/>
+    <PARAM id="scale_g" value="3.0"/>
+    <PARAM id="scale_gs" value="0.0"/>
+    <PARAM id="scale_on" value="1.0"/>
+    <CORE>
+      <LAYER unison="3.0" unison_detune="18.0" unison_spread="0.800000011920929"
+             filter_on="1.0" filter_model="8.0" filter_cutoff="3800.0" filter_keytrack="0.4000000059604645"
+             env1_attack="0.449999988079071" env1_decay="1.0" env1_sustain="0.8999999761581421"
+             env1_release="1.299999952316284" an_osc2_on="1.0" an_osc2_fine="8.0"
+             an_osc3_on="1.0" an_osc3_wave="4.0" an_osc3_octave="1.0" an_osc3_level="0.300000011920929"
+             an_osc3_pw="25.0" fx_chorus_on="1.0" fx_chorus_depth="0.6000000238418579"
+             fx_phaser_on="1.0" fx_phaser_rate="0.119999997317791" fx_phaser_mix="0.25"
+             fx_reverb_on="1.0" fx_reverb_size="0.699999988079071" fx_reverb_mix="0.300000011920929"
+             index="0"/>
+      <LAYER filter_on="1.0" filter_model="8.0" filter_cutoff="3500.0" env1_attack="0.3499999940395355"
+             env1_sustain="0.949999988079071" env1_release="1.200000047683716"
+             lfo1_rate="0.5" lfo1_mode="0.0" mm1_source="1.0" mm1_dest="258.0"
+             mm1_amount="0.300000011920929" wt_osc1_table="2.0" wt_osc1_pos="0.4000000059604645"
+             wt_osc1_unison="6.0" wt_osc1_uni_detune="16.0" fx_chorus_on="1.0"
+             fx_chorus_mix="0.449999988079071" fx_reverb_on="1.0" fx_reverb_mix="0.300000011920929"
+             index="1"/>
+      <LAYER unison="2.0" unison_detune="12.0" env1_attack="0.5" env1_sustain="0.949999988079071"
+             env1_release="1.399999976158142" pd_l1_pan="-0.4000000059604645"
+             pd_l2_on="1.0" pd_l2_fine="9.0" pd_l2_pan="0.4000000059604645"
+             pd_l1_amount="0.449999988079071" pd_l2_amount="0.4000000059604645"
+             fx_chorus_on="1.0" fx_reverb_on="1.0" fx_reverb_size="0.75" fx_reverb_mix="0.3499999940395355"
+             index="2"/>
+      <MACROS/>
+      <AUTOMATION/>
+    </CORE>
+  </CHROMA5YNTH>
+</CHROMA5YNTH_PRESET>

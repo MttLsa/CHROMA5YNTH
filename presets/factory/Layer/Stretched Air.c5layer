@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<CHROMA5YNTH_PRESET kind="layer" name="Stretched Air" category="Texture" author="TMFU audiovibe"
+                    tags="additive,airy,stereo,ambient" format="1">
+  <LAYER_PRESET on="1.0" engine="0.25" volume="0.8126519918441772" pan="0.5"
+                mute="0.0" solo="0.0" transpose="0.5" key_lo="0.0" key_hi="1.0"
+                vel_lo="0.0" vel_hi="1.0" midi_ch="0.0" max_voices="1.0">
+    <ENGINE layer_trim="-4.340000152587891" env1_attack="2.5" env1_sustain="1.0"
+            env1_release="4.0" add_partials="128.0" add_spectrum_a="6.0"
+            add_slope="18.0" add_density="0.5" add_stretch="0.300000011920929"
+            add_am_amount="0.4000000059604645" add_am_freq="0.300000011920929"
+            add_am_depth="1.0" add_spread="1.0" add_stereo_mod="0.5" fx_reverb_on="1.0"
+            fx_reverb_size="1.0" fx_reverb_decay="10.0" fx_reverb_mix="0.5"/>
+  </LAYER_PRESET>
+</CHROMA5YNTH_PRESET>
