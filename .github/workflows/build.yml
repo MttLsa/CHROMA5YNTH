@@ -73,7 +73,7 @@ jobs:
           auval -strict -v aumu Chr5 Tmfu
       - name: pluginval
         run: |
-          curl -sSL -o pluginval.zip "https://github.com/Tracktion/pluginval/releases/download/${PLUGINVAL_VERSION}/pluginval_macOS.zip"
+          curl -sSL --retry 5 --retry-all-errors --retry-delay 15 -o pluginval.zip "https://github.com/Tracktion/pluginval/releases/download/${PLUGINVAL_VERSION}/pluginval_macOS.zip"
           unzip -q pluginval.zip
           ./pluginval.app/Contents/MacOS/pluginval --strictness-level 10 --validate-in-process --skip-gui-tests --timeout-ms 300000 ~/Library/Audio/Plug-Ins/VST3/${PLUGIN}.vst3
           ./pluginval.app/Contents/MacOS/pluginval --strictness-level 10 --validate-in-process --skip-gui-tests --timeout-ms 300000 ~/Library/Audio/Plug-Ins/Components/${PLUGIN}.component

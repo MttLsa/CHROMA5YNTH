@@ -3,6 +3,7 @@
 #include "ParamIDs.h"
 #include "shared/Limiter.h"
 #include "shared/Smoothing.h"
+#include "shared/Tuning.h"
 #include "shared/TripleBuffer.h"
 #include "shared/Voice.h"
 #include "shared/fx/FxChain.h"
@@ -28,6 +29,11 @@ struct ParamTarget
 struct MacroAssignment { int macro = 0; ParamTarget target; float min = 0.0f, max = 1.0f; };  // min/max normalised
 struct MacroMap { int count = 0; std::array<MacroAssignment, maxMacroAssignments> items {}; };
 struct AutomationMap { std::array<ParamTarget, numAutomationSlots> slots {}; };
+
+// §5 MIDI learn: CC (channel -1 = any) -> parameter.
+inline constexpr int maxMidiMappings = 256;
+struct MidiMapping { int cc = 0, channel = -1; ParamTarget target; };
+struct MidiMap { int count = 0; std::array<MidiMapping, maxMidiMappings> items {}; };
 
 // Core synth (§1/§2): 12 layers, shared voice pool, SCALE, MPE, macros, automation slots,
 // layer mixer, master level and true-peak limiter.
@@ -59,8 +65,38 @@ public:
     bool saveLayerPreset (int layer, const juce::File&) const;
     bool loadLayerPreset (int layer, const juce::File&);
 
-    juce::ValueTree saveState() const;
-    void loadState (const juce::ValueTree&);
+    // Global data (MIDI map, microtuning) is saved in the host state but not in Multi presets:
+    // loadState (core, false) keeps the current global data.
+    juce::ValueTree saveState (bool includeGlobal = true) const;
+    void loadState (const juce::ValueTree&, bool loadGlobal = true);
+    void resetAll();                                   // init all layers, clear macros + automation slots
+
+    // §5 MIDI learn (message thread, except where noted)
+    void startMidiLearn (ParamTarget);                 // next CC received (audio thread) is mapped to target
+    void cancelMidiLearn() noexcept { learnArmed.store (false); }
+    bool isMidiLearning() const noexcept { return learnArmed.load(); }
+    bool pollMidiLearn();                              // finalises a pending learn; true when a mapping was added
+    void flushMidiToHost();                            // pushes CC-driven host parameter values to the host
+    bool addMidiMapping (int cc, int channel, ParamTarget);
+    void removeMidiMapping (ParamTarget);
+    void clearMidiMap();
+    int midiMappingFor (ParamTarget) const noexcept;   // CC number or -1
+    const MidiMap& getMidiMap() const noexcept { return midiMap.latest(); }
+    juce::ValueTree midiMapToTree() const;
+    void midiMapFromTree (const juce::ValueTree&);
+    bool saveMidiMap (const juce::File&) const;
+    bool loadMidiMap (const juce::File&);
+
+    // §5 Microtuning (.scl/.tun); master tune is the host parameter master_tune.
+    void setTuning (const TuningTable&, const juce::String& name);
+    void resetTuning();
+    bool loadTuningFile (const juce::File&, juce::String* error = nullptr);
+    const juce::String& getTuningName() const noexcept { return tuningName; }
+    float tunedPitch (int note) const noexcept;        // note + offset currently applied (tests / GUI)
+    int currentOversampling() const noexcept { return oversampling; }
+
+    // Monotonic counter bumped by every edit of non-host state (undo history).
+    uint32_t editCount() const noexcept;
 
     // ---- queries (tests / meters)
     struct VoiceInfo { bool active = false; int layer = 0, note = 0; bool gate = false; float level = 0.0f; };
@@ -113,6 +149,7 @@ private:
     std::vector<juce::RangedAudioParameter*> hostParams;
     std::array<HostLayer, numLayers> hostLayers {};
     juce::RangedAudioParameter *masterVolume, *polyphony, *scaleOn, *mpeOn, *mpeZone, *mpeBend;
+    juce::RangedAudioParameter *masterTune, *osRealtime, *osOffline;
     std::array<juce::RangedAudioParameter*, 12> scaleSlots {};
     std::array<juce::RangedAudioParameter*, numMacros> macros {};
     std::array<juce::RangedAudioParameter*, numAutomationSlots> autoSlots {};
@@ -127,6 +164,19 @@ private:
     VoiceGlobals globals;
 
     TripleBuffer<MacroMap> macroMap;
+    TripleBuffer<MidiMap> midiMap;
+    const MidiMap* liveMidiMap = nullptr;       // audio thread, read once per block
+    std::atomic<bool> learnArmed { false };
+    std::atomic<int> learnedCC { 0 };           // (channel << 8 | cc) + 1, 0 = none
+    ParamTarget learnTarget;
+    std::unique_ptr<std::atomic<float>[]> midiHostPending;   // per host param, -1 = none
+    std::atomic<bool> midiHostDirty { false };
+    void applyMidiCC (int ch, int cc, int value) noexcept;
+    TripleBuffer<TuningTable> tuningTable;
+    std::array<float, 128> tuningFinal {};
+    juce::String tuningName;
+    int oversampling = 2;
+    std::atomic<uint32_t> edits { 0 };
     TripleBuffer<AutomationMap> automationMap;
     std::vector<float> hostOverride;            // normalised override per host param (-1 = none)
     struct LayerOverride { int layer, id; float plain; };

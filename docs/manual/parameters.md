@@ -8,6 +8,14 @@
 |---|---|---|---|---|
 | Automation N | 0.0 … 1.0 | 0.0 |  | Automation Slot N: guida il parametro interno assegnato con click destro → Assign to automation. ID stabile. |
 
+## Global
+
+| Parametro | Range | Default | Unità | Descrizione |
+|---|---|---|---|---|
+| Master Tune | 415.0 … 466.0 | 440.0 | Hz | Frequenza di riferimento del La4 (A4). Si somma al microtuning .scl/.tun caricato. |
+| Oversampling | 1x / 2x / 4x / 8x | 2x |  | Oversampling interno degli oscillatori (Analog, FM6, Wavetable, PD) durante la riproduzione in tempo reale. |
+| Offline Oversampling | 1x / 2x / 4x / 8x | 4x |  | Oversampling usato durante il render/bounce offline della DAW. |
+
 ## Layer N
 
 | Parametro | Range | Default | Unità | Descrizione |

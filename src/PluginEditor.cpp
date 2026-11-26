@@ -7,14 +7,27 @@ using APVTS = juce::AudioProcessorValueTreeState;
 
 namespace
 {
-constexpr int knobW = 76, knobH = 96, segW = 120, segH = 40;
+constexpr int knobW = 76, knobH = 96, segW = 120, segH = 40, toolbarH = 32;
 }
+
+// Right click on any control -> MIDI learn menu (Italian, §5).
+struct ChromaEditor::LearnMenu final : juce::MouseListener
+{
+    LearnMenu (ChromaEditor& e, juce::String id) : editor (e), paramId (std::move (id)) {}
+    void mouseDown (const juce::MouseEvent& ev) override
+    {
+        if (ev.mods.isPopupMenu()) editor.showLearnMenu (paramId, *ev.eventComponent);
+    }
+    ChromaEditor& editor;
+    juce::String paramId;
+};
 
 struct ChromaEditor::Control
 {
     juce::String section;
     bool compact = false;                          // segmented selector instead of a knob
     std::unique_ptr<juce::Component> widget;
+    std::unique_ptr<LearnMenu> learn;
 };
 
 juce::String ChromaEditor::aboutText()
@@ -22,7 +35,7 @@ juce::String ChromaEditor::aboutText()
     return juce::String (CHROMA_PRODUCT_NAME) + " v" + CHROMA_VERSION_STRING + "\n" + CHROMA_COMPANY_NAME;
 }
 
-ChromaEditor::ChromaEditor (ChromaProcessor& p) : AudioProcessorEditor (p)
+ChromaEditor::ChromaEditor (ChromaProcessor& p) : AudioProcessorEditor (p), proc (p)
 {
     setLookAndFeel (&lookAndFeel);
     auto& apvts = p.getState();
@@ -65,6 +78,8 @@ ChromaEditor::ChromaEditor (ChromaProcessor& p) : AudioProcessorEditor (p)
             c->widget = std::move (knob);
         }
 
+        c->learn = std::make_unique<LearnMenu> (*this, e.id);
+        c->widget->addMouseListener (c->learn.get(), true);
         content.addAndMakeVisible (*c->widget);
         controls.push_back (std::move (c));
     }
@@ -83,6 +98,44 @@ ChromaEditor::ChromaEditor (ChromaProcessor& p) : AudioProcessorEditor (p)
     wtButton.onClick = [this] { wtEditor->setVisible (wtButton.getToggleState()); };
     addAndMakeVisible (wtButton);
 
+    // §5/§6 toolbar
+    auto tool = [this] (juce::Button& b, const juce::String& tip, std::function<void()> fn)
+    {
+        b.setTooltip (tip);
+        b.onClick = std::move (fn);
+        addAndMakeVisible (b);
+    };
+    browser = std::make_unique<PresetBrowser> (p);
+    browser->onClose = [this] { browser->setVisible (false); presetsButton.setToggleState (false, juce::dontSendNotification); };
+    browser->onLoaded = [this] { timerCallback(); };
+    addChildComponent (*browser);
+    presetsButton.setClickingTogglesState (true);
+    tool (presetsButton, "Apri il browser dei preset (Multi e Layer).", [this]
+    {
+        if (presetsButton.getToggleState()) browser->refresh();
+        browser->setVisible (presetsButton.getToggleState());
+    });
+    presetName.setFont (style::font (13.0f, true));
+    presetName.setColour (juce::Label::textColourId, style::text);
+    presetName.setTooltip ("Preset corrente.");
+    addAndMakeVisible (presetName);
+    tool (undoButton, "Annulla l'ultima modifica.", [this] { proc.undo(); });
+    tool (redoButton, "Ripristina la modifica annullata.", [this] { proc.redo(); });
+    for (auto* b : { &aButton, &bButton }) { b->setRadioGroupId (2); b->setClickingTogglesState (true); }
+    aButton.setToggleState (true, juce::dontSendNotification);
+    tool (aButton, "Confronto A/B: stato A.", [this] { proc.selectAB (0); });
+    tool (bButton, "Confronto A/B: stato B (alla prima apertura copia di A).", [this] { proc.selectAB (1); });
+    tool (copyAbButton, "Copia lo stato corrente nell'altro slot A/B.", [this] { proc.getHistory().copyActiveToOther(); });
+    tool (randomButton, "Randomizza: globale, Layer o sezione, con la quantità indicata dallo slider.", [this] { showRandomMenu(); });
+    randomAmount.setRange (0.0, 1.0, 0.01);
+    randomAmount.setValue (0.5, juce::dontSendNotification);
+    randomAmount.setTooltip ("Quantità di randomizzazione (0–100%).");
+    addAndMakeVisible (randomAmount);
+    tool (initButton, "Riporta l'intera patch ai valori iniziali (le impostazioni globali restano).", [this] { proc.initAll(); });
+    tool (tuningButton, "Microtuning: carica un file .scl (con .kbm opzionale) o .tun.", [this] { showTuningMenu(); });
+    tool (midiButton, "Mappature MIDI learn: salva, carica, cancella.", [this] { showMidiMenu(); });
+    startTimerHz (10);
+
     viewport.setViewedComponent (&content, false);
     viewport.setScrollBarsShown (true, false);
     addAndMakeVisible (viewport);
@@ -93,6 +146,7 @@ ChromaEditor::ChromaEditor (ChromaProcessor& p) : AudioProcessorEditor (p)
 
 ChromaEditor::~ChromaEditor()
 {
+    stopTimer();
     setLookAndFeel (nullptr);
 }
 
@@ -108,8 +162,29 @@ void ChromaEditor::resized()
 {
     aboutButton.setBounds (getWidth() - style::margin - 80, (style::titleH - 24) / 2, 80, 24);
     wtButton.setBounds (aboutButton.getX() - style::margin - 90, aboutButton.getY(), 90, 24);
-    wtEditor->setBounds (getLocalBounds().withTrimmedTop (style::titleH));
-    viewport.setBounds (getLocalBounds().withTrimmedTop (style::titleH));
+
+    auto bar = juce::Rectangle<int> (style::margin, style::titleH, getWidth() - 2 * style::margin, toolbarH).reduced (0, 4);
+    auto place = [&bar] (juce::Component& c, int w) { c.setBounds (bar.removeFromLeft (w)); bar.removeFromLeft (style::margin / 2); };
+    place (presetsButton, 70);
+    for (auto* c : std::initializer_list<juce::Component*> { &midiButton, &tuningButton, &initButton })
+    {
+        c->setBounds (bar.removeFromRight (60));
+        bar.removeFromRight (style::margin / 2);
+    }
+    const int nameW = juce::jmax (80, bar.getWidth() - (2 * 52 + 3 * 32 + 84 + 90 + 9 * style::margin / 2));
+    place (presetName, nameW);
+    place (undoButton, 52);
+    place (redoButton, 52);
+    place (aButton, 32);
+    place (bButton, 32);
+    place (copyAbButton, 32);
+    place (randomButton, 84);
+    place (randomAmount, juce::jmin (90, bar.getWidth()));
+
+    const auto body = getLocalBounds().withTrimmedTop (style::titleH + toolbarH);
+    wtEditor->setBounds (body);
+    browser->setBounds (body);
+    viewport.setBounds (body);
     const int w = viewport.getWidth() - viewport.getScrollBarThickness();
     content.setSize (w, layoutContent (w));
 }
@@ -148,5 +223,99 @@ int ChromaEditor::layoutContent (int width)
         y += h + style::margin;
     }
     return y;
+}
+} // namespace chroma
+
+namespace chroma
+{
+void ChromaEditor::timerCallback()
+{
+    presetName.setText (proc.getCurrentPresetName() + (proc.getSynth().getTuningName().isNotEmpty()
+                                                       ? "   |   " + proc.getSynth().getTuningName() : juce::String()),
+                        juce::dontSendNotification);
+    undoButton.setEnabled (true);
+    redoButton.setEnabled (proc.getHistory().canRedo());
+    aButton.setToggleState (proc.getHistory().activeSlot() == 0, juce::dontSendNotification);
+    bButton.setToggleState (proc.getHistory().activeSlot() == 1, juce::dontSendNotification);
+    midiButton.setButtonText (proc.getSynth().isMidiLearning() ? "Learn..." : "MIDI");
+}
+
+void ChromaEditor::showLearnMenu (const juce::String& paramId, juce::Component& target)
+{
+    auto& s = proc.getSynth();
+    const ParamTarget t { ParamTarget::host, s.hostParamIndex (paramId) };
+    if (t.id < 0) return;
+    const int cc = s.midiMappingFor (t);
+    juce::PopupMenu m;
+    m.addSectionHeader ("MIDI");
+    m.addItem ("MIDI Learn (muovi un controller)", [&s, t] { s.startMidiLearn (t); });
+    m.addItem (cc >= 0 ? "Rimuovi MIDI Learn (CC " + juce::String (cc) + ")" : juce::String ("Rimuovi MIDI Learn"), cc >= 0,
+               false, [&s, t] { s.removeMidiMapping (t); });
+    if (s.isMidiLearning()) m.addItem ("Annulla MIDI Learn", [&s] { s.cancelMidiLearn(); });
+    m.showMenuAsync (juce::PopupMenu::Options().withTargetComponent (&target));
+}
+
+void ChromaEditor::showRandomMenu()
+{
+    const float amt = (float) randomAmount.getValue();
+    juce::PopupMenu m, layers, sections;
+    m.addItem ("Randomizza tutto (Layer attivi + Master FX)", [this, amt] { proc.randomize ({ RandomizeScope::Global }, amt); });
+    for (int l = 0; l < numLayers; ++l)
+        layers.addItem ("Layer " + juce::String (l + 1), [this, amt, l] { proc.randomize ({ RandomizeScope::Layer, l }, amt); });
+    m.addSubMenu ("Randomizza Layer", layers);
+    for (int l = 0; l < numLayers; ++l)
+    {
+        juce::PopupMenu sub;
+        for (const auto& sec : Randomizer::layerSections())
+            sub.addItem (sec, [this, amt, l, sec] { proc.randomize ({ RandomizeScope::Section, l, sec }, amt); });
+        sections.addSubMenu ("Layer " + juce::String (l + 1), sub);
+    }
+    for (const auto& sec : Randomizer::hostSections())
+        sections.addItem (sec, [this, amt, sec] { proc.randomize ({ RandomizeScope::Section, 0, sec }, amt); });
+    m.addSubMenu ("Randomizza sezione", sections);
+    m.showMenuAsync (juce::PopupMenu::Options().withTargetComponent (&randomButton));
+}
+
+void ChromaEditor::showTuningMenu()
+{
+    juce::PopupMenu m;
+    m.addItem ("Carica .scl / .tun...", [this]
+    {
+        chooser = std::make_unique<juce::FileChooser> ("Tuning", juce::File(), "*.scl;*.tun");
+        chooser->launchAsync (juce::FileBrowserComponent::openMode | juce::FileBrowserComponent::canSelectFiles, [this] (const juce::FileChooser& fc)
+        {
+            const auto f = fc.getResult();
+            juce::String err;
+            if (f.existsAsFile() && ! proc.getSynth().loadTuningFile (f, &err))
+                juce::AlertWindow::showMessageBoxAsync (juce::MessageBoxIconType::WarningIcon, "Tuning", err, {}, this);
+        });
+    });
+    m.addItem ("Accordatura standard (12-TET)", proc.getSynth().getTuningName().isNotEmpty(), false, [this] { proc.getSynth().resetTuning(); });
+    m.showMenuAsync (juce::PopupMenu::Options().withTargetComponent (&tuningButton));
+}
+
+void ChromaEditor::showMidiMenu()
+{
+    auto& s = proc.getSynth();
+    juce::PopupMenu m;
+    m.addItem ("Salva mappature CC...", [this]
+    {
+        chooser = std::make_unique<juce::FileChooser> ("MIDI map", juce::File(), "*.c5midi");
+        chooser->launchAsync (juce::FileBrowserComponent::saveMode | juce::FileBrowserComponent::warnAboutOverwriting, [this] (const juce::FileChooser& fc)
+        {
+            if (fc.getResult() != juce::File()) proc.getSynth().saveMidiMap (fc.getResult().withFileExtension ("c5midi"));
+        });
+    });
+    m.addItem ("Carica mappature CC...", [this]
+    {
+        chooser = std::make_unique<juce::FileChooser> ("MIDI map", juce::File(), "*.c5midi");
+        chooser->launchAsync (juce::FileBrowserComponent::openMode | juce::FileBrowserComponent::canSelectFiles, [this] (const juce::FileChooser& fc)
+        {
+            if (fc.getResult().existsAsFile()) proc.getSynth().loadMidiMap (fc.getResult());
+        });
+    });
+    m.addItem ("Cancella tutte le mappature (" + juce::String (s.getMidiMap().count) + ")", s.getMidiMap().count > 0, false, [&s] { s.clearMidiMap(); });
+    if (s.isMidiLearning()) m.addItem ("Annulla MIDI Learn", [&s] { s.cancelMidiLearn(); });
+    m.showMenuAsync (juce::PopupMenu::Options().withTargetComponent (&midiButton));
 }
 } // namespace chroma

@@ -35,5 +35,6 @@ struct VoiceGlobals
     float* bypassL = nullptr;                             // engine bypass bus (added after the voice filter)
     float* bypassR = nullptr;
     int tickRemaining = controlBlock;                     // samples left in the current control tick at chunk start
+    const float* tuning = nullptr;                        // 128 per-note offsets in semitones (master tune + microtuning)
 };
 } // namespace chroma

@@ -1,0 +1,31 @@
+# §5 GLOBAL SETTINGS: impostazioni globali (salvate con il progetto, NON nei preset Multi/Layer).
+params:
+  - id: master_tune
+    name: Master Tune
+    type: float
+    min: 415.0
+    max: 466.0
+    default: 440.0
+    step: 0.01
+    unit: Hz
+    section: Global
+    description: Frequenza di riferimento del La4 (A4). Si somma al microtuning .scl/.tun caricato.
+    automatable: false
+
+  - id: oversampling_realtime
+    name: Oversampling
+    type: choice
+    choices: ["1x", "2x", "4x", "8x"]
+    default: "2x"
+    section: Global
+    description: Oversampling interno degli oscillatori (Analog, FM6, Wavetable, PD) durante la riproduzione in tempo reale.
+    automatable: false
+
+  - id: oversampling_offline
+    name: Offline Oversampling
+    type: choice
+    choices: ["1x", "2x", "4x", "8x"]
+    default: "4x"
+    section: Global
+    description: Oversampling usato durante il render/bounce offline della DAW.
+    automatable: false
