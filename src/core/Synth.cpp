@@ -39,6 +39,11 @@ Synth::Synth (juce::AudioProcessor& p, juce::AudioProcessorValueTreeState& s) : 
     mpeOn = get (ParamIDs::mpeOn);
     mpeZone = get (ParamIDs::mpeZone);
     mpeBend = get (ParamIDs::mpeBendRange);
+    masterTune = get (ParamIDs::masterTune);
+    osRealtime = get (ParamIDs::oversamplingRealtime);
+    osOffline = get (ParamIDs::oversamplingOffline);
+    midiHostPending = std::make_unique<std::atomic<float>[]> (hostParams.size());
+    for (size_t i = 0; i < hostParams.size(); ++i) midiHostPending[i].store (-1.0f);
     for (size_t i = 0; i < 12; ++i) scaleSlots[i] = get (ParamIDs::scaleSlot[i]);
     for (size_t i = 0; i < numMacros; ++i) macros[i] = get (ParamIDs::macro[i]);
     for (size_t i = 0; i < numAutomationSlots; ++i) autoSlots[i] = get (ParamIDs::automationSlot[i]);
@@ -80,6 +85,8 @@ Synth::Synth (juce::AudioProcessor& p, juce::AudioProcessorValueTreeState& s) : 
 
     globals.midi = &midi;
     globals.layers = &runtime;
+    globals.tuning = tuningFinal.data();
+    liveMidiMap = &midiMap.read();
 }
 
 Synth::~Synth() = default;
@@ -139,6 +146,31 @@ void Synth::readHostParams() noexcept
 
     for (size_t m = 0; m < numMacros; ++m)
         globals.macros[m] = macros[m]->getValue();
+
+    // MIDI learn: CC values not yet pushed to the host act immediately as overrides.
+    liveMidiMap = &midiMap.read();
+    if (midiHostDirty.load (std::memory_order_relaxed))
+        for (size_t i = 0; i < hostOverride.size(); ++i)
+            hostOverride[i] = midiHostPending[i].load (std::memory_order_relaxed);
+
+    // Master tune + microtuning -> per-note pitch offsets.
+    {
+        const float master = 12.0f * std::log2 (hostValue (masterTune) / 440.0f);
+        const auto& tt = tuningTable.read();
+        for (size_t k = 0; k < 128; ++k) tuningFinal[k] = tt.semis[k] + master;
+    }
+
+    // Oversampling (§5): realtime / offline factor for all oscillator engines.
+    {
+        const int f = 1 << juce::jlimit (0, 3, idx (hostValue (processor.isNonRealtime() ? osOffline : osRealtime)));
+        if (f != oversampling)
+        {
+            oversampling = f;
+            for (size_t l = 0; l < numLayers; ++l)
+                for (auto* e : { analogEngines[l].get(), addEngines[l].get(), fmEngines[l].get(), wtEngines[l].get(), pdEngines[l].get() })
+                    e->setOversampling (f);
+        }
+    }
 
     const auto& am = automationMap.read();
     for (size_t s = 0; s < numAutomationSlots; ++s)
@@ -528,6 +560,7 @@ void Synth::handleMidi (const juce::MidiMessage& m) noexcept
         const int n = m.getControllerNumber();
         const bool down = m.getControllerValue() >= 64;
         cs.cc[(size_t) n] = (float) m.getControllerValue() / 127.0f;
+        applyMidiCC (ch, n, m.getControllerValue());
         if (n == 64) pedal (ch, true, down);
         else if (n == 66) pedal (ch, false, down);
         else if (n == 120 || n == 123)
@@ -771,11 +804,13 @@ bool Synth::assignMacro (int macro, ParamTarget t, float minNorm, float maxNorm)
         {
             m.items[(size_t) i].min = minNorm; m.items[(size_t) i].max = maxNorm;
             macroMap.publish();
+            ++edits;
             return true;
         }
     if (m.count >= maxMacroAssignments || ! t.isValid()) return false;
     m.items[(size_t) m.count++] = { macro, t, juce::jlimit (0.0f, 1.0f, minNorm), juce::jlimit (0.0f, 1.0f, maxNorm) };
     macroMap.publish();
+    ++edits;
     return true;
 }
 
@@ -787,6 +822,7 @@ void Synth::clearMacroAssignments (int macro)
         if (m.items[(size_t) i].macro != macro) m.items[(size_t) w++] = m.items[(size_t) i];
     m.count = w;
     macroMap.publish();
+    ++edits;
 }
 
 int Synth::assignAutomation (int layer, int lpId)
@@ -802,6 +838,7 @@ int Synth::assignAutomation (int layer, int lpId)
     autoSlots[(size_t) slot]->setValueNotifyingHost (paramRange (lpId).toNorm (stores[(size_t) layer].get (lpId)));
     a.slots[(size_t) slot] = t;
     automationMap.publish();
+    ++edits;
     return slot;
 }
 
@@ -813,6 +850,7 @@ void Synth::clearAutomation (int slot)
         stores[(size_t) t.layer].set (t.id, paramRange (t.id).fromNorm (autoSlots[(size_t) slot]->getValue()));
     a.slots[(size_t) slot] = {};
     automationMap.publish();
+    ++edits;
 }
 
 juce::ValueTree Synth::copyLayer (int l) const
@@ -867,7 +905,7 @@ bool Synth::loadLayerPreset (int l, const juce::File& f)
     return false;
 }
 
-juce::ValueTree Synth::saveState() const
+juce::ValueTree Synth::saveState (bool includeGlobal) const
 {
     juce::ValueTree core ("CORE");
     for (int l = 0; l < numLayers; ++l)
@@ -903,11 +941,22 @@ juce::ValueTree Synth::saveState() const
             autoTree.appendChild (e, nullptr);
         }
     core.appendChild (autoTree, nullptr);
+    if (includeGlobal)
+    {
+        core.appendChild (midiMapToTree(), nullptr);
+        juce::ValueTree tun ("TUNING");
+        tun.setProperty ("name", tuningName, nullptr);
+        juce::StringArray v;
+        for (auto x : tuningTable.latest().semis) v.add (juce::String (x, 6));
+        tun.setProperty ("semis", v.joinIntoString (" "), nullptr);
+        core.appendChild (tun, nullptr);
+    }
     return core;
 }
 
-void Synth::loadState (const juce::ValueTree& core)
+void Synth::loadState (const juce::ValueTree& core, bool loadGlobal)
 {
+    ++edits;
     auto findLp = [] (const juce::String& id)
     {
         for (int i = 0; i < lp::count; ++i)
@@ -944,5 +993,215 @@ void Synth::loadState (const juce::ValueTree& core)
             a.slots[(size_t) s] = { layer, id };
     }
     automationMap.publish();
+
+    if (loadGlobal)
+    {
+        midiMapFromTree (core.getChildWithName ("MIDIMAP"));
+        const auto tun = core.getChildWithName ("TUNING");
+        auto v = juce::StringArray::fromTokens (tun.getProperty ("semis").toString(), " ", "");
+        if (tun.isValid() && v.size() == 128)
+        {
+            TuningTable t;
+            for (int k = 0; k < 128; ++k) t.semis[(size_t) k] = juce::jlimit (-128.0f, 128.0f, v[k].getFloatValue());
+            setTuning (t, tun.getProperty ("name").toString());
+        }
+        else
+            resetTuning();
+    }
+}
+
+void Synth::resetAll()
+{
+    for (auto& st : stores) st.init();
+    macroMap.edit().count = 0;
+    macroMap.publish();
+    automationMap.edit().slots.fill ({});
+    automationMap.publish();
+    ++edits;
+}
+
+uint32_t Synth::editCount() const noexcept
+{
+    uint32_t n = edits.load (std::memory_order_relaxed);
+    for (const auto& st : stores) n += st.getVersion();
+    return n;
+}
+
+// ------------------------------------------------------------------------------------------------ MIDI learn
+void Synth::applyMidiCC (int ch, int cc, int value) noexcept
+{
+    if (learnArmed.load (std::memory_order_relaxed) && cc < 120)
+    {
+        learnedCC.store (((ch << 8) | cc) + 1);
+        learnArmed.store (false);
+        return;
+    }
+    const auto& mm = *liveMidiMap;
+    const float norm = (float) value / 127.0f;
+    for (int i = 0; i < mm.count; ++i)
+    {
+        const auto& m = mm.items[(size_t) i];
+        if (m.cc != cc || (m.channel >= 0 && m.channel != ch)) continue;
+        if (m.target.layer >= 0 && m.target.layer < numLayers && m.target.id >= 0 && m.target.id < lp::count)
+            stores[(size_t) m.target.layer].set (m.target.id, paramRange (m.target.id).fromNorm (norm));
+        else if (m.target.layer == ParamTarget::host && m.target.id >= 0 && m.target.id < (int) hostOverride.size())
+        {
+            midiHostPending[(size_t) m.target.id].store (norm, std::memory_order_relaxed);
+            hostOverride[(size_t) m.target.id] = norm;
+            midiHostDirty.store (true, std::memory_order_release);
+        }
+    }
+}
+
+void Synth::startMidiLearn (ParamTarget t)
+{
+    learnTarget = t;
+    learnedCC.store (0);
+    learnArmed.store (t.isValid());
+}
+
+bool Synth::pollMidiLearn()
+{
+    const int v = learnedCC.exchange (0);
+    if (v == 0 || ! learnTarget.isValid()) return false;
+    // A learned CC is bound to one parameter: replace older bindings of the target and of the CC.
+    removeMidiMapping (learnTarget);
+    const int cc = (v - 1) & 0xff, ch = (v - 1) >> 8;
+    auto& m = midiMap.edit();
+    int w = 0;
+    for (int i = 0; i < m.count; ++i)
+        if (m.items[(size_t) i].cc != cc) m.items[(size_t) w++] = m.items[(size_t) i];
+    m.count = w;
+    juce::ignoreUnused (ch);   // learned mappings respond on any channel
+    return addMidiMapping (cc, -1, std::exchange (learnTarget, {}));
+}
+
+void Synth::flushMidiToHost()
+{
+    if (! midiHostDirty.exchange (false, std::memory_order_acquire)) return;
+    for (size_t i = 0; i < hostParams.size(); ++i)
+    {
+        float v = midiHostPending[i].load (std::memory_order_relaxed);
+        if (v < 0.0f) continue;
+        if (hostParams[i] != nullptr && std::abs (hostParams[i]->getValue() - v) > 1.0e-6f)
+            hostParams[i]->setValueNotifyingHost (v);
+        midiHostPending[i].compare_exchange_strong (v, -1.0f);   // keep a newer value from the audio thread
+    }
+}
+
+bool Synth::addMidiMapping (int cc, int channel, ParamTarget t)
+{
+    auto& m = midiMap.edit();
+    if (! t.isValid() || cc < 0 || cc > 127 || m.count >= maxMidiMappings) return false;
+    for (int i = 0; i < m.count; ++i)
+        if (m.items[(size_t) i].cc == cc && m.items[(size_t) i].channel == channel && m.items[(size_t) i].target == t)
+            return true;
+    m.items[(size_t) m.count++] = { cc, juce::jlimit (-1, 15, channel), t };
+    midiMap.publish();
+    ++edits;
+    return true;
+}
+
+void Synth::removeMidiMapping (ParamTarget t)
+{
+    auto& m = midiMap.edit();
+    int w = 0;
+    for (int i = 0; i < m.count; ++i)
+        if (! (m.items[(size_t) i].target == t)) m.items[(size_t) w++] = m.items[(size_t) i];
+    if (w == m.count) return;
+    m.count = w;
+    midiMap.publish();
+    ++edits;
+}
+
+void Synth::clearMidiMap()
+{
+    midiMap.edit().count = 0;
+    midiMap.publish();
+    ++edits;
+}
+
+int Synth::midiMappingFor (ParamTarget t) const noexcept
+{
+    const auto& m = midiMap.latest();
+    for (int i = 0; i < m.count; ++i)
+        if (m.items[(size_t) i].target == t) return m.items[(size_t) i].cc;
+    return -1;
+}
+
+juce::ValueTree Synth::midiMapToTree() const
+{
+    juce::ValueTree tree ("MIDIMAP");
+    const auto& m = midiMap.latest();
+    for (int i = 0; i < m.count; ++i)
+    {
+        const auto& it = m.items[(size_t) i];
+        juce::ValueTree e ("CC");
+        e.setProperty ("cc", it.cc, nullptr);
+        e.setProperty ("channel", it.channel, nullptr);
+        e.setProperty ("layer", it.target.layer, nullptr);
+        e.setProperty ("param", it.target.layer == ParamTarget::host ? juce::String (hostParams[(size_t) it.target.id]->getParameterID())
+                                                                     : juce::String (lp::descs[(size_t) it.target.id].id), nullptr);
+        tree.appendChild (e, nullptr);
+    }
+    return tree;
+}
+
+void Synth::midiMapFromTree (const juce::ValueTree& tree)
+{
+    auto& m = midiMap.edit();
+    m.count = 0;
+    for (auto e : tree)
+    {
+        const int layer = e.getProperty ("layer", ParamTarget::none), cc = e.getProperty ("cc", -1);
+        const auto pid = e.getProperty ("param").toString();
+        int id = -1;
+        if (layer == ParamTarget::host) id = hostParamIndex (pid);
+        else for (int i = 0; i < lp::count && id < 0; ++i) if (pid == lp::descs[(size_t) i].id) id = i;
+        if (id < 0 || cc < 0 || cc > 127 || layer < ParamTarget::host || layer >= numLayers || m.count >= maxMidiMappings) continue;
+        m.items[(size_t) m.count++] = { cc, juce::jlimit (-1, 15, (int) e.getProperty ("channel", -1)), { layer, id } };
+    }
+    midiMap.publish();
+    ++edits;
+}
+
+bool Synth::saveMidiMap (const juce::File& f) const
+{
+    if (auto xml = midiMapToTree().createXml()) return xml->writeTo (f);
+    return false;
+}
+
+bool Synth::loadMidiMap (const juce::File& f)
+{
+    auto xml = juce::XmlDocument::parse (f);
+    if (xml == nullptr || ! xml->hasTagName ("MIDIMAP")) return false;
+    midiMapFromTree (juce::ValueTree::fromXml (*xml));
+    return true;
+}
+
+// ------------------------------------------------------------------------------------------------ Tuning
+void Synth::setTuning (const TuningTable& t, const juce::String& name)
+{
+    tuningTable.edit() = t;
+    tuningTable.publish();
+    tuningName = name;
+    ++edits;
+}
+
+void Synth::resetTuning() { setTuning ({}, {}); }
+
+bool Synth::loadTuningFile (const juce::File& f, juce::String* error)
+{
+    auto t = tuning::loadFile (f, error);
+    if (! t) return false;
+    setTuning (*t, f.getFileNameWithoutExtension());
+    return true;
+}
+
+float Synth::tunedPitch (int note) const noexcept
+{
+    const int n = juce::jlimit (0, 127, note);
+    return (float) n + tuningTable.latest().semis[(size_t) n]
+           + 12.0f * std::log2 (masterTune->convertFrom0to1 (masterTune->getValue()) / 440.0f);
 }
 } // namespace chroma

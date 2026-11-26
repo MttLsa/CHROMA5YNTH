@@ -22,6 +22,7 @@ public:
 
     void init()
     {
+        touch();
         for (int u = 0; u < wt::numUserSlots; ++u)
             setUserTable (u, {}, 0);
         for (auto& s : addSpectra)
@@ -38,8 +39,13 @@ public:
     void set (int id, float v) noexcept
     {
         const auto& d = lp::descs[(size_t) id];
-        values[(size_t) id].store (juce::jlimit (d.min, d.max, v), std::memory_order_relaxed);
+        v = juce::jlimit (d.min, d.max, v);
+        if (std::abs (values[(size_t) id].exchange (v, std::memory_order_relaxed) - v) > 0.0f)
+            version.fetch_add (1, std::memory_order_relaxed);
     }
+    // Bumped on every edit (undo history); call touch() after editing tables/spectra/curve directly.
+    uint32_t getVersion() const noexcept { return version.load (std::memory_order_relaxed); }
+    void touch() noexcept { version.fetch_add (1, std::memory_order_relaxed); }
 
     LfoCustomTable& customTable (int lfo) noexcept { return custom[(size_t) lfo]; }
 
@@ -48,6 +54,7 @@ public:
     struct UserTable { std::vector<float> frames; int numFrames = 0; };
     void setUserTable (int slot, std::vector<float> frames, int numFrames)
     {
+        touch();
         auto& u = userRaw[(size_t) slot];
         numFrames = juce::jlimit (0, wt::maxFrames, juce::jmin (numFrames, (int) (frames.size() / (size_t) wt::frameSize)));
         frames.resize ((size_t) numFrames * wt::frameSize);
@@ -170,6 +177,7 @@ public:
 
 private:
     std::array<std::atomic<float>, lp::count> values;
+    std::atomic<uint32_t> version { 0 };
     std::array<LfoCustomTable, 4> custom;
     std::array<UserTable, wt::numUserSlots> userRaw;
     std::array<wt::TableSlot, wt::numUserSlots> userSlots;

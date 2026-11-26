@@ -275,7 +275,14 @@ void Voice::controlTick (VoiceGlobals& G, int n) noexcept
 
     const float noteBend = member ? vc.bend * (float) G.mpe.bendRange : 0.0f;
     const float bend = gc.bend * L.base[(size_t) lp::bendRange] + noteBend;
-    const float target = glidePitch + L.transpose + val (L, lp::pitch) + bend;
+    float tune = 0.0f;
+    if (G.tuning != nullptr)   // per-note offset, interpolated so glides move between tuned pitches
+    {
+        const float gp = std::clamp (glidePitch, 0.0f, 127.0f);
+        const int i0 = std::min ((int) gp, 126);
+        tune = G.tuning[i0] + (G.tuning[i0 + 1] - G.tuning[i0]) * (gp - (float) i0);
+    }
+    const float target = glidePitch + tune + L.transpose + val (L, lp::pitch) + bend;
     pitchStart = havePitch ? pitchEnd : target;
     pitchEnd = target;
     havePitch = true;

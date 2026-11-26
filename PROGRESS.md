@@ -83,3 +83,13 @@
 - tests/test_pd.cpp: chiusura/continuità della mappa (forme × shape × parametri casuali), sine pura ad Amount 0, brillantezza vs Amount, spettri (Square solo dispari, Symmetry 50%/100%), Reso, pitch, modulazione senza click, aliasing 4× < −70 dB, Shape/Morph/Curve/Custom, Warp/Asym/Offset, PD ENV, Ring/Noise, unison/pan, integrazione Synth + stato. 97/97 verdi (Linux).
 - CPU (Release, Linux): voce 2 linee con morph/curve/ring a 2× ≈ 2.3% core @48 kHz. Bench: `chroma_tests "PD: CPU*"`.
 - Aperti: editor a punti della curva Custom e GUI PD in fase GUI; SIMD/ottimizzazione per unison alto (mappa preparata per campione).
+
+## FASE 9 – Preset, Global, MIDI ✅ (senza preset di fabbrica)
+- params/global.yaml: Master Tune (A4 415–466 Hz), Oversampling realtime (2×) / offline (4×) → setOversampling di tutti gli engine (isNonRealtime). Global + MPE + MIDI map + microtuning = impostazioni globali: nel progetto, esclusi da preset/undo.
+- src/shared/Tuning: parser .scl (cents/ratio), .kbm (mappa, riferimento, tasti 'x' = 12-TET), .tun AnaMark ([Tuning]/[Exact Tuning], BaseFreq) → tabella 128 offset; Voice interpola l'offset sul glidePitch (+ Master Tune). Stato CORE/TUNING.
+- MIDI learn (Synth): learn armato → primo CC sull'audio thread, finalizzato da idle(); layer param via store atomico, host param override immediato + push all'host dal message thread; 1 CC = 1 parametro, canale specifico opzionale; MIDIMAP nello stato + file .c5midi.
+- src/preset/PresetManager: Multi (.c5multi, stato completo) / Layer (.c5layer, qualunque slot), metadati nome/categoria/autore/tag, ricerca a parole, filtri, preferiti (favourites.txt), Save/Load/Rename/Delete/Import/Export; libreria ~/Library/Audio/Presets/TMFU audiovibe/CHROMA5YNTH.
+- History (undo/redo 50 passi a snapshot, checkpoint dopo 0.4 s di inattività via contatori di modifica; A/B con copia), Randomizer (globale/Layer/sezione o prefisso, quantità, parametri protetti), Init. Preset load/A-B/Randomize/Init annullabili.
+- GUI generica: toolbar Presets/Undo/Redo/A/B/A>B/Randomize+quantità/Init/Tuning/MIDI, PresetBrowser overlay, clic destro sui controlli → MIDI Learn (menu in italiano). Manuale: docs/manual/presets-global.md.
+- tests/test_global.cpp (16 casi): tuning/parsers, pitch misurato con Master Tune e microtuning, oversampling RT/offline, MIDI learn, undo/redo/idle, A/B, randomize, init, preset Multi/Layer, browser. 113/113 verdi (Linux).
+- Aperti: MIDI learn solo sui parametri host nella GUI generica (layer param via API, GUI definitiva); tools/presetnorm e 64 preset di fabbrica in fase dedicata.

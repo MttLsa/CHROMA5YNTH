@@ -2,16 +2,21 @@
 
 #include <juce_audio_processors/juce_audio_processors.h>
 #include "core/Synth.h"
+#include "core/History.h"
+#include "core/Randomizer.h"
+#include "preset/PresetManager.h"
 
 namespace chroma
 {
 juce::AudioProcessorValueTreeState::ParameterLayout createParameterLayout();
 
-class ChromaProcessor final : public juce::AudioProcessor
+class ChromaProcessor final : public juce::AudioProcessor,
+                              private juce::AudioProcessorListener,
+                              private juce::Timer
 {
 public:
     ChromaProcessor();
-    ~ChromaProcessor() override = default;
+    ~ChromaProcessor() override;
 
     void prepareToPlay (double sampleRate, int samplesPerBlock) override;
     void releaseResources() override {}
@@ -40,9 +45,46 @@ public:
     juce::AudioProcessorValueTreeState& getState() noexcept { return state; }
     Synth& getSynth() noexcept { return synth; }
 
+    // ---- §5/§6 state tools (message thread)
+    static bool isGlobalParam (const juce::String& id);
+    // Editable state; includeGlobal = false leaves out Global settings, MPE, MIDI map and microtuning.
+    juce::ValueTree captureState (bool includeGlobal);
+    void restoreState (const juce::ValueTree&, bool keepGlobal);
+    void idle();                                     // MIDI learn, CC -> host, undo checkpoints (timer, 30 Hz)
+
+    History& getHistory() noexcept { return history; }
+    bool undo();
+    bool redo();
+    void commitHistory();                            // records pending edits as an undo step now
+    void selectAB (int slot);
+    int randomize (const RandomizeScope&, float amount, juce::int64 seed = 0);   // seed 0 = time based
+    void initAll();                                  // Init: whole patch back to defaults (Global kept)
+
+    PresetManager& getPresets();
+    void setPresetRoot (const juce::File&);          // tests / custom library location
+    juce::File saveMultiPreset (const PresetMeta&);
+    bool loadMultiPreset (const juce::File&);
+    juce::File saveLayerPreset (int layer, const PresetMeta&);
+    bool loadLayerPreset (int layer, const juce::File&);
+    const juce::String& getCurrentPresetName() const noexcept { return currentPresetName; }
+
 private:
+    void audioProcessorParameterChanged (juce::AudioProcessor*, int, float) override { ++paramEdits; }
+    void audioProcessorChanged (juce::AudioProcessor*, const juce::AudioProcessorListener::ChangeDetails&) override {}
+    void timerCallback() override { idle(); }
+    uint32_t editCounter() const noexcept { return paramEdits.load() + synth.editCount(); }
+    void markClean();
+
     juce::AudioProcessorValueTreeState state;
     Synth synth { *this, state };
+    History history;
+    std::unique_ptr<PresetManager> presets;
+    juce::File presetRoot;
+    juce::String currentPresetName { "Init" };
+    std::atomic<uint32_t> paramEdits { 0 };
+    uint32_t lastSeenEdits = 0;
+    double lastEditMs = 0.0;
+    bool pendingCommit = false;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (ChromaProcessor)
 };
