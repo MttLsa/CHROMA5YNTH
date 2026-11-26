@@ -5,6 +5,7 @@
 #include "shared/Smoothing.h"
 #include "shared/TripleBuffer.h"
 #include "shared/Voice.h"
+#include "shared/fx/FxChain.h"
 #include <juce_audio_processors/juce_audio_processors.h>
 #include <memory>
 
@@ -100,6 +101,8 @@ private:
     int pickSteal (int layer) const noexcept;
     void startVoice (int v, const VoiceStart&) noexcept;
     void renderChunk (float* const* out, int numChannels, int start, int n) noexcept;
+    void updateLayerFx() noexcept;
+    void updateMasterFx() noexcept;
     int layerVoiceCount (int layer) const noexcept;
     bool layerMono (int layer) const noexcept;
 
@@ -115,7 +118,8 @@ private:
     std::array<LayerParamStore, numLayers> stores;
     std::array<LayerRuntime, numLayers> runtime {};
     std::array<LayerState, numLayers> layers;
-    std::array<std::unique_ptr<IEngine>, numLayers> engines;
+    std::array<std::unique_ptr<IEngine>, numLayers> analogEngines, fmEngines, sineEngines;
+    std::array<int, numLayers> engineIndex {};
     std::array<Voice, maxPoolVoices> voices {};
     MidiState midi;
     VoiceGlobals globals;
@@ -131,10 +135,16 @@ private:
     uint16_t scaleMasks[12] {};
     int pool = 24;
     bool anySolo = false;
-    std::vector<float> scratchL, scratchR;
+    std::vector<float> scratchL, scratchR, bypassL, bypassR;
     OnePole paramSmoother;
     LinearRamp masterGain;
     TruePeakLimiter limiter;
+
+    // LAYER FX (§2) and MASTER FX (§4), shared modules in src/shared/fx.
+    std::array<fx::LayerFxChain, numLayers> layerFx;
+    fx::MasterFxChain masterFx;
+    std::vector<juce::RangedAudioParameter*> masterFxParams;   // ordered as in params/master_fx.yaml
+    std::vector<float> monoScratch;
     double sampleRate = 48000.0;
     int tickRemaining = 0;
     uint64_t sampleClock = 0, noteOrder = 0;

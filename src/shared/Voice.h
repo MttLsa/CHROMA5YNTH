@@ -1,5 +1,7 @@
 #pragma once
+#include "Drift.h"
 #include "Envelope.h"
+#include "Filter.h"
 #include "Smoothing.h"
 #include "VoiceContext.h"
 #include <cstdint>
@@ -40,6 +42,9 @@ public:
     bool pendingRelease = false;
     float glidePitch = 60.0f;          // note portion of the pitch (with glide)
 
+    // Mod matrix offsets (normalised, by lp::Id) of the last control tick.
+    const float* modOffsets() const noexcept { return offsets.data(); }
+
 private:
     float val (const LayerRuntime&, int id) const noexcept;
     EnvParams makeEnv (const LayerRuntime&, int i) const noexcept;
@@ -58,6 +63,7 @@ private:
     std::array<LfoParams, 4> lfoP {};
     ModMatrixState matrix;
     std::array<float, lp::count> offsets {};
+    std::array<float, 4> lfoOut {};
 
     float glideTarget = 60.0f, glideStep = 0.0f, glideTime = 0.0f;
     bool gliding = false;
@@ -67,6 +73,15 @@ private:
     bool havePitch = false;
     int tickLen = controlBlock, tickPos = 0;
     LinearRamp gainL, gainR;
+
+    // FILTER LIBRARY + DRIFT (§2)
+    Filter filter;
+    Drift drift;
+    bool filterActive = false, driftActive = false, haveCutoff = false;
+    float cutStart = 1000.0f, cutEnd = 1000.0f;   // Hz, interpolated across the tick
+    void updateFilter (const LayerRuntime&, float dt) noexcept;
+    void renderEngine (IEngine&, EngineVoiceParams, VoiceGlobals&, int n, float p0, float p1) noexcept;
+    void runFilter (float* l, float* r, int n, float p0, float p1) noexcept;
 
     // stealing fade
     VoiceStart pending;

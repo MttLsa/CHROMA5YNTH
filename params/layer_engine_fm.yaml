@@ -1,0 +1,88 @@
+# Engine FM6 (§3C). Parametri interni di ogni Layer (attivi quando L{n} Engine = FM6).
+scope: layer
+
+lists:
+  fm_algorithms: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16",
+                  "17", "18", "19", "20", "21", "22", "23", "24", "25", "26", "27", "28", "29", "30", "31", "32", Custom]
+  fm_waves: [Sine, Half Sine, Abs Sine, Pulse Sine, Alt Sine, Camel Sine, Square, Saw]
+  fm_ks_curves: ["-Lin", "-Exp", "+Exp", "+Lin"]
+
+blocks:
+  - repeat: { count: 6 }
+    section: "FM6 · Op {n}"
+    params:
+      - { id: "fm_op{n}_on", array: fmOpOn, name: "Op {n}", type: bool, default: true, description: "Attiva l'operatore {n} (spento o a livello 0 = zero CPU; non modula e non suona)." }
+      - { id: "fm_op{n}_mode", array: fmOpMode, name: "Op {n} Ratio/Fixed", type: choice, choices: [Ratio, Fixed], default: Ratio, description: "Ratio = frequenza proporzionale alla nota; Fixed = frequenza fissa in Hz." }
+      - { id: "fm_op{n}_ratio", array: fmOpRatio, name: "Op {n} Ratio", type: float, min: 0.0625, max: 64.0, default: 1.0, skew: 2.0, unit: x, description: "Rapporto di frequenza rispetto alla nota (Ratio). Destinazione Mod Matrix \"Op freq\"." }
+      - { id: "fm_op{n}_coarse", array: fmOpCoarse, name: "Op {n} Coarse", type: int, min: -24, max: 24, default: 0, unit: st, description: "Trasposizione in semitoni (Ratio e Fixed)." }
+      - { id: "fm_op{n}_fine", array: fmOpFine, name: "Op {n} Fine", type: float, min: -100.0, max: 100.0, default: 0.0, unit: ct, description: "Intonazione fine in cent (Ratio e Fixed)." }
+      - { id: "fm_op{n}_fixed", array: fmOpFixed, name: "Op {n} Fixed Hz", type: float, min: 1.0, max: 20000.0, default: 440.0, skew: 440.0, unit: Hz, description: "Frequenza in modalità Fixed (non segue la tastiera)." }
+      - { id: "fm_op{n}_detune", array: fmOpDetune, name: "Op {n} Detune", type: float, min: -10.0, max: 10.0, default: 0.0, unit: ct, description: "Piccolo scostamento in cent per battimenti tra operatori." }
+      - { id: "fm_op{n}_wave", array: fmOpWave, name: "Op {n} Wave", type: choice, choices_from: fm_waves, default: Sine, description: "Forma dell'operatore: Sine + 7 forme derivate dalla sinusoide (semionda, raddrizzata, impulsi, doppia frequenza alternata, quadra e saw morbide)." }
+      - { id: "fm_op{n}_phase", array: fmOpPhase, name: "Op {n} Phase", type: float, min: 0.0, max: 360.0, default: 0.0, unit: "°", mod_dest: false, description: "Fase iniziale usata con Phase Reset." }
+      - { id: "fm_op{n}_reset", array: fmOpReset, name: "Op {n} Phase Reset", type: bool, default: true, description: "On = la fase riparte da Phase a ogni nota; Off = fase libera." }
+      - { id: "fm_op{n}_sync", array: fmOpSync, name: "Op {n} Sync", type: bool, default: false, description: "Hard sync: la fase dell'operatore riparte a ogni ciclo della nota fondamentale (timbri formantici con rapporti non interi)." }
+      - { id: "fm_op{n}_feedback", array: fmOpFeedback, name: "Op {n} Feedback", type: float, min: 0.0, max: 1.0, default: 0.0, unit: "%", description: "Auto-modulazione dell'operatore (negli algoritmi 4 e 6 l'anello di feedback dell'Op 6 passa da Op 4 / Op 5). Destinazione \"Op feedback\"." }
+      - { id: "fm_op{n}_level", array: fmOpLevel, name: "Op {n} Output Level", type: float, min: 0.0, max: 1.0, default: 0.0, default_by_index: { 1: 1.0 }, unit: "%", description: "Livello d'uscita con legge logaritmica (−6 dB ogni 1/12 di corsa, come una scala 0–99): per un modulatore è l'indice di modulazione. Destinazione \"Op level\"." }
+      - { id: "fm_op{n}_vel_sens", array: fmOpVelSens, name: "Op {n} Velocity Sens", type: float, min: 0.0, max: 1.0, default: 0.0, unit: "%", description: "Quanto la velocity riduce il livello dell'operatore (100% = fino a −42 dB a velocity minima)." }
+      - { id: "fm_op{n}_am_sens", array: fmOpAmSens, name: "Op {n} AM Sens", type: float, min: 0.0, max: 1.0, default: 0.0, unit: "%", description: "Sensibilità dell'operatore alla modulazione d'ampiezza degli LFO FM (Amp Depth)." }
+      - { id: "fm_op{n}_pan", array: fmOpPan, name: "Op {n} Pan", type: float, min: -1.0, max: 1.0, default: 0.0, description: "Pan dell'operatore quando è un carrier." }
+      - { id: "fm_op{n}_ks_break", array: fmOpKsBreak, name: "Op {n} Breakpoint", type: int, min: 0, max: 127, default: 60, description: "Nota MIDI di riferimento del key scaling di livello (60 = C3)." }
+      - { id: "fm_op{n}_ks_left", array: fmOpKsLeftDepth, name: "Op {n} Left Depth", type: float, min: 0.0, max: 1.0, default: 0.0, unit: "%", mod_dest: false, description: "Profondità del key scaling sotto il breakpoint." }
+      - { id: "fm_op{n}_ks_right", array: fmOpKsRightDepth, name: "Op {n} Right Depth", type: float, min: 0.0, max: 1.0, default: 0.0, unit: "%", mod_dest: false, description: "Profondità del key scaling sopra il breakpoint." }
+      - { id: "fm_op{n}_ks_left_curve", array: fmOpKsLeftCurve, name: "Op {n} Left Curve", type: choice, choices_from: fm_ks_curves, default: "-Lin", description: "Curva sotto il breakpoint: − attenua, + amplifica; Lin lineare in ottave, Exp esponenziale." }
+      - { id: "fm_op{n}_ks_right_curve", array: fmOpKsRightCurve, name: "Op {n} Right Curve", type: choice, choices_from: fm_ks_curves, default: "-Lin", description: "Curva sopra il breakpoint." }
+      - { id: "fm_op{n}_rate_scale", array: fmOpRateScale, name: "Op {n} Rate Scaling", type: float, min: 0.0, max: 1.0, default: 0.0, unit: "%", mod_dest: false, description: "Le note alte accorciano i tempi dell'inviluppo dell'operatore (100% = ×2 ogni ottava)." }
+
+  - repeat: { count: 6 }
+    section: "FM6 · Op {n} Env"
+    mod_dest: false
+    params:
+      - { id: "fm_op{n}_attack", array: fmOpAttack, name: "Op {n} Attack", type: float, min: 0.0, max: 10.0, default: 0.002, skew: 0.5, unit: s, description: "Attacco dell'inviluppo dell'operatore." }
+      - { id: "fm_op{n}_hold", array: fmOpHold, name: "Op {n} Hold", type: float, min: 0.0, max: 10.0, default: 0.0, skew: 0.5, unit: s, description: "Hold al picco." }
+      - { id: "fm_op{n}_decay", array: fmOpDecay, name: "Op {n} Decay", type: float, min: 0.0, max: 10.0, default: 1.0, skew: 0.5, unit: s, description: "Decadimento." }
+      - { id: "fm_op{n}_sustain", array: fmOpSustain, name: "Op {n} Sustain", type: float, min: 0.0, max: 1.0, default: 1.0, unit: "%", description: "Livello di sustain." }
+      - { id: "fm_op{n}_release", array: fmOpRelease, name: "Op {n} Release", type: float, min: 0.0, max: 20.0, default: 0.3, skew: 1.0, unit: s, description: "Rilascio (la voce termina con l'Amp Env del Layer)." }
+      - { id: "fm_op{n}_attack_curve", array: fmOpAttackCurve, name: "Op {n} Attack Curve", type: choice, choices_from: curves, default: Linear, description: "Curva dell'attacco." }
+      - { id: "fm_op{n}_decay_curve", array: fmOpDecayCurve, name: "Op {n} Decay Curve", type: choice, choices_from: curves, default: Exponential, description: "Curva del decay." }
+      - { id: "fm_op{n}_release_curve", array: fmOpReleaseCurve, name: "Op {n} Release Curve", type: choice, choices_from: curves, default: Exponential, description: "Curva del release." }
+      - { id: "fm_op{n}_loop", array: fmOpLoop, name: "Op {n} Env Loop", type: bool, default: false, description: "Ripete Attack-Hold-Decay finché la nota è tenuta." }
+      - { id: "fm_op{n}_time_scale", array: fmOpTimeScale, name: "Op {n} Time Scale", type: float, min: 0.1, max: 10.0, default: 1.0, skew: 1.0, unit: x, description: "Moltiplica tutti i tempi dell'inviluppo." }
+
+  - repeat: { count: 6 }
+    section: "FM6 · Custom"
+    mod_dest: false
+    params:
+      - { id: "fm_c1_to{n}", array: fmCustomFrom1, name: "Custom Op 1 → Op {n}", type: float, min: -1.0, max: 1.0, default: 0.0, description: "Matrice Custom: modulazione di Op 1 su Op {n} (segno = polarità; diagonale = feedback)." }
+      - { id: "fm_c2_to{n}", array: fmCustomFrom2, name: "Custom Op 2 → Op {n}", type: float, min: -1.0, max: 1.0, default: 0.0, description: "Matrice Custom: modulazione di Op 2 su Op {n}." }
+      - { id: "fm_c3_to{n}", array: fmCustomFrom3, name: "Custom Op 3 → Op {n}", type: float, min: -1.0, max: 1.0, default: 0.0, description: "Matrice Custom: modulazione di Op 3 su Op {n}." }
+      - { id: "fm_c4_to{n}", array: fmCustomFrom4, name: "Custom Op 4 → Op {n}", type: float, min: -1.0, max: 1.0, default: 0.0, description: "Matrice Custom: modulazione di Op 4 su Op {n}." }
+      - { id: "fm_c5_to{n}", array: fmCustomFrom5, name: "Custom Op 5 → Op {n}", type: float, min: -1.0, max: 1.0, default: 0.0, description: "Matrice Custom: modulazione di Op 5 su Op {n}." }
+      - { id: "fm_c6_to{n}", array: fmCustomFrom6, name: "Custom Op 6 → Op {n}", type: float, min: -1.0, max: 1.0, default: 0.0, description: "Matrice Custom: modulazione di Op 6 su Op {n}." }
+      - { id: "fm_c_out{n}", array: fmCustomOut, name: "Custom Op {n} Out", type: float, min: 0.0, max: 1.0, default: 0.0, default_by_index: { 1: 1.0 }, unit: "%", description: "Matrice Custom: livello dell'Op {n} come carrier (0 = non suona)." }
+
+  - repeat: { count: 2 }
+    section: "FM6 · LFO"
+    params:
+      - { id: "fm_lfo{n}_pitch", array: fmLfoPitch, name: "FM LFO {n} Pitch Depth", type: float, min: 0.0, max: 12.0, default: 0.0, skew: 1.0, unit: st, description: "Vibrato da LFO {n} del Layer (Delay, Rate, Key sync = Mode Retrigger) su tutti gli operatori in Ratio." }
+      - { id: "fm_lfo{n}_amp", array: fmLfoAmp, name: "FM LFO {n} Amp Depth", type: float, min: 0.0, max: 1.0, default: 0.0, unit: "%", description: "Tremolo da LFO {n} sugli operatori, scalato dall'AM Sens di ciascuno." }
+      - { id: "fm_lfo{n}_op", array: fmLfoOp, name: "FM LFO {n} Op Depth", type: float, min: 0.0, max: 1.0, default: 0.0, unit: "%", description: "Modulazione da LFO {n} dell'indice di modulazione (brillantezza)." }
+
+  - params:
+      - { id: fm_algorithm, name: Algorithm, type: choice, choices_from: fm_algorithms, default: "1", section: "FM6 · Algorithm", description: "Algoritmo A: 32 configurazioni classiche a 6 operatori, o Custom (matrice 6×6)." }
+      - { id: fm_algorithm_b, name: Algorithm B, type: choice, choices_from: fm_algorithms, default: "1", section: "FM6 · Algorithm", description: "Algoritmo B, destinazione dell'Algorithm Morph." }
+      - { id: fm_morph, name: Algorithm Morph, type: float, min: 0.0, max: 1.0, default: 0.0, unit: "%", section: "FM6 · Algorithm", description: "Interpola connessioni, feedback e carrier dall'algoritmo A (0%) al B (100%)." }
+      - { id: fm_mod_index, name: Mod Index, type: float, min: 0.0, max: 2.0, default: 1.0, unit: x, section: "FM6 · Algorithm", description: "Scala tutte le modulazioni tra operatori (non il feedback). Destinazione \"Mod index\"." }
+      - { id: fm_output, name: FM Output, type: float, min: 0.0, max: 1.0, default: 0.7, unit: "%", section: "FM6 · Algorithm", description: "Livello d'uscita dei carrier prima del filtro." }
+
+      - { id: fm_penv_amount, name: Pitch Env Amount, type: float, min: -48.0, max: 48.0, default: 0.0, unit: st, section: "FM6 · Pitch Env", description: "Escursione dell'inviluppo di pitch (0 = spento)." }
+      - { id: fm_penv_attack, name: Pitch Env Attack, type: float, min: 0.0, max: 10.0, default: 0.0, skew: 0.5, unit: s, mod_dest: false, section: "FM6 · Pitch Env", description: "Attacco." }
+      - { id: fm_penv_decay, name: Pitch Env Decay, type: float, min: 0.0, max: 10.0, default: 0.2, skew: 0.5, unit: s, mod_dest: false, section: "FM6 · Pitch Env", description: "Decadimento." }
+      - { id: fm_penv_sustain, name: Pitch Env Sustain, type: float, min: 0.0, max: 1.0, default: 0.0, unit: "%", mod_dest: false, section: "FM6 · Pitch Env", description: "Livello di sustain." }
+      - { id: fm_penv_release, name: Pitch Env Release, type: float, min: 0.0, max: 20.0, default: 0.2, skew: 1.0, unit: s, mod_dest: false, section: "FM6 · Pitch Env", description: "Rilascio." }
+      - { id: fm_penv_attack_curve, name: Pitch Env Attack Curve, type: choice, choices_from: curves, default: Linear, section: "FM6 · Pitch Env", description: "Curva dell'attacco." }
+      - { id: fm_penv_decay_curve, name: Pitch Env Decay Curve, type: choice, choices_from: curves, default: Exponential, section: "FM6 · Pitch Env", description: "Curva del decay." }
+      - { id: fm_penv_release_curve, name: Pitch Env Release Curve, type: choice, choices_from: curves, default: Exponential, section: "FM6 · Pitch Env", description: "Curva del release." }
+      - { id: fm_penv_velocity, name: Pitch Env Velocity, type: float, min: 0.0, max: 1.0, default: 0.0, unit: "%", mod_dest: false, section: "FM6 · Pitch Env", description: "Quanto la velocity scala l'escursione." }
+      - { id: fm_penv_keytrack, name: Pitch Env Key Track, type: float, min: -1.0, max: 1.0, default: 0.0, mod_dest: false, section: "FM6 · Pitch Env", description: "Le note alte accorciano (> 0) o allungano (< 0) i tempi." }
+      - { id: fm_penv_retrigger, name: Pitch Env Retrigger, type: bool, default: true, section: "FM6 · Pitch Env", description: "Al retrigger riparte da zero (Off = dal livello corrente)." }

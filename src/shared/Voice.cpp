@@ -17,6 +17,7 @@ void Voice::prepare (int voiceIndex, double sampleRate)
     sr = sampleRate;
     seed = 0x2545F491u * (uint32_t) (voiceIndex + 1);
     for (auto& e : envs) e.setSampleRate (sampleRate);
+    filter.prepare (sampleRate);
     state = State::Free;
 }
 
@@ -104,6 +105,8 @@ void Voice::begin (const VoiceStart& s, VoiceGlobals& G)
     havePitch = false;
     gainL.reset (0.0f); gainR.reset (0.0f);
     currentLevel = 0.0f;
+    filterActive = false;   // updateFilter() resets the filter state on the first tick
+    drift.start (seed ^ 0x9E3779B9u);
 
     if (L.engine != nullptr)
         L.engine->noteOn (index, { note, velocity, channel, true });
@@ -294,6 +297,12 @@ void Voice::controlTick (VoiceGlobals& G, int n) noexcept
     ep.detuneCents = val (L, lp::unisonDetune);
     ep.spread = val (L, lp::unisonSpread);
     ep.unisonPan = val (L, lp::unisonPan);
+    ep.base = L.base.data();
+    ep.offsets = offsets.data();
+    for (size_t i = 0; i < 4; ++i)
+        lfoOut[i] = lfos[i].value();
+    ep.lfo = lfoOut.data();
+    updateFilter (L, dt);
 
     if (L.engine != nullptr)
         L.engine->setNoteExpression (index, { noteBend, pressure * atSens, vc.cc[74] });
@@ -315,7 +324,7 @@ void Voice::render (VoiceGlobals& G, int start, int n) noexcept
             const int m = std::min (n, fadeRemaining);
             if (auto* e = (*G.layers)[(size_t) fadeLayer].engine; e != nullptr && m > 0)
             {
-                e->render (index, ep, G.scratchL, G.scratchR, m);
+                renderEngine (*e, ep, G, m, 1.0f, 1.0f);
                 float* outL = G.layerL[(size_t) fadeLayer] + start;
                 float* outR = G.layerR[(size_t) fadeLayer] + start;
                 for (int i = 0; i < m; ++i)
@@ -348,7 +357,7 @@ void Voice::render (VoiceGlobals& G, int start, int n) noexcept
         EngineVoiceParams rp = ep;
         rp.pitchStart = pitchStart + (pitchEnd - pitchStart) * p0;
         rp.pitchEnd = pitchStart + (pitchEnd - pitchStart) * p1;
-        L.engine->render (index, rp, G.scratchL, G.scratchR, n);
+        renderEngine (*L.engine, rp, G, n, p0, p1);
 
         float* outL = G.layerL[(size_t) layer] + start;
         float* outR = G.layerR[(size_t) layer] + start;
@@ -370,4 +379,59 @@ void Voice::render (VoiceGlobals& G, int start, int n) noexcept
         return;
     }
 }
+void Voice::updateFilter (const LayerRuntime& L, float dt) noexcept
+{
+    driftActive = on (L.base[(size_t) lp::driftOn]);
+    if (driftActive)
+        drift.tick (val (L, lp::driftAmount), dt);
+    ep.driftSemis = driftActive ? drift.pitchSemis() : nullptr;
+
+    const bool want = on (L.base[(size_t) lp::filterOn]) && ! (driftActive && on (L.base[(size_t) lp::driftOnly]));
+    if (! want) { filterActive = false; return; }
+    const auto model = (FilterModel) std::clamp (idx (L.base[(size_t) lp::filterModel]), 0, (int) FilterModel::count - 1);
+    if (! filterActive)
+    {
+        filter.setModel (model);
+        filter.reset();
+        haveCutoff = false;
+        filterActive = true;
+    }
+    filter.setModel (model);
+    filter.setResonance (std::clamp (val (L, lp::filterResonance) + (driftActive ? drift.resonanceOffset() : 0.0f), 0.0f, 1.0f));
+    filter.setDrive (val (L, lp::filterDrive));
+
+    float oct = std::log2 (std::max (val (L, lp::filterCutoff), 1.0f));
+    oct += val (L, lp::filterKeytrack) * (pitchEnd - 60.0f) / 12.0f;
+    oct += val (L, lp::filterEnvAmount) * 10.0f * envs[1].output (envP[1]);
+    oct += val (L, lp::filterVelocity) * (velocity - 1.0f) * 4.0f;
+    oct += val (L, lp::filterLfoAmount) * 4.0f * lfos[0].value();
+    if (driftActive) oct += drift.cutoffOctaves();
+    const float hz = std::clamp (std::exp2 (oct), 20.0f, 20000.0f);
+    cutStart = haveCutoff ? cutEnd : hz;
+    cutEnd = hz;
+    haveCutoff = true;
+}
+
+void Voice::renderEngine (IEngine& e, EngineVoiceParams p, VoiceGlobals& G, int n, float p0, float p1) noexcept
+{
+    p.bypassL = G.bypassL;
+    p.bypassR = G.bypassR;
+    const bool bypass = e.render (index, p, G.scratchL, G.scratchR, n) && G.bypassL != nullptr;
+    runFilter (G.scratchL, G.scratchR, n, p0, p1);
+    if (bypass)
+        for (int i = 0; i < n; ++i)
+        {
+            G.scratchL[i] += G.bypassL[i];
+            G.scratchR[i] += G.bypassR[i];
+        }
+}
+
+void Voice::runFilter (float* l, float* r, int n, float p0, float p1) noexcept
+{
+    if (! filterActive || n <= 0)
+        return;
+    const float ratio = cutEnd / cutStart;
+    filter.process (l, r, n, cutStart * std::pow (ratio, p0), cutStart * std::pow (ratio, p1));
+}
+
 } // namespace chroma

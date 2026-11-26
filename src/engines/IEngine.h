@@ -25,6 +25,12 @@ struct EngineVoiceParams
     float pitchStart = 60.0f, pitchEnd = 60.0f;   // MIDI note (fractional), interpolated across the call
     int unison = 1;
     float detuneCents = 0.0f, spread = 0.0f, unisonPan = 0.0f;
+    const float* driftSemis = nullptr;            // DRIFT: per-oscillator pitch offset [maxUnison], null = off
+    const float* base = nullptr;                  // layer plain values [lp::count] (smoothed)
+    const float* offsets = nullptr;               // per-voice normalised modulation offsets [lp::count], may be null
+    const float* lfo = nullptr;                   // layer LFO 1..4 outputs of this voice [4], may be null
+    float* bypassL = nullptr;                     // optional post-filter bus (Mixer routing "Bypass")
+    float* bypassR = nullptr;
 };
 
 // Common engine interface (§1). Engines keep per-voice state indexed by the global voice index.
@@ -38,7 +44,9 @@ public:
     virtual void noteOff (int voice) = 0;
     virtual void kill (int voice) = 0;
     virtual void setNoteExpression (int /*voice*/, const NoteExpression&) {}
-    // Writes (does not add) n stereo samples.
-    virtual void render (int voice, const EngineVoiceParams&, float* left, float* right, int n) noexcept = 0;
+    virtual void setOversampling (int /*factor 1/2/4/8*/) {}
+    // Writes (does not add) n stereo samples to the filter bus. Returns true when it also wrote
+    // n samples to p.bypassL/R (signal routed around the voice filter); false = bypass bus untouched.
+    virtual bool render (int voice, const EngineVoiceParams& p, float* left, float* right, int n) noexcept = 0;
 };
 } // namespace chroma

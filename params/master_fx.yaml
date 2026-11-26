@@ -1,0 +1,62 @@
+# MASTER FX (§4): ordine Drive → Chorus → Delay → Reverb → Filter, ciascuno On/Off (spento = zero CPU).
+# Stessi moduli DSP delle Layer FX (src/shared/fx).
+
+lists:
+  master_drive_types: [Tube, Overdrive, Op-Amp Clip, Pedal Clip, Fuzz, Tape]
+  master_chorus_modes: [Chorus I, Chorus II, Dimension 1, Dimension 2, Dimension 3, Dimension 4, Custom]
+  master_delay_types: [Digital, Tape, BBD, Ping-Pong, Dual L/R, Multitap]
+  master_reverb_types: [Room, Plate, Hall, Large Hall]
+
+params:
+  - { id: mfx_drive_on, name: Master Drive, type: bool, default: false, section: "Master FX · Drive", description: "Attiva il Drive del Master." }
+  - { id: mfx_drive_type, name: Master Drive Type, type: choice, choices_from: master_drive_types, default: Tube, section: "Master FX · Drive", description: "Tube (asimmetrica), Overdrive (soft clip morbido), Op-Amp Clip (guadagno alto + clip a diodi), Pedal Clip (hard clip a diodi), Fuzz, Tape (saturazione con isteresi e ammorbidimento degli acuti)." }
+  - { id: mfx_drive_drive, name: Master Drive Amount, type: float, min: 0.0, max: 1.0, default: 0.3, unit: "%", section: "Master FX · Drive", description: "Guadagno in ingresso (0–40 dB)." }
+  - { id: mfx_drive_tone, name: Master Drive Tone, type: float, min: 0.0, max: 1.0, default: 0.5, unit: "%", section: "Master FX · Drive", description: "Tono in uscita: < 50% più scuro, > 50% più brillante." }
+  - { id: mfx_drive_mix, name: Master Drive Mix, type: float, min: 0.0, max: 1.0, default: 1.0, unit: "%", section: "Master FX · Drive", description: "Bilanciamento dry/wet." }
+  - { id: mfx_drive_output, name: Master Drive Output, type: float, min: -24.0, max: 12.0, default: 0.0, unit: dB, section: "Master FX · Drive", description: "Livello in uscita." }
+
+  - { id: mfx_chorus_on, name: Master Chorus, type: bool, default: false, section: "Master FX · Chorus", description: "Attiva il Chorus del Master." }
+  - { id: mfx_chorus_mode, name: Master Chorus Mode, type: choice, choices_from: master_chorus_modes, default: Chorus I, section: "Master FX · Chorus", description: "Chorus I / II: chorus BBD a due linee (lento / più veloce e profondo). Dimension 1–4: linee in controfase a bassa profondità, spaziali e senza vibrato percepibile, intensità crescente. Custom: Rate e Depth liberi." }
+  - { id: mfx_chorus_rate, name: Master Chorus Rate, type: float, min: 0.01, max: 10.0, default: 0.5, skew: 1.0, unit: Hz, section: "Master FX · Chorus", description: "Velocità di modulazione (solo Custom)." }
+  - { id: mfx_chorus_depth, name: Master Chorus Depth, type: float, min: 0.0, max: 1.0, default: 0.5, unit: "%", section: "Master FX · Chorus", description: "Profondità di modulazione (solo Custom)." }
+  - { id: mfx_chorus_mix, name: Master Chorus Mix, type: float, min: 0.0, max: 1.0, default: 0.5, unit: "%", section: "Master FX · Chorus", description: "Bilanciamento dry/wet." }
+
+  - { id: mfx_delay_on, name: Master Delay, type: bool, default: false, section: "Master FX · Delay", description: "Attiva il Delay del Master." }
+  - { id: mfx_delay_type, name: Master Delay Type, type: choice, choices_from: master_delay_types, default: Digital, section: "Master FX · Delay", description: "Digital (pulito), Tape (wow/flutter, saturazione), BBD (scuro, modulato), Ping-Pong (rimbalzo L/R), Dual L/R (tempi indipendenti), Multitap (4 tap a 1/4, 2/4, 3/4, 1 del tempo)." }
+  - { id: mfx_delay_time_l, name: Master Delay Time, type: float, min: 1.0, max: 2000.0, default: 375.0, skew: 300.0, unit: ms, section: "Master FX · Delay", description: "Tempo (canale sinistro in Dual L/R), Sync off." }
+  - { id: mfx_delay_time_r, name: Master Delay Time R, type: float, min: 1.0, max: 2000.0, default: 500.0, skew: 300.0, unit: ms, section: "Master FX · Delay", description: "Tempo del canale destro (solo Dual L/R), Sync off." }
+  - { id: mfx_delay_sync, name: Master Delay Sync, type: bool, default: false, section: "Master FX · Delay", description: "Tempi sincronizzati al tempo dell'host." }
+  - { id: mfx_delay_div_l, name: Master Delay Division, type: choice, choices_from: sync_divisions, default: "1/8D", section: "Master FX · Delay", description: "Suddivisione (canale sinistro in Dual L/R), Sync on." }
+  - { id: mfx_delay_div_r, name: Master Delay Division R, type: choice, choices_from: sync_divisions, default: "1/4", section: "Master FX · Delay", description: "Suddivisione del canale destro (solo Dual L/R), Sync on." }
+  - { id: mfx_delay_feedback, name: Master Delay Feedback, type: float, min: 0.0, max: 0.98, default: 0.35, unit: "%", section: "Master FX · Delay", description: "Retroazione." }
+  - { id: mfx_delay_hp, name: Master Delay HP, type: float, min: 20.0, max: 2000.0, default: 20.0, skew: 200.0, unit: Hz, section: "Master FX · Delay", description: "Passa-alto nella retroazione." }
+  - { id: mfx_delay_lp, name: Master Delay LP, type: float, min: 500.0, max: 20000.0, default: 12000.0, skew: 4000.0, unit: Hz, section: "Master FX · Delay", description: "Passa-basso nella retroazione." }
+  - { id: mfx_delay_width, name: Master Delay Width, type: float, min: 0.0, max: 1.0, default: 1.0, unit: "%", section: "Master FX · Delay", description: "Apertura stereo del segnale wet." }
+  - { id: mfx_delay_mod, name: Master Delay Modulation, type: float, min: 0.0, max: 1.0, default: 0.0, unit: "%", section: "Master FX · Delay", description: "Modulazione del tempo (si somma al wow/flutter di Tape e BBD)." }
+  - { id: mfx_delay_ducking, name: Master Delay Ducking, type: float, min: 0.0, max: 1.0, default: 0.0, unit: "%", section: "Master FX · Delay", description: "Attenua il wet mentre il segnale in ingresso suona (100% = fino a −24 dB)." }
+  - { id: mfx_delay_mix, name: Master Delay Mix, type: float, min: 0.0, max: 1.0, default: 0.25, unit: "%", section: "Master FX · Delay", description: "Bilanciamento dry/wet." }
+
+  - { id: mfx_reverb_on, name: Master Reverb, type: bool, default: false, section: "Master FX · Reverb", description: "Attiva il Reverb del Master (algoritmico, nessuna convoluzione)." }
+  - { id: mfx_reverb_type, name: Master Reverb Type, type: choice, choices_from: master_reverb_types, default: Hall, section: "Master FX · Reverb", description: "Room, Hall, Large Hall: FDN a 16 linee. Plate: modello a piastra (allpass in ingresso + anello a due rami modulati)." }
+  - { id: mfx_reverb_size, name: Master Reverb Size, type: float, min: 0.0, max: 1.0, default: 0.5, unit: "%", section: "Master FX · Reverb", description: "Dimensione dello spazio." }
+  - { id: mfx_reverb_decay, name: Master Reverb Decay, type: float, min: 0.1, max: 20.0, default: 2.5, skew: 2.5, unit: s, section: "Master FX · Reverb", description: "Tempo di decadimento (RT60)." }
+  - { id: mfx_reverb_predelay, name: Master Reverb Pre-Delay, type: float, min: 0.0, max: 250.0, default: 20.0, skew: 50.0, unit: ms, section: "Master FX · Reverb", description: "Ritardo prima delle prime riflessioni." }
+  - { id: mfx_reverb_damping, name: Master Reverb Damping, type: float, min: 0.0, max: 1.0, default: 0.4, unit: "%", section: "Master FX · Reverb", description: "Assorbimento delle alte frequenze nella coda." }
+  - { id: mfx_reverb_diffusion, name: Master Reverb Diffusion, type: float, min: 0.0, max: 1.0, default: 0.7, unit: "%", section: "Master FX · Reverb", description: "Densità degli echi iniziali." }
+  - { id: mfx_reverb_mod, name: Master Reverb Modulation, type: float, min: 0.0, max: 1.0, default: 0.3, unit: "%", section: "Master FX · Reverb", description: "Modulazione lenta delle linee (coda più morbida, meno risonanze metalliche)." }
+  - { id: mfx_reverb_lowcut, name: Master Reverb Low Cut, type: float, min: 20.0, max: 1000.0, default: 20.0, skew: 150.0, unit: Hz, section: "Master FX · Reverb", description: "Passa-alto sul segnale wet." }
+  - { id: mfx_reverb_highcut, name: Master Reverb High Cut, type: float, min: 1000.0, max: 20000.0, default: 12000.0, skew: 5000.0, unit: Hz, section: "Master FX · Reverb", description: "Passa-basso sul segnale wet." }
+  - { id: mfx_reverb_width, name: Master Reverb Width, type: float, min: 0.0, max: 1.0, default: 1.0, unit: "%", section: "Master FX · Reverb", description: "Apertura stereo del segnale wet." }
+  - { id: mfx_reverb_mix, name: Master Reverb Mix, type: float, min: 0.0, max: 1.0, default: 0.2, unit: "%", section: "Master FX · Reverb", description: "Bilanciamento dry/wet." }
+
+  - { id: mfx_filter_on, name: Master Filter, type: bool, default: false, section: "Master FX · Filter", description: "Attiva il Filter del Master (HP → BP → LP, 12 dB/ott. con risonanza)." }
+  - { id: mfx_hp_on, name: Master HP, type: bool, default: true, section: "Master FX · Filter", description: "Attiva il passa-alto." }
+  - { id: mfx_hp_freq, name: Master HP Freq, type: float, min: 20.0, max: 20000.0, default: 20.0, skew: 1000.0, unit: Hz, section: "Master FX · Filter", description: "Taglio del passa-alto: sale da 20 Hz (aperto)." }
+  - { id: mfx_hp_res, name: Master HP Resonance, type: float, min: 0.0, max: 1.0, default: 0.0, unit: "%", section: "Master FX · Filter", description: "Risonanza del passa-alto." }
+  - { id: mfx_bp_on, name: Master BP, type: bool, default: false, section: "Master FX · Filter", description: "Attiva il passa-banda." }
+  - { id: mfx_bp_freq, name: Master BP Center, type: float, min: 20.0, max: 20000.0, default: 1000.0, skew: 1000.0, unit: Hz, section: "Master FX · Filter", description: "Centro del passa-banda." }
+  - { id: mfx_bp_width, name: Master BP Width, type: float, min: 0.0, max: 1.0, default: 1.0, unit: "%", section: "Master FX · Filter", description: "Larghezza della banda: 100% = ±5 ottave (aperto), 0% = ±1/6 di ottava." }
+  - { id: mfx_bp_res, name: Master BP Resonance, type: float, min: 0.0, max: 1.0, default: 0.0, unit: "%", section: "Master FX · Filter", description: "Risonanza ai bordi della banda." }
+  - { id: mfx_lp_on, name: Master LP, type: bool, default: true, section: "Master FX · Filter", description: "Attiva il passa-basso." }
+  - { id: mfx_lp_freq, name: Master LP Freq, type: float, min: 20.0, max: 20000.0, default: 20000.0, skew: 1000.0, unit: Hz, section: "Master FX · Filter", description: "Taglio del passa-basso: scende da 20 kHz (aperto)." }
+  - { id: mfx_lp_res, name: Master LP Resonance, type: float, min: 0.0, max: 1.0, default: 0.0, unit: "%", section: "Master FX · Filter", description: "Risonanza del passa-basso." }
