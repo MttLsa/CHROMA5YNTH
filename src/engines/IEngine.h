@@ -45,6 +45,8 @@ public:
     virtual void kill (int voice) = 0;
     virtual void setNoteExpression (int /*voice*/, const NoteExpression&) {}
     virtual void setOversampling (int /*factor 1/2/4/8*/) {}
+    // true = the voice runs Filter 2 + Serial/Parallel routing (§3D, params wt_f2_* / wt_filter_*).
+    virtual bool dualFilter() const noexcept { return false; }
     // Writes (does not add) n stereo samples to the filter bus. Returns true when it also wrote
     // n samples to p.bypassL/R (signal routed around the voice filter); false = bypass bus untouched.
     virtual bool render (int voice, const EngineVoiceParams& p, float* left, float* right, int n) noexcept = 0;

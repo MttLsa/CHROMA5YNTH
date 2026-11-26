@@ -2,6 +2,7 @@
 
 #include "PluginProcessor.h"
 #include "gui/StyleLookAndFeel.h"
+#include "gui/WavetableEditor.h"
 #include <juce_audio_utils/juce_audio_utils.h>
 
 namespace chroma
@@ -28,6 +29,8 @@ private:
     juce::Component content;
     int layoutContent (int width);
     juce::TextButton aboutButton { "About" };
+    juce::TextButton wtButton { "WT Editor" };
+    std::unique_ptr<WavetableEditor> wtEditor;
     juce::TooltipWindow tooltips { this, 600 };
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (ChromaEditor)

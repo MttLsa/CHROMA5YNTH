@@ -125,7 +125,7 @@
 | Mod N Enable | Off / On | On |  | Abilita lo slot N. |
 | Mod N Source | 31 voci | Off |  | Sorgente dello slot N. |
 | Mod N CC | 0 … 127 | 1 |  | Numero CC quando la sorgente è MIDI CC. |
-| Mod N Destination | 251 voci | Off |  | Destinazione: qualunque parametro continuo del Layer. |
+| Mod N Destination | 331 voci | Off |  | Destinazione: qualunque parametro continuo del Layer. |
 | Mod N Amount | -1.0 … 1.0 | 0.0 |  | Quantità ±100% del range della destinazione. |
 | Mod N Via | 31 voci | Off |  | Sorgente che scala l'amount (Off = 1). |
 | Mod N Curve | Linear / Exponential / Logarithmic / S-Curve | Linear |  | Curva applicata alla sorgente. |
@@ -281,6 +281,77 @@
 | Pitch Env Velocity | 0.0 … 1.0 | 0.0 | % | Quanto la velocity scala l'escursione. |
 | Pitch Env Key Track | -1.0 … 1.0 | 0.0 |  | Le note alte accorciano (> 0) o allungano (< 0) i tempi. |
 | Pitch Env Retrigger | Off / On | On |  | Al retrigger riparte da zero (Off = dal livello corrente). |
+
+## Wavetable · OSC N
+
+| Parametro | Range | Default | Unità | Descrizione |
+|---|---|---|---|---|
+| WT OSC N | Off / On | Off |  | Attiva l'oscillatore wavetable N (spento = zero CPU). Default per indice (1: True). |
+| WT OSC N Table | 49 voci | Basic Shapes |  | Wavetable: 46 tabelle di fabbrica generate proceduralmente o uno dei 3 slot User (editor). |
+| WT OSC N Position | 0.0 … 1.0 | 0.0 | % | Posizione nella tabella (interpolazione lineare tra frame adiacenti). |
+| WT OSC N Scan | -1.0 … 1.0 | 0.0 |  | Scansione automatica della tabella dall'inizio della nota (ping-pong; ±100% = 4 attraversamenti al secondo, curva quadratica). |
+| WT OSC N Volume | 0.0 … 1.0 | 0.8 | % | Volume dell'oscillatore. |
+| WT OSC N Octave | -4 … 4 | 0 | oct | Trasposizione in ottave. |
+| WT OSC N Semitone | -12 … 12 | 0 | st | Trasposizione in semitoni. |
+| WT OSC N Fine | -100.0 … 100.0 | 0.0 | ct | Intonazione fine in cent. |
+| WT OSC N Detune | -10.0 … 10.0 | 0.0 | Hz | Scostamento lineare in Hz (battimento costante su tutta la tastiera). |
+| WT OSC N Phase | 0.0 … 360.0 | 0.0 | ° | Fase iniziale. |
+| WT OSC N Random Phase | 0.0 … 1.0 | 0.0 | % | Quantità di fase casuale aggiunta alla fase iniziale (per voce di unison). |
+| WT OSC N Phase Reset | Off / On | On |  | On = la fase riparte a ogni nota; Off = fase libera. |
+| WT OSC N Unison | 1 … 16 | 1 |  | Voci di unison dell'oscillatore (sostituisce l'Unison del Layer per questo engine). |
+| WT OSC N Unison Detune | 0.0 … 100.0 | 20.0 | ct | Detune totale dello stack unison. |
+| WT OSC N Unison Spread | 0.0 … 1.0 | 0.5 | % | Apertura stereo (pan) delle voci di unison. |
+| WT OSC N Unison Width | 0.0 … 2.0 | 1.0 | x | Larghezza stereo M/S dell'oscillatore (0 = mono, 1 = invariata, 2 = allargata). |
+| WT OSC N Pan | -1.0 … 1.0 | 0.0 |  | Pan dell'oscillatore. |
+| WT OSC N Warp | Off / Bend + / Bend - / Bend +/- / PWM / Sync / Mirror / Asym / Quantize / FM / AM / Ring | Off |  | Warp della lettura: Bend (curva di fase), PWM, Sync (ratio 1–16), Mirror, Asym, Quantize (fase a gradini), FM (modulazione di fase), AM, Ring. FM/AM/Ring usano Warp Source. |
+| WT OSC N Warp Amount | 0.0 … 1.0 | 0.0 | % | Quantità del warp. |
+| WT OSC N Warp Source | OSC 1 / OSC 2 / OSC 3 / Sub | Sub |  | Modulatore per FM/AM/Ring: un OSC (un OSC successivo o se stesso arriva con un blocco di ritardo) o il Sub. |
+
+## Wavetable · OSC N Advanced
+
+| Parametro | Range | Default | Unità | Descrizione |
+|---|---|---|---|---|
+| WT OSC N Spectral Freeze | 0.0 … 1.0 | 0.0 | % | Blend delle ampiezze spettrali verso lo spettro catturato all'inizio della nota. |
+| WT OSC N Spectral Blur | 0.0 … 1.0 | 0.0 | % | Media delle ampiezze spettrali su frame vicini (fino a ±25% della tabella). |
+| WT OSC N Spectral Tilt | -1.0 … 1.0 | 0.0 |  | Inclinazione spettrale ±12 dB/ottava (volume RMS compensato). |
+| WT OSC N Formant Shift | -1.0 … 1.0 | 0.0 |  | Sposta l'inviluppo spettrale di ±2 ottave mantenendo l'intonazione. |
+| WT OSC N Harmonic Stretch | -1.0 … 1.0 | 0.0 |  | Rimappa l'armonica k sull'armonica più vicina a k^(1 ± 0.5). |
+| WT OSC N Phase Distortion | 0.0 … 1.0 | 0.0 | % | Distorsione di fase sinusoidale della lettura (continua al giro di fase). |
+| WT OSC N Bit Depth | 1.0 … 16.0 | 16.0 | bit | Quantizzazione d'ampiezza (16 = spenta). |
+| WT OSC N SR Reduction | 0.0 … 1.0 | 0.0 | % | Riduzione della frequenza di campionamento (sample & hold, 100% = 1/64). |
+| WT OSC N Granular | 0.0 … 1.0 | 0.0 | % | Riproduzione granulare: grani sovrapposti con posizione casuale attorno a Position (100% = tutta la tabella). |
+| WT OSC N Grain Size | 5.0 … 500.0 | 60.0 | ms | Durata dei grani. |
+
+## Wavetable · Sub/Noise
+
+| Parametro | Range | Default | Unità | Descrizione |
+|---|---|---|---|---|
+| WT Sub | Off / On | Off |  | Attiva il Sub OSC (segue la nota). |
+| WT Sub Wave | Sine / Triangle / Saw / Square | Sine |  | Forma del Sub (band-limited). |
+| WT Sub Octave | -3 … 0 | -1 | oct | Ottava del Sub rispetto alla nota. |
+| WT Sub Level | 0.0 … 1.0 | 0.5 | % | Livello del Sub (anche come sorgente di warp resta attivo a livello 0 se richiesto). |
+| WT Sub Pan | -1.0 … 1.0 | 0.0 |  | Pan del Sub. |
+| WT Noise Type | White / Pink | White |  | Rumore bianco o rosa. |
+| WT Noise Level | 0.0 … 1.0 | 0.0 | % | Livello del Noise OSC (0 = zero CPU). |
+| WT Noise Pan | -1.0 … 1.0 | 0.0 |  | Pan del Noise. |
+
+## Wavetable · Filter 2
+
+| Parametro | Range | Default | Unità | Descrizione |
+|---|---|---|---|---|
+| Filter 2 | Off / On | Off |  | Attiva il secondo filtro della voce (Filter Library). Filter 1 = filtro del Layer. |
+| Filter 2 Model | Ladder LP24 / Diode LP / SVF LP12 / SVF BP12 / SVF HP12 / SVF Notch / OTA LP24 / Cascade LP24 / Sallen-Key LP12 / Sallen-Key HP12 / Bridge LP12 / Classic LP24 / Digital LP12 / Digital LP24 / Digital LP36 / Digital LP48 / Digital HP12 / Digital HP24 / Digital BP / Digital Notch / Comb + / Comb - / Formant | SVF LP12 |  | Modello del Filter 2. |
+| Filter 2 Cutoff | 20.0 … 20000.0 | 20000.0 | Hz | Frequenza di taglio del Filter 2. |
+| Filter 2 Resonance | 0.0 … 1.0 | 0.0 | % | Risonanza del Filter 2. |
+| Filter 2 Drive | 0.0 … 1.0 | 0.0 | % | Drive del Filter 2 (0–24 dB). |
+| Filter 2 Key Track | 0.0 … 1.0 | 0.0 | % | 100% = il cutoff segue la nota. |
+| Filter 2 Env Amount | -1.0 … 1.0 | 0.0 |  | Modulazione del cutoff da Mod Env 2 (±100% = ±10 ottave). |
+| Filter 2 Velocity | 0.0 … 1.0 | 0.0 | % | Velocity bassa abbassa il cutoff (100% = fino a −4 ottave). |
+| Filter 2 LFO Amount | -1.0 … 1.0 | 0.0 |  | Modulazione del cutoff da LFO 2 (±100% = ±4 ottave). |
+| Filter Routing | Serial / Parallel | Serial |  | Serial = Filter 1 → Filter 2; Parallel = i due filtri sullo stesso ingresso. |
+| Filter Mix | 0.0 … 1.0 | 0.5 | % | Serial: dry/wet del Filter 2 dopo il Filter 1. Parallel: bilanciamento a potenza costante Filter 1 ↔ Filter 2. |
+| Filter Pan | -1.0 … 1.0 | 0.0 |  | Parallel: Filter 1 verso sinistra e Filter 2 verso destra (valori > 0) o viceversa. |
+| Filter Stereo | 0.0 … 2.0 | 1.0 | x | Larghezza stereo M/S dopo i filtri (0 = mono, 1 = invariata, 2 = allargata). |
 
 ## Layer FX · Distortion
 

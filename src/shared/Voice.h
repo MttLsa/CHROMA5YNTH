@@ -83,6 +83,15 @@ private:
     void renderEngine (IEngine&, EngineVoiceParams, VoiceGlobals&, int n, float p0, float p1) noexcept;
     void runFilter (float* l, float* r, int n, float p0, float p1) noexcept;
 
+    // Filter 2 + routing (engines with dualFilter(), §3D)
+    Filter filter2;
+    bool filter2Active = false, haveCutoff2 = false, dual = false;
+    float cut2Start = 1000.0f, cut2End = 1000.0f;
+    int routing = 0;
+    float fMix = 0.5f, fPan = 0.0f, fStereo = 1.0f;
+    std::array<float, controlBlock> tmpL {}, tmpR {};
+    void updateFilter2 (const LayerRuntime&, bool bypassAll) noexcept;
+
     // stealing fade
     VoiceStart pending;
     int fadeLayer = 0, fadeRemaining = 0, fadeTotal = 1;

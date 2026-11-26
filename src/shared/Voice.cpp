@@ -18,6 +18,7 @@ void Voice::prepare (int voiceIndex, double sampleRate)
     seed = 0x2545F491u * (uint32_t) (voiceIndex + 1);
     for (auto& e : envs) e.setSampleRate (sampleRate);
     filter.prepare (sampleRate);
+    filter2.prepare (sampleRate);
     state = State::Free;
 }
 
@@ -106,6 +107,7 @@ void Voice::begin (const VoiceStart& s, VoiceGlobals& G)
     gainL.reset (0.0f); gainR.reset (0.0f);
     currentLevel = 0.0f;
     filterActive = false;   // updateFilter() resets the filter state on the first tick
+    filter2Active = false;
     drift.start (seed ^ 0x9E3779B9u);
 
     if (L.engine != nullptr)
@@ -386,7 +388,10 @@ void Voice::updateFilter (const LayerRuntime& L, float dt) noexcept
         drift.tick (val (L, lp::driftAmount), dt);
     ep.driftSemis = driftActive ? drift.pitchSemis() : nullptr;
 
-    const bool want = on (L.base[(size_t) lp::filterOn]) && ! (driftActive && on (L.base[(size_t) lp::driftOnly]));
+    const bool bypassAll = driftActive && on (L.base[(size_t) lp::driftOnly]);
+    dual = L.engine != nullptr && L.engine->dualFilter();
+    updateFilter2 (L, bypassAll);
+    const bool want = on (L.base[(size_t) lp::filterOn]) && ! bypassAll;
     if (! want) { filterActive = false; return; }
     const auto model = (FilterModel) std::clamp (idx (L.base[(size_t) lp::filterModel]), 0, (int) FilterModel::count - 1);
     if (! filterActive)
@@ -426,12 +431,106 @@ void Voice::renderEngine (IEngine& e, EngineVoiceParams p, VoiceGlobals& G, int 
         }
 }
 
+void Voice::updateFilter2 (const LayerRuntime& L, bool bypassAll) noexcept
+{
+    // Filter 2 + Serial/Parallel routing (§3D, engines with dualFilter()).
+    if (! dual || bypassAll || ! on (L.base[(size_t) lp::wtF2On])) { filter2Active = false; return; }
+    const auto model = (FilterModel) std::clamp (idx (L.base[(size_t) lp::wtF2Model]), 0, (int) FilterModel::count - 1);
+    if (! filter2Active)
+    {
+        filter2.setModel (model);
+        filter2.reset();
+        haveCutoff2 = false;
+        filter2Active = true;
+    }
+    filter2.setModel (model);
+    filter2.setResonance (std::clamp (val (L, lp::wtF2Resonance) + (driftActive ? drift.resonanceOffset() : 0.0f), 0.0f, 1.0f));
+    filter2.setDrive (val (L, lp::wtF2Drive));
+    float oct = std::log2 (std::max (val (L, lp::wtF2Cutoff), 1.0f));
+    oct += val (L, lp::wtF2Keytrack) * (pitchEnd - 60.0f) / 12.0f;
+    oct += val (L, lp::wtF2EnvAmount) * 10.0f * envs[2].output (envP[2]);
+    oct += val (L, lp::wtF2Velocity) * (velocity - 1.0f) * 4.0f;
+    oct += val (L, lp::wtF2LfoAmount) * 4.0f * lfos[1].value();
+    if (driftActive) oct += drift.cutoffOctaves();
+    const float hz = std::clamp (std::exp2 (oct), 20.0f, 20000.0f);
+    cut2Start = haveCutoff2 ? cut2End : hz;
+    cut2End = hz;
+    haveCutoff2 = true;
+    routing = idx (L.base[(size_t) lp::wtFilterRouting]);
+    fMix = std::clamp (val (L, lp::wtFilterMix), 0.0f, 1.0f);
+    fPan = std::clamp (val (L, lp::wtFilterPan), -1.0f, 1.0f);
+    fStereo = std::clamp (val (L, lp::wtFilterStereo), 0.0f, 2.0f);
+}
+
 void Voice::runFilter (float* l, float* r, int n, float p0, float p1) noexcept
 {
-    if (! filterActive || n <= 0)
+    if (n <= 0)
         return;
-    const float ratio = cutEnd / cutStart;
-    filter.process (l, r, n, cutStart * std::pow (ratio, p0), cutStart * std::pow (ratio, p1));
+    const bool f2 = dual && filter2Active;
+    if (! f2)
+    {
+        if (! filterActive)
+            return;
+        const float ratio = cutEnd / cutStart;
+        filter.process (l, r, n, cutStart * std::pow (ratio, p0), cutStart * std::pow (ratio, p1));
+        return;
+    }
+    // chunks of controlBlock (scratch size)
+    for (int done = 0; done < n;)
+    {
+        const int m = std::min (controlBlock, n - done);
+        const float q0 = p0 + (p1 - p0) * (float) done / (float) n, q1 = p0 + (p1 - p0) * (float) (done + m) / (float) n;
+        float* L = l + done;
+        float* R = r + done;
+        float* tL = tmpL.data();
+        float* tR = tmpR.data();
+        const auto run1 = [&] (float* a, float* b) noexcept
+        {
+            if (! filterActive) return;
+            const float ratio = cutEnd / cutStart;
+            filter.process (a, b, m, cutStart * std::pow (ratio, q0), cutStart * std::pow (ratio, q1));
+        };
+        const auto run2 = [&] (float* a, float* b) noexcept
+        {
+            const float ratio = cut2End / cut2Start;
+            filter2.process (a, b, m, cut2Start * std::pow (ratio, q0), cut2Start * std::pow (ratio, q1));
+        };
+        if (routing == 0)   // Serial: F1 -> F2, Mix = dry/wet of F2
+        {
+            run1 (L, R);
+            std::copy (L, L + m, tL);
+            std::copy (R, R + m, tR);
+            run2 (tL, tR);
+            for (int i = 0; i < m; ++i)
+            {
+                L[i] += fMix * (tL[i] - L[i]);
+                R[i] += fMix * (tR[i] - R[i]);
+            }
+        }
+        else                // Parallel: equal-power balance, Pan spreads F1 / F2
+        {
+            std::copy (L, L + m, tL);
+            std::copy (R, R + m, tR);
+            run1 (L, R);
+            run2 (tL, tR);
+            const float g1 = std::cos (fMix * 1.5707963f), g2 = std::sin (fMix * 1.5707963f);
+            const float aL = g1 * std::min (1.0f, 1.0f + fPan), aR = g1 * std::min (1.0f, 1.0f - fPan);
+            const float bL = g2 * std::min (1.0f, 1.0f - fPan), bR = g2 * std::min (1.0f, 1.0f + fPan);
+            for (int i = 0; i < m; ++i)
+            {
+                L[i] = aL * L[i] + bL * tL[i];
+                R[i] = aR * R[i] + bR * tR[i];
+            }
+        }
+        if (fStereo != 1.0f)
+            for (int i = 0; i < m; ++i)
+            {
+                const float mid = 0.5f * (L[i] + R[i]), side = 0.5f * (L[i] - R[i]) * fStereo;
+                L[i] = mid + side;
+                R[i] = mid - side;
+            }
+        done += m;
+    }
 }
 
 } // namespace chroma

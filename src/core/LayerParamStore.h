@@ -1,9 +1,14 @@
 #pragma once
 #include "LayerParams.h"
 #include "shared/Lfo.h"
+#include "engines/wavetable/Wavetable.h"
 #include <juce_data_structures/juce_data_structures.h>
 #include <array>
 #include <atomic>
+#include <cmath>
+#include <cstring>
+#include <string>
+#include <vector>
 
 namespace chroma
 {
@@ -13,8 +18,10 @@ class LayerParamStore
 public:
     LayerParamStore() { init(); }
 
-    void init() noexcept
+    void init()
     {
+        for (int u = 0; u < wt::numUserSlots; ++u)
+            setUserTable (u, {}, 0);
         for (int i = 0; i < lp::count; ++i)
             values[(size_t) i].store (lp::descs[(size_t) i].def, std::memory_order_relaxed);
         for (auto& t : custom)
@@ -31,6 +38,23 @@ public:
 
     LfoCustomTable& customTable (int lfo) noexcept { return custom[(size_t) lfo]; }
 
+    // User wavetables (§3D editor): raw frames (wt::frameSize each) kept for state/editing, band-limited
+    // table published lock-free to the engine. Message thread only. numFrames = 0 clears the slot.
+    struct UserTable { std::vector<float> frames; int numFrames = 0; };
+    void setUserTable (int slot, std::vector<float> frames, int numFrames)
+    {
+        auto& u = userRaw[(size_t) slot];
+        numFrames = juce::jlimit (0, wt::maxFrames, juce::jmin (numFrames, (int) (frames.size() / (size_t) wt::frameSize)));
+        frames.resize ((size_t) numFrames * wt::frameSize);
+        u.frames = std::move (frames);
+        u.numFrames = numFrames;
+        userSlots[(size_t) slot].set (numFrames > 0 ? wt::buildTable (u.frames.data(), numFrames,
+                                                                      "User " + std::to_string (slot + 1), true)
+                                                    : nullptr);
+    }
+    const UserTable& userTable (int slot) const noexcept { return userRaw[(size_t) slot]; }
+    const wt::TableSlot* userTableSlots() const noexcept { return userSlots.data(); }
+
     juce::ValueTree toTree (const juce::Identifier& type) const
     {
         juce::ValueTree t (type);
@@ -41,6 +65,17 @@ public:
             juce::StringArray pts;
             for (auto& p : custom[l]) pts.add (juce::String (p.load(), 5));
             t.setProperty ("lfo" + juce::String ((int) l + 1) + "_custom", pts.joinIntoString (" "), nullptr);
+        }
+        for (int u = 0; u < wt::numUserSlots; ++u)
+        {
+            const auto& ut = userRaw[(size_t) u];
+            if (ut.numFrames <= 0) continue;
+            juce::ValueTree w ("WT_USER");
+            w.setProperty ("slot", u, nullptr);
+            w.setProperty ("frames", ut.numFrames, nullptr);
+            juce::MemoryBlock mb (ut.frames.data(), ut.frames.size() * sizeof (float));
+            w.setProperty ("data", mb.toBase64Encoding(), nullptr);
+            t.appendChild (w, nullptr);
         }
         return t;
     }
@@ -59,10 +94,24 @@ public:
             for (int i = 0; i < juce::jmin (pts.size(), lfoCustomPoints); ++i)
                 custom[l][(size_t) i].store (juce::jlimit (-1.0f, 1.0f, pts[i].getFloatValue()));
         }
+        for (auto w : t)
+        {
+            if (! w.hasType ("WT_USER")) continue;
+            const int u = w.getProperty ("slot", -1), nf = w.getProperty ("frames", 0);
+            juce::MemoryBlock mb;
+            if (u < 0 || u >= wt::numUserSlots || nf <= 0 || ! mb.fromBase64Encoding (w.getProperty ("data").toString()))
+                continue;
+            std::vector<float> fr (mb.getSize() / sizeof (float));
+            std::memcpy (fr.data(), mb.getData(), fr.size() * sizeof (float));
+            for (auto& x : fr) if (! std::isfinite (x)) x = 0.0f;
+            setUserTable (u, std::move (fr), nf);
+        }
     }
 
 private:
     std::array<std::atomic<float>, lp::count> values;
     std::array<LfoCustomTable, 4> custom;
+    std::array<UserTable, wt::numUserSlots> userRaw;
+    std::array<wt::TableSlot, wt::numUserSlots> userSlots;
 };
 } // namespace chroma
