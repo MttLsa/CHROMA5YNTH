@@ -222,6 +222,45 @@ bool FineSlider::keyPressed (const KeyPress& k)
 }
 
 //==============================================================================
+String Binding::format (float v) const
+{
+    if (kind == Kind::Choice || kind == Kind::Bool)
+        return choices[jlimit (0, jmax (0, choices.size() - 1), roundToInt (v - min))];
+    if (kind == Kind::Int)
+        return String (roundToInt (v)) + (unit.isNotEmpty() ? " " + unit : String());
+    auto num = [] (float x)
+    {
+        const float a = std::abs (x);
+        return String (x, a < 10.0f ? 2 : a < 100.0f ? 1 : 0);
+    };
+    if (unit == "%" && min >= -1.0f && max <= 2.0f)
+        return String (roundToInt (v * 100.0f)) + "%";
+    if (unit == "s" && std::abs (v) < 1.0f)
+        return String (roundToInt (v * 1000.0f)) + " ms";
+    if (unit == "ms" && std::abs (v) >= 1000.0f)
+        return num (v * 0.001f) + " s";
+    if (unit == "Hz" && std::abs (v) >= 1000.0f)
+        return num (v * 0.001f) + " kHz";
+    return num (v) + (unit.isNotEmpty() ? (unit == "%" || unit == utf8 ("°") ? unit : " " + unit) : String());
+}
+
+NormalisableRange<double> Binding::range() const
+{
+    if (hasHostRange)
+    {
+        const auto& h = hostRange;
+        return { (double) h.start, (double) h.end,
+                 [h] (double s, double e, double x) { auto c = h; c.start = (float) s; c.end = (float) e; return (double) c.convertFrom0to1 ((float) x); },
+                 [h] (double s, double e, double v) { auto c = h; c.start = (float) s; c.end = (float) e; return (double) c.convertTo0to1 ((float) v); },
+                 [h] (double, double, double v) { return (double) h.snapToLegalValue ((float) v); } };
+    }
+    NormalisableRange<double> r (min, jmax (min + 1.0e-6f, max), kind == Kind::Float ? 0.0 : 1.0);
+    if (hasSkew && skewCentre > min && skewCentre < max)
+        r.setSkewForCentre (skewCentre);
+    return r;
+}
+
+//==============================================================================
 Knob::Knob (const String& c, Colour a) : caption (c), accent (a)
 {
     slider.setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
@@ -255,6 +294,39 @@ void Knob::attach (AudioProcessorValueTreeState& s, const String& id)
     repaint();
 }
 
+void Knob::bind (BindingPtr b)
+{
+    att.reset();
+    param = nullptr;
+    binding = std::move (b);
+    slider.setNormalisableRange (binding->range());
+    slider.setDoubleClickReturnValue (true, binding->def);
+    slider.setValue (binding->get(), dontSendNotification);
+    slider.setTooltip (binding->tooltip.isNotEmpty() ? binding->tooltip : binding->name);
+    slider.onDragStart = [this] { if (binding->beginGesture) binding->beginGesture(); };
+    slider.onDragEnd = [this] { if (binding->endGesture) binding->endGesture(); };
+    slider.onValueChange = [this]
+    {
+        if (binding->set) binding->set ((float) slider.getValue());
+        repaint();
+    };
+    if (caption.isEmpty())
+        caption = binding->name;
+    repaint();
+}
+
+void Knob::refresh()
+{
+    if (binding == nullptr || slider.isMouseButtonDown())
+        return;
+    const double v = binding->get();
+    if (std::abs (v - slider.getValue()) > 1.0e-7)
+    {
+        slider.setValue (v, dontSendNotification);
+        repaint();
+    }
+}
+
 static int captionHeight (int h) { return jlimit (10, 16, h / 6); }
 
 void Knob::resized()
@@ -273,10 +345,10 @@ void Knob::paint (Graphics& g)
     g.setFont (style::font (jlimit (9.5f, 14.0f, (float) capH * 0.85f)));
     g.setColour (style::textDim);
     g.drawFittedText (caption, 0, 0, getWidth(), capH, Justification::centred, 1, 0.7f);
-    if (param != nullptr)
+    if (param != nullptr || binding != nullptr)
     {
         g.setColour (slider.isMouseOverOrDragging() || slider.hasKeyboardFocus (false) ? accent : style::text);
-        g.drawFittedText (param->getCurrentValueAsText(), 0, getHeight() - capH, getWidth(), capH, Justification::centred, 1, 0.7f);
+        g.drawFittedText (binding != nullptr ? binding->format ((float) slider.getValue()) : param->getCurrentValueAsText(), 0, getHeight() - capH, getWidth(), capH, Justification::centred, 1, 0.7f);
     }
     if (slider.hasKeyboardFocus (false))
     {
@@ -314,6 +386,32 @@ void Segmented::attach (AudioProcessorValueTreeState& s, const String& id, Strin
         caption = param->getName (32);
 }
 
+void Segmented::bind (BindingPtr b)
+{
+    att.reset();
+    param = nullptr;
+    binding = std::move (b);
+    labels = binding->choices;
+    if (labels.isEmpty())
+        for (int i = (int) binding->min; i <= (int) binding->max; ++i)
+            labels.add (String (i));
+    setTooltip (binding->tooltip.isNotEmpty() ? binding->tooltip : binding->name);
+    index = -1;
+    refresh();
+}
+
+void Segmented::refresh()
+{
+    if (binding == nullptr)
+        return;
+    const int i = roundToInt (binding->get() - binding->min);
+    if (i != index)
+    {
+        index = i;
+        repaint();
+    }
+}
+
 Rectangle<int> Segmented::area() const
 {
     auto r = getLocalBounds();
@@ -349,11 +447,21 @@ void Segmented::paint (Graphics& g)
 
 void Segmented::mouseDown (const MouseEvent& e)
 {
-    if (att == nullptr || labels.isEmpty())
+    if ((att == nullptr && binding == nullptr) || labels.isEmpty() || e.mods.isPopupMenu())
         return;
     const auto r = area();
     const int n = labels.size();
-    const int i = jlimit (0, n - 1, (e.x - r.getX()) * n / jmax (1, r.getWidth()));
+    int i = jlimit (0, n - 1, (e.x - r.getX()) * n / jmax (1, r.getWidth()));
+    if (binding != nullptr)
+    {
+        if (n == 2 && binding->kind == Binding::Kind::Bool && r.getWidth() < 48)
+            i = index == 0 ? 1 : 0;          // compact toggle: click anywhere flips
+        if (binding->beginGesture) binding->beginGesture();
+        binding->set (binding->min + (float) i);
+        if (binding->endGesture) binding->endGesture();
+        refresh();
+        return;
+    }
     att->setValueAsCompleteGesture (param->getNormalisableRange().start + (float) i);
 }
 

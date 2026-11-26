@@ -506,6 +506,7 @@ void Synth::process (juce::AudioBuffer<float>& buffer, const juce::MidiBuffer& m
         if (r != nullptr) r[i] *= g;
     }
     limiter.process (buffer.getArrayOfWritePointers(), numSamples);
+    updateMeters (buffer, numCh, numSamples);
     for (int ch = 2; ch < buffer.getNumChannels(); ++ch)
         buffer.clear (ch, 0, numSamples);
     sampleClock += (uint64_t) numSamples;
@@ -536,8 +537,29 @@ void Synth::renderChunk (float* const* out, int numChannels, int start, int n) n
             const float b = st.bufR[(size_t) i] * st.gainR.next();
             if (numChannels > 1) { out[0][start + i] += a; out[1][start + i] += b; }
             else out[0][start + i] += 0.5f * (a + b);
+            blockPeak[l] = juce::jmax (blockPeak[l], std::abs (a), std::abs (b));
         }
     }
+}
+
+void Synth::updateMeters (const juce::AudioBuffer<float>& buffer, int numCh, int numSamples) noexcept
+{
+    auto hold = [] (std::atomic<float>& m, float v)
+    {
+        if (v > m.load (std::memory_order_relaxed)) m.store (v, std::memory_order_relaxed);
+    };
+    for (size_t l = 0; l < numLayers; ++l)
+    {
+        hold (meterLayer[l], blockPeak[l]);
+        blockPeak[l] = 0.0f;
+    }
+    for (int ch = 0; ch < 2; ++ch)
+        hold (meterMaster[(size_t) ch], buffer.getMagnitude (juce::jmin (ch, numCh - 1), 0, numSamples));
+    std::array<int, numLayers> count {};
+    for (const auto& v : voices)
+        if (v.state != Voice::State::Free) ++count[(size_t) juce::jlimit (0, numLayers - 1, v.layer)];
+    for (size_t l = 0; l < numLayers; ++l)
+        meterVoices[l].store (count[l], std::memory_order_relaxed);
 }
 
 // ------------------------------------------------------------------------------------------------ MIDI

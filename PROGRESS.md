@@ -93,3 +93,13 @@
 - GUI generica: toolbar Presets/Undo/Redo/A/B/A>B/Randomize+quantità/Init/Tuning/MIDI, PresetBrowser overlay, clic destro sui controlli → MIDI Learn (menu in italiano). Manuale: docs/manual/presets-global.md.
 - tests/test_global.cpp (16 casi): tuning/parsers, pitch misurato con Master Tune e microtuning, oversampling RT/offline, MIDI learn, undo/redo/idle, A/B, randomize, init, preset Multi/Layer, browser. 113/113 verdi (Linux).
 - Aperti: MIDI learn solo sui parametri host nella GUI generica (layer param via API, GUI definitiva); tools/presetnorm e 64 preset di fabbrica in fase dedicata.
+
+## FASE 10 – GUI definitiva ✅
+- Editor nuovo (src/PluginEditor.*, src/gui/ParamUI.*, MainPanels.*): header + toolbar (preset, undo/redo, A/B, randomize, init, tuning, MIDI, zoom, About), barra Layer 1–12 (engine ▾, on/M/S, voci, meter; clic destro copia/incolla/init/preset Layer), schede Engine/Voice/Modulation/Layer FX/Master FX/Global, colonna Master (meter L/R, volume, polifonia) + Macro + Scale (tastiera a maschere di Layer).
+- Scala vettoriale 75–200 % (base 1280×800 via AffineTransform), oltre il 200 % il layout si allarga; limite massimo = schermo intero (+ voce "Schermo intero" nel menu zoom). Dimensione salvata nello stato host.
+- Binding generico host/Layer (`Binding`, Knob/Segmented::bind), pannelli generati da params (Desc + unit/description nel generatore), header power, viste ENV/LFO, Mod Matrix a tabella (destinazioni a sottomenu), clic destro: default, MIDI learn, assegna a Macro, slot automazione host (aperti fase 1/9 chiusi).
+- Editor dedicati: Additive Custom Spectrum A/B (barre per campo), curva di fase PD (punti), import banco FM .syx, apertura WT Editor.
+- 60 fps senza pesare sull'audio: VBlankAttachment limitato a 60 Hz, meter lock-free (picchi atomici scritti 1×/blocco), controlli a 30 Hz solo pagina visibile (≈ 0.003 ms/pass), meter opachi.
+- Fix: stringhe UTF-8 (sezioni "·", tooltip italiani) via `utf8()`.
+- tests/test_gui.cpp: scala/limiti/stato, tutte le pagine engine, meter; snapshot dev `"GUI: snapshots"`. 116/116 verdi (Linux, xvfb).
+- Aperti: editor tabella LFO Custom; GUI tuning/MPE avanzata solo via menu.

@@ -35,3 +35,9 @@ Raggi: pannello 4, controlli 2.5, segment 3/2. Bordi 1 px outline.
 - choice/bool → `Segmented` (fondo outline, cella attiva accent + testo nero SemiBold); float/int → `Knob`. Pulsanti: panel2, attivo accent.
 - Slider lineari: traccia 4 px, thumb text 6×16 r2. Combo: freccia triangolare textDim a destra.
 - Nessun colore/font hard-coded fuori da `chroma::style`; nuove sezioni = nuovi `Panel`.
+
+## GUI definitiva (§7, `src/PluginEditor.cpp`, `src/gui/ParamUI.*`, `src/gui/MainPanels.*`)
+- Base logica 1280×800 disegnata su un `Root` scalato con `AffineTransform`: scala = min(W/1280, H/800) limitata a 75–200 %; oltre, il layout cresce (fino all'area dello schermo, limite massimo = display più grande). Dimensione salvata nello stato host (`uiWidth/uiHeight`).
+- Struttura: header + toolbar, barra Layer 1–12 (numero, engine ▾, M/S/power, meter), centro a schede (Engine, Voice, Modulation, Layer FX, Master FX, Global) con pannelli a mosaico (colonne ≥ 340 px), colonna destra Master (meter L/R) + Macro (accent2) + Scale (tastiera).
+- Pannelli generati da `lp::descs` / `gui::params` (mai parametri hard-coded): un `*_on` iniziale diventa il power nell'header, prefisso comune tolto dalle caption, vista ENV/LFO automatica.
+- Aggiornamento su v-blank ≤ 60 fps: meter (lock-free, `Synth::takeLayerPeak/takeMasterPeak`), controlli a 30 Hz solo per la pagina visibile. Stringhe con caratteri non ASCII sempre via `utf8 ("…")`.
