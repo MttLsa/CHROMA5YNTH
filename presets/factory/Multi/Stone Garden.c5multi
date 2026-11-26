@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<CHROMA5YNTH_PRESET kind="multi" name="Stone Garden" category="Pluck" author="TMFU audiovibe"
+                    tags="scale,pentatonic,mallet" format="1">
+  <CHROMA5YNTH>
+    <PARAM id="layer1_engine" value="2.0"/>
+    <PARAM id="layer1_pan" value="-0.199999988079071"/>
+    <PARAM id="layer2_engine" value="3.0"/>
+    <PARAM id="layer2_on" value="1.0"/>
+    <PARAM id="layer2_pan" value="0.3000000715255737"/>
+    <PARAM id="layer2_volume" value="-6.0"/>
+    <PARAM id="preset_trim" value="2.309999942779541"/>
+    <PARAM id="scale_a" value="3.0"/>
+    <PARAM id="scale_as" value="0.0"/>
+    <PARAM id="scale_c" value="3.0"/>
+    <PARAM id="scale_cs" value="0.0"/>
+    <PARAM id="scale_d" value="0.0"/>
+    <PARAM id="scale_ds" value="0.0"/>
+    <PARAM id="scale_e" value="3.0"/>
+    <PARAM id="scale_fs" value="0.0"/>
+    <PARAM id="scale_g" value="0.0"/>
+    <PARAM id="scale_gs" value="0.0"/>
+    <PARAM id="scale_on" value="1.0"/>
+    <CORE>
+      <LAYER env1_attack="0.001000000047497451" env1_sustain="1.0" env1_release="0.4000000059604645"
+             env1_velocity="0.4000000059604645" fm_op2_ratio="3.5" fm_op2_level="0.7799999713897705"
+             fm_op3_ratio="4.0" fm_op3_level="0.6000000238418579" fm_op4_ratio="9.0"
+             fm_op4_level="0.550000011920929" fm_op5_on="0.0" fm_op6_on="0.0"
+             fm_op1_decay="0.699999988079071" fm_op1_sustain="0.0" fm_op1_release="0.4000000059604645"
+             fm_op2_decay="0.07999999821186066" fm_op2_sustain="0.0" fm_op3_decay="0.4000000059604645"
+             fm_op3_sustain="0.0" fm_op4_decay="0.05000000074505806" fm_op4_sustain="0.0"
+             fm_algorithm="4.0" fx_dist_on="1.0" fx_dist_drive="0.4000000059604645"
+             fx_dist_tone="0.6000000238418579" fx_reverb_on="1.0" fx_reverb_mix="0.2000000029802322"
+             index="0"/>
+      <LAYER env1_attack="0.001000000047497451" env1_decay="0.8999999761581421"
+             env1_sustain="0.0" env1_velocity="0.300000011920929" env2_attack="0.001000000047497451"
+             env2_sustain="0.0" mm1_source="6.0" mm1_dest="258.0" mm1_amount="0.5"
+             wt_osc1_table="37.0" wt_osc1_pos="0.300000011920929" fx_dist_on="1.0"
+             fx_dist_drive="0.4000000059604645" fx_dist_tone="0.6000000238418579"
+             fx_delay_on="1.0" fx_delay_sync="1.0" fx_delay_div_l="16.0" fx_delay_div_r="16.0"
+             fx_delay_feedback="0.449999988079071" fx_delay_pingpong="1.0"
+             fx_reverb_on="1.0" fx_reverb_mix="0.2000000029802322" index="1"/>
+      <MACROS/>
+      <AUTOMATION/>
+    </CORE>
+  </CHROMA5YNTH>
+</CHROMA5YNTH_PRESET>

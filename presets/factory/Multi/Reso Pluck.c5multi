@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<CHROMA5YNTH_PRESET kind="multi" name="Reso Pluck" category="Pluck" author="TMFU audiovibe"
+                    tags="pd,resonant,short" format="1">
+  <CHROMA5YNTH>
+    <PARAM id="layer1_engine" value="4.0"/>
+    <PARAM id="preset_trim" value="0.0"/>
+    <CORE>
+      <LAYER layer_trim="2.809999942779541" env1_attack="0.001000000047497451"
+             env1_decay="0.8999999761581421" env1_sustain="0.0" pd_l1_wave="5.0"
+             pd_l1_amount="0.2000000029802322" pd_l1_env_amount="0.699999988079071"
+             pd_l1_env_attack="0.001000000047497451" pd_l1_env_decay="0.25"
+             pd_l1_env_sustain="0.0" fx_dist_on="1.0" fx_dist_drive="0.4000000059604645"
+             fx_dist_tone="0.6000000238418579" fx_delay_on="1.0" fx_delay_sync="1.0"
+             fx_delay_div_l="3.0" fx_delay_div_r="3.0" fx_delay_pingpong="1.0"
+             fx_delay_mix="0.2199999988079071" index="0"/>
+      <MACROS/>
+      <AUTOMATION/>
+    </CORE>
+  </CHROMA5YNTH>
+</CHROMA5YNTH_PRESET>

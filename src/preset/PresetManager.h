@@ -69,6 +69,13 @@ public:
     bool isFavourite (const juce::File&) const;
 
     static juce::String safeFileName (const juce::String&);
+    // Writes a wrapped preset file (metadata + content).
+    static bool writeFile (const juce::File&, PresetKind, const juce::ValueTree& content, const PresetMeta&);
+
+    // Factory presets (presets/factory, embedded in the binary) are copied to <kind>/Factory once per
+    // factory set (marker file .factory). Returns the number of files written.
+    int installFactory (bool force = false);
+    static int numFactoryPresets();
 
 private:
     juce::File root;

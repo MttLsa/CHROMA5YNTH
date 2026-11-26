@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<CHROMA5YNTH_PRESET kind="multi" name="Dorian Dusk" category="Pad" author="TMFU audiovibe"
+                    tags="scale,dorian,bass split" format="1">
+  <CHROMA5YNTH>
+    <PARAM id="layer1_key_lo" value="48.0"/>
+    <PARAM id="layer2_key_hi" value="47.0"/>
+    <PARAM id="layer2_on" value="1.0"/>
+    <PARAM id="layer2_volume" value="-3.0"/>
+    <PARAM id="preset_trim" value="0.0"/>
+    <PARAM id="scale_a" value="3.0"/>
+    <PARAM id="scale_as" value="0.0"/>
+    <PARAM id="scale_b" value="3.0"/>
+    <PARAM id="scale_c" value="3.0"/>
+    <PARAM id="scale_cs" value="0.0"/>
+    <PARAM id="scale_d" value="3.0"/>
+    <PARAM id="scale_ds" value="0.0"/>
+    <PARAM id="scale_e" value="3.0"/>
+    <PARAM id="scale_f" value="3.0"/>
+    <PARAM id="scale_fs" value="0.0"/>
+    <PARAM id="scale_g" value="3.0"/>
+    <PARAM id="scale_gs" value="0.0"/>
+    <PARAM id="scale_on" value="1.0"/>
+    <CORE>
+      <LAYER filter_on="1.0" filter_model="2.0" filter_cutoff="2200.0" filter_resonance="0.1500000059604645"
+             filter_lfo_amount="0.119999997317791" drift_on="1.0" drift_amount="0.4000000059604645"
+             env1_attack="1.399999976158142" env1_decay="1.5" env1_sustain="0.8500000238418579"
+             env1_release="2.799999952316284" lfo1_rate="0.1500000059604645"
+             an_osc1_wave="5.0" an_osc1_ss_detune="0.300000011920929" an_osc1_ss_spread="0.800000011920929"
+             an_osc2_on="1.0" an_osc2_octave="-1.0" an_osc2_fine="7.0" an_osc2_level="0.5"
+             fx_chorus_on="1.0" fx_chorus_mix="0.4000000059604645" fx_reverb_on="1.0"
+             fx_reverb_size="0.800000011920929" fx_reverb_decay="5.0" fx_reverb_mix="0.3499999940395355"
+             index="0"/>
+      <LAYER voice_mode="0.0" glide_on="1.0" glide_time="0.03999999910593033"
+             filter_on="1.0" filter_cutoff="320.0" filter_resonance="0.3499999940395355"
+             filter_drive="0.300000011920929" filter_keytrack="0.300000011920929"
+             filter_env_amount="0.4199999868869781" env1_attack="0.002000000094994903"
+             env1_decay="0.5" env1_sustain="0.75" env1_release="0.119999997317791"
+             env1_velocity="0.300000011920929" env2_attack="0.001000000047497451"
+             env2_decay="0.3199999928474426" env2_sustain="0.119999997317791"
+             env2_release="0.2000000029802322" an_osc2_on="1.0" an_osc2_wave="3.0"
+             an_osc2_octave="-1.0" an_osc2_level="0.6000000238418579" an_sub_level="0.449999988079071"
+             an_sub_on="1.0" fx_dist_on="1.0" fx_dist_type="2.0" fx_dist_drive="0.25"
+             fx_dist_mix="0.6000000238418579" index="1"/>
+      <MACROS/>
+      <AUTOMATION/>
+    </CORE>
+  </CHROMA5YNTH>
+</CHROMA5YNTH_PRESET>

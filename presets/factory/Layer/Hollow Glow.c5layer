@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<CHROMA5YNTH_PRESET kind="layer" name="Hollow Glow" category="Pad" author="TMFU audiovibe"
+                    tags="additive,morph,warm" format="1">
+  <LAYER_PRESET on="1.0" engine="0.25" volume="0.8126519918441772" pan="0.5"
+                mute="0.0" solo="0.0" transpose="0.5" key_lo="0.0" key_hi="1.0"
+                vel_lo="0.0" vel_hi="1.0" midi_ch="0.0" max_voices="1.0">
+    <ENGINE layer_trim="1.870000004768372" env1_attack="1.200000047683716"
+            env1_sustain="0.8999999761581421" env1_release="2.200000047683716"
+            lfo1_rate="0.1000000014901161" lfo1_mode="0.0" lfo1_unipolar="1.0"
+            mm1_source="1.0" mm1_dest="91.0" mm1_amount="0.5" add_spectrum_a="8.0"
+            add_spectrum_b="12.0" add_spread="0.6000000238418579" fx_chorus_on="1.0"
+            fx_chorus_mix="0.300000011920929" fx_reverb_on="1.0" fx_reverb_mix="0.3499999940395355"/>
+  </LAYER_PRESET>
+</CHROMA5YNTH_PRESET>

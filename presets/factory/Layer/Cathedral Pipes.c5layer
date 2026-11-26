@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<CHROMA5YNTH_PRESET kind="layer" name="Cathedral Pipes" category="Organ" author="TMFU audiovibe"
+                    tags="additive,organ,majestic" format="1">
+  <LAYER_PRESET on="1.0" engine="0.25" volume="0.8126519918441772" pan="0.5"
+                mute="0.0" solo="0.0" transpose="0.5" key_lo="0.0" key_hi="1.0"
+                vel_lo="0.0" vel_hi="1.0" midi_ch="0.0" max_voices="1.0">
+    <ENGINE layer_trim="-6.679999828338623" env1_attack="0.02999999932944775"
+            env1_sustain="1.0" env1_release="0.6000000238418579" add_partials="48.0"
+            add_spectrum_a="7.0" fx_reverb_on="1.0" fx_reverb_size="0.949999988079071"
+            fx_reverb_decay="6.0" fx_reverb_mix="0.3499999940395355"/>
+  </LAYER_PRESET>
+</CHROMA5YNTH_PRESET>

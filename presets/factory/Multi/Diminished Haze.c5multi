@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<CHROMA5YNTH_PRESET kind="multi" name="Diminished Haze" category="Texture" author="TMFU audiovibe"
+                    tags="scale,diminished,dark" format="1">
+  <CHROMA5YNTH>
+    <PARAM id="layer1_volume" value="-6.0"/>
+    <PARAM id="layer2_engine" value="1.0"/>
+    <PARAM id="layer2_on" value="1.0"/>
+    <PARAM id="preset_trim" value="1.289999961853027"/>
+    <PARAM id="scale_a" value="0.0"/>
+    <PARAM id="scale_as" value="0.0"/>
+    <PARAM id="scale_b" value="0.0"/>
+    <PARAM id="scale_c" value="3.0"/>
+    <PARAM id="scale_cs" value="0.0"/>
+    <PARAM id="scale_d" value="3.0"/>
+    <PARAM id="scale_ds" value="3.0"/>
+    <PARAM id="scale_e" value="0.0"/>
+    <PARAM id="scale_f" value="3.0"/>
+    <PARAM id="scale_fs" value="0.0"/>
+    <PARAM id="scale_g" value="0.0"/>
+    <PARAM id="scale_gs" value="0.0"/>
+    <PARAM id="scale_on" value="1.0"/>
+    <CORE>
+      <LAYER filter_on="1.0" filter_model="3.0" filter_cutoff="900.0" filter_resonance="0.550000011920929"
+             filter_lfo_amount="0.449999988079071" env1_attack="1.799999952316284"
+             env1_decay="2.0" env1_sustain="1.0" env1_release="3.5" lfo1_shape="6.0"
+             lfo1_rate="0.1800000071525574" lfo1_mode="0.0" an_osc1_level="0.0"
+             an_noise_level="0.8999999761581421" an_noise_type="1.0" an_noise_width="1.0"
+             fx_reverb_on="1.0" fx_reverb_size="0.8999999761581421" fx_reverb_decay="8.0"
+             fx_reverb_mix="0.449999988079071" index="0"/>
+      <LAYER env1_attack="1.200000047683716" env1_sustain="0.8999999761581421"
+             env1_release="2.200000047683716" lfo1_rate="0.1000000014901161"
+             lfo1_mode="0.0" lfo1_unipolar="1.0" mm1_source="1.0" mm1_dest="91.0"
+             mm1_amount="0.5" add_spectrum_a="8.0" add_spectrum_b="12.0" add_spread="0.6000000238418579"
+             fx_chorus_on="1.0" fx_chorus_mix="0.300000011920929" fx_reverb_on="1.0"
+             fx_reverb_mix="0.3499999940395355" index="1"/>
+      <MACROS/>
+      <AUTOMATION/>
+    </CORE>
+  </CHROMA5YNTH>
+</CHROMA5YNTH_PRESET>

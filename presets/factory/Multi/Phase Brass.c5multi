@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<CHROMA5YNTH_PRESET kind="multi" name="Phase Brass" category="Brass" author="TMFU audiovibe"
+                    tags="pd,brass,swell" format="1">
+  <CHROMA5YNTH>
+    <PARAM id="layer1_engine" value="4.0"/>
+    <PARAM id="preset_trim" value="0.0"/>
+    <CORE>
+      <LAYER layer_trim="-8.189999580383301" env1_attack="0.05000000074505806"
+             env1_sustain="0.8999999761581421" pd_l2_on="1.0" pd_l2_fine="7.0"
+             pd_l2_level="0.6000000238418579" pd_l1_amount="0.2000000029802322"
+             pd_l2_amount="0.25" pd_l1_env_amount="0.6000000238418579" pd_l1_env_attack="0.09000000357627869"
+             pd_l1_env_decay="0.6000000238418579" pd_l1_env_sustain="0.550000011920929"
+             pd_l1_env_velocity="0.5" fx_reverb_on="1.0" fx_reverb_mix="0.2000000029802322"
+             index="0"/>
+      <MACROS/>
+      <AUTOMATION/>
+    </CORE>
+  </CHROMA5YNTH>
+</CHROMA5YNTH_PRESET>

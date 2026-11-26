@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<CHROMA5YNTH_PRESET kind="multi" name="Cosine Strings" category="Strings" author="TMFU audiovibe"
+                    tags="pd,ensemble,soft" format="1">
+  <CHROMA5YNTH>
+    <PARAM id="layer1_engine" value="4.0"/>
+    <PARAM id="preset_trim" value="0.0"/>
+    <CORE>
+      <LAYER layer_trim="-1.649999976158142" unison="2.0" unison_detune="12.0"
+             env1_attack="0.5" env1_sustain="0.949999988079071" env1_release="1.399999976158142"
+             pd_l1_pan="-0.4000000059604645" pd_l2_on="1.0" pd_l2_fine="9.0"
+             pd_l2_pan="0.4000000059604645" pd_l1_amount="0.449999988079071"
+             pd_l2_amount="0.4000000059604645" fx_chorus_on="1.0" fx_reverb_on="1.0"
+             fx_reverb_size="0.75" fx_reverb_mix="0.3499999940395355" index="0"/>
+      <MACROS/>
+      <AUTOMATION/>
+    </CORE>
+  </CHROMA5YNTH>
+</CHROMA5YNTH_PRESET>

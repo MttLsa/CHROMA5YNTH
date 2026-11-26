@@ -1,4 +1,7 @@
 #include "PresetManager.h"
+#if CHROMA_HAS_FACTORY
+ #include "FactoryPresets.h"
+#endif
 
 namespace chroma
 {
@@ -123,6 +126,56 @@ juce::String PresetManager::safeFileName (const juce::String& name)
 {
     auto s = juce::File::createLegalFileName (name.trim()).trim();
     return s.isEmpty() ? juce::String ("Untitled") : s;
+}
+
+bool PresetManager::writeFile (const juce::File& f, PresetKind k, const juce::ValueTree& content, const PresetMeta& meta)
+{
+    juce::XmlElement x (rootTag);
+    writeMeta (x, k, meta);
+    if (auto c = content.createXml()) x.addChildElement (c.release());
+    f.getParentDirectory().createDirectory();
+    return x.writeTo (f);
+}
+
+int PresetManager::numFactoryPresets()
+{
+#if CHROMA_HAS_FACTORY
+    return ChromaFactory::namedResourceListSize;
+#else
+    return 0;
+#endif
+}
+
+int PresetManager::installFactory (bool force)
+{
+    int written = 0;
+#if CHROMA_HAS_FACTORY
+    juce::String id;
+    for (int i = 0; i < ChromaFactory::namedResourceListSize; ++i)
+    {
+        int size = 0;
+        ChromaFactory::getNamedResource (ChromaFactory::namedResourceList[i], size);
+        id << ChromaFactory::originalFilenames[i] << ":" << size << ";";
+    }
+    const auto marker = root.getChildFile (".factory");
+    const auto stamp = juce::String::toHexString (id.hashCode64());
+    if (! force && marker.loadFileAsString().trim() == stamp) return 0;
+    for (int i = 0; i < ChromaFactory::namedResourceListSize; ++i)
+    {
+        int size = 0;
+        const auto* data = ChromaFactory::getNamedResource (ChromaFactory::namedResourceList[i], size);
+        const juce::String name = juce::String::fromUTF8 (ChromaFactory::originalFilenames[i]);
+        const auto dir = folder (name.endsWithIgnoreCase (layerExt) ? PresetKind::Layer : PresetKind::Multi).getChildFile ("Factory");
+        dir.createDirectory();
+        if (data != nullptr && dir.getChildFile (name).replaceWithData (data, (size_t) size)) ++written;
+    }
+    root.createDirectory();
+    marker.replaceWithText (stamp);
+    rescan();
+#else
+    juce::ignoreUnused (force);
+#endif
+    return written;
 }
 
 juce::File PresetManager::uniqueFile (PresetKind k, const juce::String& name) const

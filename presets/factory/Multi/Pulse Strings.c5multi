@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<CHROMA5YNTH_PRESET kind="multi" name="Pulse Strings" category="Strings" author="TMFU audiovibe"
+                    tags="wavetable,pwm,ensemble" format="1">
+  <CHROMA5YNTH>
+    <PARAM id="layer1_engine" value="3.0"/>
+    <PARAM id="preset_trim" value="0.0"/>
+    <CORE>
+      <LAYER layer_trim="-0.9900000095367432" filter_on="1.0" filter_model="8.0"
+             filter_cutoff="3500.0" env1_attack="0.3499999940395355" env1_sustain="0.949999988079071"
+             env1_release="1.200000047683716" lfo1_rate="0.5" lfo1_mode="0.0"
+             mm1_source="1.0" mm1_dest="258.0" mm1_amount="0.300000011920929"
+             wt_osc1_table="2.0" wt_osc1_pos="0.4000000059604645" wt_osc1_unison="6.0"
+             wt_osc1_uni_detune="16.0" fx_chorus_on="1.0" fx_chorus_mix="0.449999988079071"
+             fx_reverb_on="1.0" fx_reverb_mix="0.300000011920929" index="0"/>
+      <MACROS/>
+      <AUTOMATION/>
+    </CORE>
+  </CHROMA5YNTH>
+</CHROMA5YNTH_PRESET>

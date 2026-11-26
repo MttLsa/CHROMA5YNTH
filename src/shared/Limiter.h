@@ -15,6 +15,7 @@ class TruePeakLimiter
 {
 public:
     static constexpr float ceilingDb = -1.0f;
+    static constexpr float safetyDb = 0.7f;      // detection margin below the ceiling
     static constexpr int halfTaps = 32;         // interpolator half length (64 taps per phase)
 
     void prepare (double sampleRate, int numChannels)
@@ -35,10 +36,14 @@ public:
         n = 0; released = 1.0f; boxSum = (double) lookahead;
         boxRing.fill (1.0f);
         lastGain = 1.0f;
+        minGain = 1.0f;
     }
 
     int getLatencySamples() const noexcept { return 2 * halfTaps + lookahead - 1; }
     float getGainReduction() const noexcept { return lastGain; }
+    // Lowest gain applied since the last call (offline analysis, e.g. tools/presetnorm).
+    float takeMinGain() noexcept { const float m = minGain; minGain = 1.0f; return m; }
+    static constexpr float thresholdDb() noexcept { return ceilingDb - safetyDb; }
 
     // Processes in place. `data` holds `channels` pointers (only `channels` are used).
     void process (float* const* data, int numSamples) noexcept
@@ -90,6 +95,7 @@ public:
             float g = (float) (boxSum / (double) lookahead);
             g = std::min (g, 1.0f);
             lastGain = g;
+            minGain = std::min (minGain, g);
 
             // 7. output the delayed sample c = j - lookahead - halfTaps + 1
             const std::int64_t c = j - lookahead - halfTaps + 1;
@@ -124,7 +130,7 @@ private:
     static constexpr int dqSize = 2048, dqMask = dqSize - 1;
     static constexpr int boxSize = 2048, boxMask = boxSize - 1;
     // Worst-case gap between 4x-oversampled points and the continuous peak is cos(pi/8) = -0.69 dB.
-    static constexpr float safetyDb = 0.7f;
+
 
     int channels = 2, lookahead = 64;
     float releaseCoeff = 0.999f;
@@ -136,7 +142,7 @@ private:
     std::int64_t dqHead = 0, dqTail = 0;
     std::array<float, boxSize> boxRing {};
     std::int64_t n = 0;
-    float released = 1.0f, lastGain = 1.0f;
+    float released = 1.0f, lastGain = 1.0f, minGain = 1.0f;
     double boxSum = 0.0;
 };
 } // namespace chroma

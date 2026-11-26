@@ -192,7 +192,10 @@ void ChromaProcessor::initAll()
 PresetManager& ChromaProcessor::getPresets()
 {
     if (presets == nullptr)
+    {
         presets = std::make_unique<PresetManager> (presetRoot == juce::File() ? PresetManager::defaultRoot() : presetRoot);
+        if (presetRoot == juce::File()) presets->installFactory();
+    }
     return *presets;
 }
 

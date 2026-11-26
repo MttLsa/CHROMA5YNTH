@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<CHROMA5YNTH_PRESET kind="multi" name="Glass Choir" category="Pad" author="TMFU audiovibe"
+                    tags="fm,pad,airy,slow" format="1">
+  <CHROMA5YNTH>
+    <PARAM id="layer1_engine" value="2.0"/>
+    <PARAM id="preset_trim" value="0.0"/>
+    <CORE>
+      <LAYER layer_trim="-7.449999809265137" env1_attack="1.5" env1_sustain="1.0"
+             env1_release="2.5" lfo1_rate="0.4000000059604645" fm_op2_ratio="2.0"
+             fm_op2_level="0.6200000047683716" fm_op3_detune="6.0" fm_op3_level="0.8999999761581421"
+             fm_op4_ratio="3.0" fm_op4_level="0.550000011920929" fm_op5_ratio="2.0"
+             fm_op5_detune="-6.0" fm_op5_level="0.800000011920929" fm_op6_level="0.5"
+             fm_op2_attack="1.200000047683716" fm_op4_attack="2.0" fm_lfo1_amp="0.1500000059604645"
+             fm_algorithm="4.0" fx_chorus_on="1.0" fx_chorus_mix="0.4000000059604645"
+             fx_reverb_on="1.0" fx_reverb_size="0.8500000238418579" fx_reverb_decay="6.0"
+             fx_reverb_mix="0.4000000059604645" index="0"/>
+      <MACROS/>
+      <AUTOMATION/>
+    </CORE>
+  </CHROMA5YNTH>
+</CHROMA5YNTH_PRESET>

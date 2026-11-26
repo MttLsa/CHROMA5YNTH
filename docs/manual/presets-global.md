@@ -7,6 +7,12 @@
 - Libreria: `~/Library/Audio/Presets/TMFU audiovibe/CHROMA5YNTH/{Multi,Layer}`; preferiti in `favourites.txt`.
 - Browser (pulsante **Presets**): Multi/Layer, ricerca (tutte le parole su nome, categoria, autore, tag), filtri
   categoria/tag/autore, preferiti, Save / Load (doppio clic) / Rename / Delete / Import / Export.
+- **Preset di fabbrica**: 64 Multi (40 patch a un Layer, 8 per engine, + 24 Multi che usano SCALE) e le 40 patch anche
+  come Layer preset. Sono incorporati nel plugin e copiati in `{Multi,Layer}/Factory` al primo uso (di nuovo solo
+  quando cambia il set di fabbrica). Elenco: [factory-presets.md](factory-presets.md).
+- **Normalizzazione**: ogni preset di fabbrica è renderizzato offline (nota C3, velocity 100, 4 s) e riceve un trim
+  per arrivare a −14 LUFS short-term max, mai sopra −1 dBTP: **Preset Trim** (Multi, sommato al Master Volume) e
+  **Trim** del Layer (Layer preset, dopo le Layer FX). Strumento: `tools/presetnorm` (vedi `presets/README.md`).
 
 ## Undo/Redo, A/B, Randomize, Init (§5)
 - **Undo/Redo**: ogni modifica (anche dei parametri interni dei Layer) diventa un passo dopo 0.4 s di inattività;

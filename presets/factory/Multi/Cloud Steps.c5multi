@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<CHROMA5YNTH_PRESET kind="multi" name="Cloud Steps" category="Pad" author="TMFU audiovibe"
+                    tags="scale,pentatonic,dreamy" format="1">
+  <CHROMA5YNTH>
+    <PARAM id="layer1_engine" value="4.0"/>
+    <PARAM id="layer2_engine" value="2.0"/>
+    <PARAM id="layer2_on" value="1.0"/>
+    <PARAM id="layer2_volume" value="-6.0"/>
+    <PARAM id="mfx_reverb_on" value="1.0"/>
+    <PARAM id="mfx_reverb_type" value="3.0"/>
+    <PARAM id="preset_trim" value="-0.7200000286102295"/>
+    <PARAM id="scale_a" value="3.0"/>
+    <PARAM id="scale_as" value="0.0"/>
+    <PARAM id="scale_b" value="0.0"/>
+    <PARAM id="scale_c" value="3.0"/>
+    <PARAM id="scale_cs" value="0.0"/>
+    <PARAM id="scale_d" value="3.0"/>
+    <PARAM id="scale_ds" value="3.0"/>
+    <PARAM id="scale_e" value="0.0"/>
+    <PARAM id="scale_f" value="0.0"/>
+    <PARAM id="scale_fs" value="0.0"/>
+    <PARAM id="scale_g" value="3.0"/>
+    <PARAM id="scale_gs" value="0.0"/>
+    <PARAM id="scale_on" value="1.0"/>
+    <CORE>
+      <LAYER env1_attack="1.299999952316284" env1_sustain="1.0" env1_release="2.5"
+             lfo1_rate="0.1500000059604645" lfo1_mode="0.0" lfo1_unipolar="1.0"
+             mm1_source="1.0" mm1_dest="238.0" mm1_amount="0.6000000238418579"
+             pd_l1_wave="2.0" pd_l2_on="1.0" pd_l2_wave="3.0" pd_l2_octave="-1.0"
+             pd_l2_level="0.5" pd_l1_shape="2.0" pd_l2_amount="0.300000011920929"
+             fx_chorus_on="1.0" fx_chorus_mix="0.3499999940395355" fx_reverb_on="1.0"
+             fx_reverb_size="0.8500000238418579" fx_reverb_mix="0.4000000059604645"
+             index="0"/>
+      <LAYER env1_attack="1.5" env1_sustain="1.0" env1_release="2.5" lfo1_rate="0.4000000059604645"
+             fm_op2_ratio="2.0" fm_op2_level="0.6200000047683716" fm_op3_detune="6.0"
+             fm_op3_level="0.8999999761581421" fm_op4_ratio="3.0" fm_op4_level="0.550000011920929"
+             fm_op5_ratio="2.0" fm_op5_detune="-6.0" fm_op5_level="0.800000011920929"
+             fm_op6_level="0.5" fm_op2_attack="1.200000047683716" fm_op4_attack="2.0"
+             fm_lfo1_amp="0.1500000059604645" fm_algorithm="4.0" fx_chorus_on="1.0"
+             fx_chorus_mix="0.4000000059604645" fx_reverb_on="1.0" fx_reverb_size="0.8500000238418579"
+             fx_reverb_decay="6.0" fx_reverb_mix="0.4000000059604645" index="1"/>
+      <MACROS/>
+      <AUTOMATION/>
+    </CORE>
+  </CHROMA5YNTH>
+</CHROMA5YNTH_PRESET>
