@@ -126,4 +126,5 @@
 - CPU (Release, 2× OS, 48 kHz/256): Linux container 32 % core (44 % con Chorus/Delay/Reverb su ogni Layer); CI macos-15-intel 45 % / 73 %.
 - pluginval livello 10 SUCCESS: VST3 + AU su macOS (CI, ora anche test GUI), VST3 su Linux con xvfb. auval -strict: AU VALIDATION SUCCEEDED.
 - CI: step "QA report" con i numeri CPU. 124/124 test verdi (Linux + macOS). Nessun bug trovato nel plugin; corretto solo il confronto dei parametri discreti nel test (host invia valori non quantizzati).
+- Fix build #65: soglia CPU instabile sul runner condiviso (stesso codice 45 % → 81 %): misura in 8 segmenti da 0.25 s, gate sul segmento migliore, report migliore/mediana.
 - Aperti: misura CPU su Apple Silicon reale; prova d'ascolto (vedi chat fase 13).
