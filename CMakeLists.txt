@@ -6,7 +6,7 @@ if(APPLE AND NOT CMAKE_OSX_ARCHITECTURES)
     set(CMAKE_OSX_ARCHITECTURES "x86_64;arm64" CACHE STRING "macOS architectures")
 endif()
 
-project(CHROMA5YNTH VERSION 0.1.0 LANGUAGES C CXX)
+project(CHROMA5YNTH VERSION 1.0.0 LANGUAGES C CXX)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -52,6 +52,7 @@ add_custom_command(
             --params ${CMAKE_SOURCE_DIR}/params
             --out ${CHROMA_GEN_DIR}
             --docs ${CMAKE_SOURCE_DIR}/docs/manual/parameters.md
+            --docs-en ${CMAKE_SOURCE_DIR}/docs/manual/en/parameters.md
     DEPENDS ${CMAKE_SOURCE_DIR}/tools/gen_params.py ${CHROMA_PARAM_YAMLS}
     COMMENT "Generating parameter code from params/*.yaml")
 add_custom_target(chroma_gen_params DEPENDS ${CHROMA_GEN_FILES})

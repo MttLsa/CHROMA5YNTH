@@ -15,6 +15,7 @@ Ogni file `*.yaml` contiene una lista `params:`. Campi:
 | `choices` | choice | Lista di etichette |
 | `section` | sì | Sezione GUI/manuale (es. Master, Layer, Macro) |
 | `description` | sì | Testo per il manuale |
+| `description_en` | no | Testo inglese per il manuale EN (colonna Notes); se assente la colonna resta vuota |
 | `version` | no | Version hint VST3/AU (default 1; incrementare solo per parametri aggiunti in versioni successive) |
 | `automatable` | no | Esposto all'host (default true) |
 

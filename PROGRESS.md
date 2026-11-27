@@ -112,3 +112,11 @@
 - Preset in `presets/factory/` (430 KB) → `juce_add_binary_data(chroma_factory)` → installati in `{Multi,Layer}/Factory` al primo uso (marker `.factory`, reinstallo se cambia il set).
 - tests/test_presets.cpp: misure BS.1770/true peak, trim, normalize/compact, set di fabbrica (conteggi, SCALE, categorie, caricamento); loudness completa in `"[.slow]"`. 119/119 verdi (Linux).
 - Aperti: tool non compilato in CI (opzione OFF); preset solo a −14 LUFS su C3 (note diverse possono variare).
+
+## FASE 12 – Manuale, installer, release ✅
+- Manuale IT (docs/manual: installazione, panoramica, engine, modulazione, effetti, preset/global, preset di fabbrica, parametri) + EN (docs/manual/en, stessi capitoli). Apertura installer non firmato (Privacy e sicurezza → Apri comunque). Windows: non supportato.
+- gen_params: `--docs-en` → en/parameters.md (nomi/range/default/unità; campo opzionale `description_en`). presetnorm: fix UTF-8 nel report.
+- tools/build_manual.py (markdown + weasyprint): sito statico IT/EN (stile STYLE.md, Inter incorporato) + PDF A4 IT/EN con indice e numeri di pagina, Inter incorporato.
+- CI: job `manual` (verifica tabelle generate aggiornate, build sito+PDF, artifact manual-pdf, deploy gh-pages su main/tag); release su tag = .pkg + 2 PDF + link al manuale. Versione 1.0.0.
+- Release v1.0.0 creata da workflow_dispatch (input `release_tag`; il push di tag dalla sessione è bloccato). Pages: branch gh-pages pubblicato, da attivare in Settings → Pages.
+- Aperti: `description_en` da compilare (colonna Notes EN vuota); nomi "SuperSaw"/"Dimension" da verificare legalmente; firma/notarizzazione solo con secrets.

@@ -6,9 +6,15 @@ on:
     tags: ["chroma5ynth-v*"]
   pull_request:
   workflow_dispatch:
+    inputs:
+      release_tag:
+        description: "Create a release with this tag (e.g. chroma5ynth-v1.0.0); empty = build only"
+        required: false
+        default: ""
 
 env:
   PLUGIN: CHROMA5YNTH
+  RELEASE_TAG: ${{ github.event.inputs.release_tag }}
   PLUGINVAL_VERSION: v1.0.4
 
 jobs:
@@ -27,7 +33,7 @@ jobs:
       - uses: actions/checkout@v4
       - name: Version
         run: |
-          if [[ "$GITHUB_REF_TYPE" == "tag" ]]; then V="${GITHUB_REF_NAME#chroma5ynth-v}"; else V="$(grep -m1 -oE 'project\(CHROMA5YNTH VERSION [0-9.]+' CMakeLists.txt | awk '{print $3}')"; fi
+          if [[ -n "$RELEASE_TAG" ]]; then V="${RELEASE_TAG#chroma5ynth-v}"; elif [[ "$GITHUB_REF_TYPE" == "tag" ]]; then V="${GITHUB_REF_NAME#chroma5ynth-v}"; else V="$(grep -m1 -oE 'project\(CHROMA5YNTH VERSION [0-9.]+' CMakeLists.txt | awk '{print $3}')"; fi
           echo "VERSION=$V" >> "$GITHUB_ENV"
       - uses: actions/setup-python@v5
         with:
@@ -90,9 +96,42 @@ jobs:
           name: macos-installer
           path: dist/*.pkg
 
+  manual:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Python deps
+        run: python -m pip install pyyaml markdown weasyprint
+      - name: Check generated parameter tables are up to date
+        run: |
+          python tools/gen_params.py --params params --out "$RUNNER_TEMP/gen" --docs docs/manual/parameters.md --docs-en docs/manual/en/parameters.md
+          git diff --exit-code docs/manual
+      - name: Build manual (site + PDF)
+        run: |
+          if [[ -n "$RELEASE_TAG" ]]; then V="${RELEASE_TAG#chroma5ynth-v}"; elif [[ "$GITHUB_REF_TYPE" == "tag" ]]; then V="${GITHUB_REF_NAME#chroma5ynth-v}"; else V="$(grep -m1 -oE 'project\(CHROMA5YNTH VERSION [0-9.]+' CMakeLists.txt | awk '{print $3}')"; fi
+          python tools/build_manual.py --out site --version "$V"
+          mkdir -p pdf && cp site/*.pdf pdf/
+      - uses: actions/upload-artifact@v4
+        with:
+          name: manual-pdf
+          path: pdf/*.pdf
+      - name: Deploy GitHub Pages
+        if: github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/chroma5ynth-v') || startsWith(env.RELEASE_TAG, 'chroma5ynth-v')
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: site
+          publish_branch: gh-pages
+          force_orphan: true
+
   release:
-    if: startsWith(github.ref, 'refs/tags/chroma5ynth-v')
-    needs: [macos]
+    if: startsWith(github.ref, 'refs/tags/chroma5ynth-v') || startsWith(github.event.inputs.release_tag, 'chroma5ynth-v')
+    needs: [macos, manual]
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -103,5 +142,13 @@ jobs:
           merge-multiple: true
       - uses: softprops/action-gh-release@v2
         with:
+          tag_name: ${{ github.event.inputs.release_tag || github.ref_name }}
+          target_commitish: ${{ github.sha }}
+          name: CHROMA5YNTH ${{ github.event.inputs.release_tag || github.ref_name }}
           files: dist/*
           generate_release_notes: true
+          body: |
+            **CHROMA5YNTH** by TMFU audiovibe – macOS (Universal, 10.13+), VST3 + Audio Unit.
+
+            - Installer: `CHROMA5YNTH-*-macOS.pkg` (not signed: see the manual, *Installazione / Installation*).
+            - Manuale / Manual: https://mttlsa.github.io/CHROMA5YNTH/ · PDF IT/EN attached below.
