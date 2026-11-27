@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="it"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Engine · CHROMA5YNTH</title><link rel="stylesheet" href="style.css"></head>
+<body><header class="top"><a class="brand" href="index.html">CHROMA5YNTH</a><span class="maker">TMFU audiovibe · Manuale · Versione 1.1.0</span>
+<span class="sp"></span><a href="CHROMA5YNTH-Manuale-IT.pdf">Scarica il PDF</a><a href="en/index.html">English</a></header>
+<div class="wrap"><nav class="side"><a href="index.html">CHROMA5YNTH – Manuale</a>
+<a href="installazione.html">Installazione</a>
+<a href="panoramica.html">Panoramica</a>
+<a href="engine.html" class=cur>Engine</a>
+<a href="modulazione.html">Voce, filtri e modulazione</a>
+<a href="effetti.html">Effetti e Master</a>
+<a href="presets-global.html">Preset, impostazioni globali e MIDI</a>
+<a href="factory-presets.html">Preset di fabbrica</a>
+<a href="parameters.html">Parametri</a></nav><main><h1 id="engine">Engine</h1>
+<p>Ogni Layer usa uno dei cinque engine. Voice, filtro, inviluppi, LFO, Mod Matrix e Layer FX sono comuni
+(vedi <a href="modulazione.html">Voce, filtri e modulazione</a>); qui sono descritte solo le parti specifiche.
+Gli oscillatori di Analog, FM6, Wavetable e PD lavorano in oversampling interno (<strong>Oversampling</strong> 2× in tempo reale,
+<strong>Offline Oversampling</strong> 4× in bounce; scheda <em>Global</em>). Sorgenti spente non usano CPU.</p>
+<h2 id="analog">Analog</h2>
+<p>Sottrattivo virtuale-analogico con oscillatori band-limited.</p>
+<ul>
+<li><strong>3 OSC</strong>: On, Wave (Sine, Triangle, Saw, Square, Pulse, SuperSaw, Half, Narrow), Octave ±4, Semitone ±12,
+  Fine ±100 ct, Level, Pan, Phase, Phase Reset, Wave Mod, <strong>Route</strong> (Filter / Bypass del filtro); Pulse Width 1–99 %
+  solo con Pulse; SuperSaw Detune/Spread/Voices 2–7 e Stereo Width solo con SuperSaw. Un OSC a Level 0 resta
+  sorgente silenziosa di sync/FM/ring.</li>
+<li><strong>Mod</strong>: Hard Sync 2→1, FM 3→1 e 2→1 (lineare, audio-rate), Ring 1×2.</li>
+<li><strong>Sub</strong>: Sine/Square, −1/−2 ottave rispetto a OSC 1, Level, Phase, Route.</li>
+<li><strong>Noise</strong>: Level, White/Pink, Color, Pan, Stereo Width, Route.</li>
+<li><strong>Output</strong>: livello complessivo delle sorgenti prima del filtro. (Il vecchio modulo Mixer non c'è più: livello e pan
+  sono negli oscillatori.)</li>
+</ul>
+<h2 id="additive">Additive</h2>
+<p>Banco fino a <strong>256 parziali</strong> (default 64); le parziali oltre Nyquist vengono sfumate automaticamente.</p>
+<ul>
+<li><strong>Spectrum A/B</strong> (Sine, Saw, Square, Triangle, Pulse 25%, Flat, Organ, Hollow, Bell, Vocal A, Vocal O, Strings,
+  Glass, Custom) con <strong>Morph</strong> tra A e B e <strong>Distribution</strong> (Spectrum, Harmonic, Odd, Octaves).</li>
+<li>Modellazione: Tilt, Odd/Even, Balance, Brightness/Slope, Density, Inharmonicity, Stretch, Shift, Phase Reset.</li>
+<li><strong>Partial ENV</strong>: inviluppo per parziale con scaling del tempo in funzione dell'indice.</li>
+<li><strong>Spectral ENV</strong>: inviluppo che sposta tilt/posizione dello spettro nel tempo.</li>
+<li><strong>FM</strong> (Amount, Ratio, Frequency, Feedback, Depth, Env) e <strong>AM</strong> (Amount, Freq, Depth in controfase pari/dispari, Wave, Env).</li>
+<li><strong>Stereo</strong>: Width, Spread, posizione stereo delle parziali, Stereo Modulation, Mid/Side.</li>
+<li><strong>Editor Custom</strong> (scheda Engine): barre per Amp, Ratio, Phase, Pan, Detune… delle singole parziali, per gli
+  spettri Custom A e B (salvati con il Layer).</li>
+</ul>
+<h2 id="fm6">FM6</h2>
+<p>Sintesi FM (phase modulation) a <strong>6 operatori</strong>.</p>
+<ul>
+<li>Per operatore: On, Ratio/Fixed, Ratio, Coarse, Fine, Fixed Hz, Detune, Wave (Sine, Half Sine, Abs Sine,
+  Pulse Sine, Alt Sine, Camel Sine, Square, Saw), Phase, Phase Reset, Sync, Feedback, Output Level,
+  Velocity e AM Sens, Pan, key scaling (Breakpoint, Depth, curve ±Lin/±Exp), Rate Scaling.
+  <strong>Output Level</strong>: ampiezza = valore² (50 % ≈ −12 dB come carrier, indice di modulazione ben udibile su quasi tutta la
+  corsa). I banchi .syx vengono convertiti con la stessa legge, quindi suonano come prima.</li>
+<li><strong>ENV per operatore</strong>: AHDSR con curve, Loop e Time Scale.</li>
+<li><strong>Algorithm</strong>: 32 algoritmi classici + <strong>Custom</strong> (matrice 6×6 + uscite; la diagonale è il feedback).
+  <strong>Algorithm A/B + Morph</strong> sfuma connessioni, feedback e carrier tra due algoritmi.</li>
+<li><strong>Mod Index</strong> globale, <strong>Pitch Env</strong>, profondità LFO verso pitch, ampiezza e operatori.</li>
+<li><strong>Import .syx</strong>: banchi a 32 voci in formato sysex standard (6 operatori) → patch convertita
+  (inviluppi approssimati ad AHDSR).</li>
+<li>Livello d'uscita: −6 dB ogni 1/12 di corsa.</li>
+</ul>
+<h2 id="wavetable">Wavetable</h2>
+<p>Tre oscillatori wavetable con mipmap band-limited.</p>
+<ul>
+<li><strong>Table</strong>: 46 tabelle di fabbrica (Basic Shapes, PWM, Vowels, Formant Sweep, Bell, Drawbars, FM, Wavefolder,
+  Choir, Brass, Glass, Growl…) + <strong>User 1–3</strong>.</li>
+<li>Per OSC: Position, Scan, Volume, Octave/Semi/Fine, Detune Hz, Phase, Random Phase, Reset, Unison 1–16
+  (Detune/Spread/Width), Pan, <strong>Warp</strong> (Bend +/−/±, PWM, Sync, Mirror, Asym, Quantize, FM, AM, Ring) con Amount e
+  sorgente (OSC 1–3, Sub).</li>
+<li><strong>Advanced</strong>: Freeze, Blur, Tilt, Formant, Stretch, PD, Bit Depth, SR Reduction, Granular + Grain Size.</li>
+<li>Sub e Noise; <strong>Filter 2</strong> con routing Serial/Parallel, Mix, Pan e Stereo (Filter 2: Env = Mod Env 2, LFO = LFO 2).</li>
+<li><strong>WT Editor</strong> (pulsante nella scheda Engine): Import/Export WAV (2048 campioni per frame, max 256 frame),
+  Add/Remove/Duplicate, Resample/Morph (None, Linear, Spectral), Smooth, Normalize, disegno a mano libera,
+  editor armonico (ampiezza/fase), vista 3D. <strong>Apply</strong> scrive la tabella in uno slot User del Layer
+  (salvato nel progetto e nei preset).</li>
+</ul>
+<h2 id="phase-distortion-pd">Phase Distortion (PD)</h2>
+<p>Due <strong>Line</strong> che deformano la fase di un coseno.</p>
+<ul>
+<li>Per Line: On, Wave (Saw, Square, Pulse, Double Sine, Saw-Pulse, Reso 1–3), Octave, Coarse, Fine, Pitch,
+  Phase, Level, Pan.</li>
+<li><strong>Distortion</strong>: PD Amount (0 = sinusoide pura), Shape (Linear, Smooth, Ripple, Steps, Custom), Shape Morph,
+  Curve, Symmetry, Asymmetry, Offset, Warp, Window, PD Mix.</li>
+<li><strong>PD ENV</strong> per Line: ADSR, Amount, Velocity, Key Track.</li>
+<li><strong>Ring Mod</strong> e <strong>Noise Mod</strong> sulla Line 2, <strong>PD Output</strong>.</li>
+<li><strong>Curva Custom</strong>: editor a punti (fino a 32, Linear/Smooth/Cubic) nella scheda Engine, salvata con il Layer.</li>
+</ul></main></div></body></html>

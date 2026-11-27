@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Overview · CHROMA5YNTH</title><link rel="stylesheet" href="../style.css"></head>
+<body><header class="top"><a class="brand" href="index.html">CHROMA5YNTH</a><span class="maker">TMFU audiovibe · User Manual · Version 1.1.0</span>
+<span class="sp"></span><a href="../CHROMA5YNTH-Manual-EN.pdf">Download PDF</a><a href="../index.html">Italiano</a></header>
+<div class="wrap"><nav class="side"><a href="index.html">CHROMA5YNTH – User Manual</a>
+<a href="installation.html">Installation</a>
+<a href="overview.html" class=cur>Overview</a>
+<a href="engines.html">Engines</a>
+<a href="modulation.html">Voice, filters and modulation</a>
+<a href="effects.html">Effects and Master</a>
+<a href="presets-global.html">Presets, global settings and MIDI</a>
+<a href="factory-presets.html">Factory presets</a>
+<a href="parameters.html">Parameter reference</a></nav><main><h1 id="overview">Overview</h1>
+<h2 id="layers">Layers</h2>
+<p>CHROMA5YNTH contains up to <strong>12 Layers</strong>, each a complete synthesizer. A new instance starts with Layer 1 only.
+Per Layer: On/Off, <strong>Engine</strong> (Analog, Additive, FM6, Wavetable, PD), Volume, Pan, Mute, Solo, Transpose ±48 st,
+key range, velocity range, MIDI channel (All/1–16), Copy/Paste/Init and Save/Load as a Layer preset.
+A Layer that is off uses no CPU. Switching engine keeps the previous engine's parameters (undoable).</p>
+<h2 id="signal-flow">Signal flow</h2>
+<pre><code>Engine → Filter → Layer FX → GLOBAL SCALE → Layer mixer   (×12 Layer)
+→ Sum → Master FX → Master Filter → Master Volume → Limiter
+</code></pre>
+<p>The final limiter is true-peak (4×, look-ahead) with a −1 dBTP ceiling; its latency is reported to the host.</p>
+<h2 id="polyphony">Polyphony</h2>
+<ul>
+<li>Global pool of <strong>12 / 24 / 36 voices</strong> (default 24) shared by all Layers.</li>
+<li>Each Layer has <strong>Max Voices</strong> (limited by the pool). Unison voices live inside a voice and do not use the pool.</li>
+<li>Global voice stealing: oldest first, then quietest, with a 2 ms crossfade.</li>
+</ul>
+<h2 id="note-assign">NOTE ASSIGN</h2>
+<p>A one-octave keyboard in the Master column (C, C#, … B). <strong>Click a note</strong> → drop-down menu with <strong>Synth 1–12</strong> and
+<strong>Off</strong>: that note (in every octave) plays only the chosen synth; Off = silent note. The key shows the number of the
+assigned synth. NOTE ASSIGN does not retune: it assigns notes to synths.</p>
+<ul>
+<li><strong>NOTE ASSIGN off</strong> (header switch): every active synth plays every note (classic layering).</li>
+<li>Factory Multis assign Synth 1 to C, Synth 2 to C#, … Synth 12 to B.</li>
+</ul>
+<h2 id="global-scale">GLOBAL SCALE</h2>
+<p><strong>Real-time</strong> pitch correction of each synth's output (after the Layer FX) towards the notes of the chosen scale (the
+Ableton Live scale list, root C–B). Useful when automation or modulation physically changes the pitch of the sound
+(FM ratio, wavetable position, Pitch…): the sound is pulled continuously and smoothly to the nearest scale note. It
+does not change parameters, only the sound. Audio engine and pitch recognition are the same as Groovulation's MELODIC
+modules (polyphonic phase vocoder + YIN fundamental detection).</p>
+<ul>
+<li><strong>Mode Poly</strong>: every spectral component moves to the nearest scale note (chords, inharmonic sounds).</li>
+<li><strong>Mode Mono</strong>: detects the fundamental and shifts the whole sound by the same interval: harmonic timbre preserved
+  (monophonic leads and basses).</li>
+<li><strong>Amount</strong>: strength (0 % = original sound). <strong>Smooth</strong>: width of the transition between two notes (0 % = hard
+  step, higher = softer glide). Accuracy ≈ 1 cent on a steady tone.</li>
+<li>Latency ≈ 64 ms while on (reported to the DAW, which compensates it on playback); off = no latency, no CPU.</li>
+</ul>
+<h2 id="mpe">MPE</h2>
+<p>Per-note pitch (48 st bend range in MPE), Pressure and Slide (CC74). Lower/Upper zone via the <strong>MPE Zone</strong> parameter
+(Master). All engines receive MPE Pitch/Pressure/Slide as Mod Matrix sources.</p>
+<h2 id="host-automation">Host automation</h2>
+<p>To avoid exposing thousands of parameters the host sees: all Master and Master FX parameters, 8 <strong>Macros</strong>, the common
+parameters of the 12 Layers and 256 <strong>Automation Slots</strong>. Right-click any control → <em>assign to automation slot</em>:
+the slot then drives that internal parameter. Parameter IDs are stable across versions.</p>
+<h2 id="interface">Interface</h2>
+<ul>
+<li><strong>Header and toolbar</strong>: Presets, Undo/Redo, A/B, A&gt;B, Randomize (+ amount), Init (selected synth only), Tuning,
+  MIDI, zoom, About.</li>
+<li><strong>Synth bar 1–12</strong>: engine ▾, On, M (mute), S (solo), active voices and meter. Right-click: copy/paste/init, Layer presets.</li>
+<li><strong>Tabs</strong>: <em>Engine</em>, <em>Voice</em>, <em>Modulation</em>, <em>Layer FX</em>, <em>Master FX</em>, <em>Global</em>. Modules follow the signal flow (left to
+  right, then top to bottom): on the Engine tab the <strong>Filter</strong> is the last module of the chain; in FM6 each operator
+  sits next to its envelope (Op 1 – Op 1 Env, …); in Wavetable each OSC sits next to its Advanced module; in PD each
+  Line is followed by its Distortion and PD Env.</li>
+<li><strong>Colours</strong>: orange = modules and parameters; blue = selected synth and tab, NOTE ASSIGN, GLOBAL SCALE; white =
+  selected toolbar buttons, Master and Macro.</li>
+<li><strong>Master column</strong>: L/R meters, Master Volume, Polyphony, 8 Macros, NOTE ASSIGN and GLOBAL SCALE.</li>
+<li><strong>Mode-dependent controls</strong> appear only when relevant: SuperSaw controls only with the SuperSaw wave, Pulse Width
+  only with Pulse, Unison Detune/Spread/Pan only with Unison &gt; 1, Glide Time/Mode/Curve only with Glide on, LFO Rate
+  or Division according to Sync, FM operator Ratio or Fixed Hz according to its mode.</li>
+<li><strong>Mod Env 2, Mod Env 3 and LFO 1–4</strong> that are not assigned (Mod Matrix or the fixed routings: Filter LFO Amount,
+  Wavetable Filter 2 Env/LFO, FM6 LFO depths) are greyed out and disabled ("not assigned"). Mod Env 1 is the filter
+  envelope (<strong>Filter Envelope</strong>); with Wavetable, Mod Env 2 is the Filter 2 envelope.</li>
+<li>Changing engine closes the windows of other engines (e.g. the Wavetable Editor).</li>
+<li><strong>Zoom</strong> 75–200 % (zoom menu or drag the corner); beyond 200 % the layout grows up to full screen.
+  The size is saved with the project.</li>
+<li><strong>Controls</strong>: drag to adjust, Shift + drag for fine adjustment, double-click = default value.
+  <strong>Typed values</strong>: click a knob and type a number (or double-click the value), Enter applies, Esc cancels; units
+  are understood (<code>250 ms</code>, <code>1.2 s</code>, <code>1.2k</code>, <code>45 %</code>), list entries by name.
+  Right-click: default value, MIDI Learn, assign to Macro, assign to automation slot.</li>
+</ul></main></div></body></html>

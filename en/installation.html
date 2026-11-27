@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Installation · CHROMA5YNTH</title><link rel="stylesheet" href="../style.css"></head>
+<body><header class="top"><a class="brand" href="index.html">CHROMA5YNTH</a><span class="maker">TMFU audiovibe · User Manual · Version 1.1.0</span>
+<span class="sp"></span><a href="../CHROMA5YNTH-Manual-EN.pdf">Download PDF</a><a href="../index.html">Italiano</a></header>
+<div class="wrap"><nav class="side"><a href="index.html">CHROMA5YNTH – User Manual</a>
+<a href="installation.html" class=cur>Installation</a>
+<a href="overview.html">Overview</a>
+<a href="engines.html">Engines</a>
+<a href="modulation.html">Voice, filters and modulation</a>
+<a href="effects.html">Effects and Master</a>
+<a href="presets-global.html">Presets, global settings and MIDI</a>
+<a href="factory-presets.html">Factory presets</a>
+<a href="parameters.html">Parameter reference</a></nav><main><h1 id="installation">Installation</h1>
+<h2 id="requirements">Requirements</h2>
+<ul>
+<li>macOS 10.13 or later, Intel or Apple Silicon Mac (Universal binary).</li>
+<li>A host that loads <strong>VST3</strong> or <strong>Audio Unit</strong> plug-ins (Logic Pro, Ableton Live, Reaper, Bitwig, Cubase, Studio One…).</li>
+<li>About 100 MB of RAM per instance (the factory wavetable bank is shared).</li>
+</ul>
+<h2 id="installer">Installer</h2>
+<p>Download <code>CHROMA5YNTH-&lt;version&gt;-macOS.pkg</code> from the <strong>Releases</strong> page of the GitHub repository and open it.
+It installs:</p>
+<table>
+<thead>
+<tr>
+<th>Format</th>
+<th>Location</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>VST3</td>
+<td><code>/Library/Audio/Plug-Ins/VST3/CHROMA5YNTH.vst3</code></td>
+</tr>
+<tr>
+<td>Audio Unit</td>
+<td><code>/Library/Audio/Plug-Ins/Components/CHROMA5YNTH.component</code></td>
+</tr>
+</tbody>
+</table>
+<p>Use <strong>Customize</strong> to install a single format. In your host the instrument is listed under the manufacturer
+<strong>TMFU audiovibe</strong> (Audio Unit: <em>TMFU audiovibe: CHROMA5YNTH</em>).</p>
+<h2 id="opening-an-unsigned-installer">Opening an unsigned installer</h2>
+<p>The installer is not signed with an Apple Developer ID, so macOS blocks it the first time
+("cannot be opened because it is from an unidentified developer"). To open it:</p>
+<ol>
+<li>Double-click the <code>.pkg</code> and dismiss the warning with <strong>OK</strong> (or <strong>Done</strong>).</li>
+<li>Open <strong>System Settings → Privacy &amp; Security</strong> (macOS 12 and earlier: <em>System Preferences → Security &amp; Privacy → General</em>).</li>
+<li>At the bottom of the <em>Security</em> section a message about <code>CHROMA5YNTH-…pkg</code> appears: click <strong>Open Anyway</strong>.</li>
+<li>Confirm with your administrator password and click <strong>Open</strong> again.</li>
+</ol>
+<p>Alternatively: right-click (Control-click) the <code>.pkg</code> → <strong>Open</strong> → <strong>Open</strong> (macOS up to 14).</p>
+<blockquote>
+<p>Windows is not supported in this version.</p>
+</blockquote>
+<h2 id="after-installing">After installing</h2>
+<ul>
+<li><strong>Logic Pro / GarageBand</strong>: if the plug-in does not appear, restart the host; Logic validates the Audio Unit on first
+  launch (<em>Plug-in Manager</em> to re-run validation).</li>
+<li><strong>Ableton Live</strong>: <em>Settings → Plug-Ins → Use VST3 / Audio Units system folders</em>, then <strong>Rescan</strong>.</li>
+<li>On first load the factory presets are copied to <code>~/Library/Audio/Presets/TMFU audiovibe/CHROMA5YNTH/</code>.</li>
+</ul>
+<h2 id="uninstalling">Uninstalling</h2>
+<p>Delete <code>CHROMA5YNTH.vst3</code> and <code>CHROMA5YNTH.component</code> from the folders above. Your presets stay in
+<code>~/Library/Audio/Presets/TMFU audiovibe/CHROMA5YNTH/</code> (delete them manually if no longer needed).</p></main></div></body></html>

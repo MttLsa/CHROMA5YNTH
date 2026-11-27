@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="it"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Installazione · CHROMA5YNTH</title><link rel="stylesheet" href="style.css"></head>
+<body><header class="top"><a class="brand" href="index.html">CHROMA5YNTH</a><span class="maker">TMFU audiovibe · Manuale · Versione 1.1.0</span>
+<span class="sp"></span><a href="CHROMA5YNTH-Manuale-IT.pdf">Scarica il PDF</a><a href="en/index.html">English</a></header>
+<div class="wrap"><nav class="side"><a href="index.html">CHROMA5YNTH – Manuale</a>
+<a href="installazione.html" class=cur>Installazione</a>
+<a href="panoramica.html">Panoramica</a>
+<a href="engine.html">Engine</a>
+<a href="modulazione.html">Voce, filtri e modulazione</a>
+<a href="effetti.html">Effetti e Master</a>
+<a href="presets-global.html">Preset, impostazioni globali e MIDI</a>
+<a href="factory-presets.html">Preset di fabbrica</a>
+<a href="parameters.html">Parametri</a></nav><main><h1 id="installazione">Installazione</h1>
+<h2 id="requisiti">Requisiti</h2>
+<ul>
+<li>macOS 10.13 o successivo, Mac Intel o Apple Silicon (binario Universal).</li>
+<li>Una DAW che carica plugin <strong>VST3</strong> o <strong>Audio Unit</strong> (Logic Pro, Ableton Live, Reaper, Bitwig, Cubase, Studio One…).</li>
+<li>Circa 100 MB di RAM per istanza (banco wavetable di fabbrica condiviso).</li>
+</ul>
+<h2 id="installer">Installer</h2>
+<p>Scarica <code>CHROMA5YNTH-&lt;versione&gt;-macOS.pkg</code> dalla pagina <strong>Releases</strong> del repository GitHub e aprilo.
+L'installer copia:</p>
+<table>
+<thead>
+<tr>
+<th>Formato</th>
+<th>Percorso</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>VST3</td>
+<td><code>/Library/Audio/Plug-Ins/VST3/CHROMA5YNTH.vst3</code></td>
+</tr>
+<tr>
+<td>Audio Unit</td>
+<td><code>/Library/Audio/Plug-Ins/Components/CHROMA5YNTH.component</code></td>
+</tr>
+</tbody>
+</table>
+<p>Con <strong>Personalizza</strong> puoi installare un solo formato. Nella DAW il plugin compare come strumento del produttore
+<strong>TMFU audiovibe</strong> (Audio Unit: <em>TMFU audiovibe: CHROMA5YNTH</em>).</p>
+<h2 id="aprire-un-installer-non-firmato">Aprire un installer non firmato</h2>
+<p>L'installer non è firmato con un Apple Developer ID, quindi al primo avvio macOS lo blocca
+("impossibile aprire perché proviene da uno sviluppatore non identificato"). Per aprirlo:</p>
+<ol>
+<li>Fai doppio clic sul <code>.pkg</code> e chiudi l'avviso con <strong>OK</strong> (oppure <strong>Fine</strong>).</li>
+<li>Apri <strong>Impostazioni di Sistema → Privacy e sicurezza</strong> (macOS 12 e precedenti: <em>Preferenze di Sistema → Sicurezza e privacy → Generali</em>).</li>
+<li>In fondo alla sezione <em>Sicurezza</em> compare il messaggio relativo a <code>CHROMA5YNTH-…pkg</code>: fai clic su <strong>Apri comunque</strong>.</li>
+<li>Conferma con la password di amministratore e di nuovo <strong>Apri</strong>.</li>
+</ol>
+<p>In alternativa: clic destro (Ctrl-clic) sul <code>.pkg</code> → <strong>Apri</strong> → <strong>Apri</strong> (macOS fino a 14).</p>
+<p>Se in futuro le build saranno firmate e notarizzate, questi passaggi non saranno più necessari.</p>
+<blockquote>
+<p>Windows: non supportato in questa versione.</p>
+</blockquote>
+<h2 id="dopo-linstallazione">Dopo l'installazione</h2>
+<ul>
+<li><strong>Logic Pro / GarageBand</strong>: se il plugin non compare, riavvia la DAW; Logic verifica l'Audio Unit al primo avvio
+  (<em>Gestione plug-in</em> per ripetere la verifica).</li>
+<li><strong>Ableton Live</strong>: <em>Impostazioni → Plug-in → Usa cartella di sistema VST3 / Audio Unit</em>, poi <strong>Ripeti scansione</strong>.</li>
+<li>Al primo caricamento i preset di fabbrica vengono copiati in
+  <code>~/Library/Audio/Presets/TMFU audiovibe/CHROMA5YNTH/</code>.</li>
+</ul>
+<h2 id="disinstallazione">Disinstallazione</h2>
+<p>Elimina <code>CHROMA5YNTH.vst3</code> e <code>CHROMA5YNTH.component</code> dalle cartelle indicate sopra. I tuoi preset restano in
+<code>~/Library/Audio/Presets/TMFU audiovibe/CHROMA5YNTH/</code> (cancellali a mano se non servono più).</p></main></div></body></html>

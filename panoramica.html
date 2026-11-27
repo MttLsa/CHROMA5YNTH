@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="it"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Panoramica · CHROMA5YNTH</title><link rel="stylesheet" href="style.css"></head>
+<body><header class="top"><a class="brand" href="index.html">CHROMA5YNTH</a><span class="maker">TMFU audiovibe · Manuale · Versione 1.1.0</span>
+<span class="sp"></span><a href="CHROMA5YNTH-Manuale-IT.pdf">Scarica il PDF</a><a href="en/index.html">English</a></header>
+<div class="wrap"><nav class="side"><a href="index.html">CHROMA5YNTH – Manuale</a>
+<a href="installazione.html">Installazione</a>
+<a href="panoramica.html" class=cur>Panoramica</a>
+<a href="engine.html">Engine</a>
+<a href="modulazione.html">Voce, filtri e modulazione</a>
+<a href="effetti.html">Effetti e Master</a>
+<a href="presets-global.html">Preset, impostazioni globali e MIDI</a>
+<a href="factory-presets.html">Preset di fabbrica</a>
+<a href="parameters.html">Parametri</a></nav><main><h1 id="panoramica">Panoramica</h1>
+<h2 id="layer">Layer</h2>
+<p>CHROMA5YNTH contiene fino a <strong>12 Layer</strong>, ognuno un sintetizzatore completo. All'apertura è attivo solo il Layer 1.
+Per ogni Layer: On/Off, <strong>Engine</strong> (Analog, Additive, FM6, Wavetable, PD), Volume, Pan, Mute, Solo, Transpose ±48 st,
+key range, velocity range, canale MIDI (All/1–16), Copy/Paste/Init e Save/Load come Layer preset.
+Un Layer spento non usa CPU. Cambiare engine conserva i parametri dell'engine precedente (annullabile con Undo).</p>
+<h2 id="flusso-del-segnale">Flusso del segnale</h2>
+<pre><code>Engine → Filter → Layer FX → GLOBAL SCALE → Layer mixer   (×12 Layer)
+→ Somma → Master FX → Master Filter → Master Volume → Limiter
+</code></pre>
+<p>Il limiter finale è true-peak (4×, look-ahead) con tetto a −1 dBTP; la sua latenza è comunicata alla DAW.</p>
+<h2 id="polifonia">Polifonia</h2>
+<ul>
+<li>Pool globale di <strong>12 / 24 / 36 voci</strong> (default 24), condiviso da tutti i Layer.</li>
+<li>Ogni Layer ha <strong>Max Voices</strong> (limitato dal pool). Le voci di unison sono interne alla voce e non consumano il pool.</li>
+<li>Voice stealing globale: prima la voce più vecchia, poi la più silenziosa, con crossfade di 2 ms.</li>
+</ul>
+<h2 id="note-assign">NOTE ASSIGN</h2>
+<p>Sezione nella colonna Master: una tastiera di un'ottava (Do, Do#, … Si). <strong>Clic su una nota</strong> → menu a tendina con
+<strong>Synth 1–12</strong> e <strong>Off</strong>: la nota (su tutte le ottave) suona solo il synth scelto; Off = nota muta. Sul tasto è
+scritto il numero del synth assegnato. NOTE ASSIGN non intona: assegna le note ai synth.</p>
+<ul>
+<li><strong>NOTE ASSIGN spento</strong> (interruttore nell'intestazione): ogni synth attivo suona tutte le note (layering classico).</li>
+<li>I Multi di fabbrica assegnano il Synth 1 al Do, il Synth 2 al Do#, … il Synth 12 al Si.</li>
+</ul>
+<h2 id="global-scale">GLOBAL SCALE</h2>
+<p>Correzione d'intonazione <strong>in tempo reale</strong> sull'uscita di ogni synth (dopo le Layer FX), verso le note della scala
+scelta (le stesse scale di Ableton Live, tonica Do–Si). Utile quando automazioni o modulazioni cambiano fisicamente il
+pitch del suono (es. Ratio FM, posizione wavetable, Pitch): il suono viene "attratto" in modo continuo e graduale sulla
+nota di scala più vicina. Non modifica i parametri, solo il suono. Motore audio e riconoscimento del pitch sono gli
+stessi dei moduli MELODIC di Groovulation (phase vocoder polifonico + rilevamento YIN della fondamentale).</p>
+<ul>
+<li><strong>Mode Poly</strong>: ogni componente dello spettro viene spostata sulla nota di scala più vicina (accordi, suoni inarmonici).</li>
+<li><strong>Mode Mono</strong>: riconosce la fondamentale e sposta tutto il suono dello stesso intervallo: timbro armonico intatto
+  (ideale per lead e bassi monofonici).</li>
+<li><strong>Amount</strong>: forza della correzione (0 % = suono originale). <strong>Smooth</strong>: larghezza della transizione tra due note
+  (0 % = scatto netto, valori alti = passaggio più morbido). Precisione ≈ 1 cent su un suono stabile.</li>
+<li>Latenza ≈ 64 ms quando è attivo (comunicata alla DAW, che la compensa in riproduzione); spento = zero latenza e zero CPU.</li>
+</ul>
+<h2 id="mpe">MPE</h2>
+<p>Pitch per nota (bend range 48 st in MPE), Pressure e Slide (CC74). Zona Lower/Upper con il parametro <strong>MPE Zone</strong> (Master).
+Tutti gli engine ricevono MPE Pitch/Pressure/Slide come sorgenti della Mod Matrix.</p>
+<h2 id="automazione-dalla-daw">Automazione dalla DAW</h2>
+<p>Per non esporre migliaia di parametri, la DAW vede: tutti i parametri Master e Master FX, 8 <strong>Macro</strong>, i parametri
+comuni dei 12 Layer e 256 <strong>Automation Slot</strong>. Clic destro su qualunque controllo → <em>Assegna a slot automazione</em>:
+lo slot guida quel parametro interno. Gli ID dei parametri restano stabili tra le versioni.</p>
+<h2 id="interfaccia">Interfaccia</h2>
+<ul>
+<li><strong>Header e toolbar</strong>: Presets, Undo/Redo, A/B, A&gt;B, Randomize (+ quantità), Init (solo il synth selezionato),
+  Tuning, MIDI, zoom, About.</li>
+<li><strong>Barra Synth 1–12</strong>: engine ▾, On, M (mute), S (solo), voci attive e meter. Clic destro: copia/incolla/init, Layer preset.</li>
+<li><strong>Schede</strong>: <em>Engine</em>, <em>Voice</em>, <em>Modulation</em>, <em>Layer FX</em>, <em>Master FX</em>, <em>Global</em>. I moduli sono disposti nell'ordine
+  del segnale (da sinistra a destra, poi dall'alto in basso): nella scheda Engine il <strong>Filter</strong> è l'ultimo modulo della
+  catena; in FM6 ogni operatore ha accanto il suo inviluppo (Op 1 – Op 1 Env, …); in Wavetable ogni OSC ha accanto il
+  suo modulo Advanced; in PD ogni Line è seguita dalla sua Distortion e dal suo PD Env.</li>
+<li><strong>Colori</strong>: arancione = moduli e parametri; blu = synth e scheda selezionati, NOTE ASSIGN e GLOBAL SCALE;
+  bianco = pulsanti della barra in alto selezionati, Master e Macro.</li>
+<li><strong>Colonna Master</strong>: meter L/R, Master Volume, Polyphony, 8 Macro, NOTE ASSIGN e GLOBAL SCALE.</li>
+<li><strong>Controlli che dipendono da una modalità</strong> compaiono solo quando servono: per esempio i parametri SuperSaw solo con
+  la forma SuperSaw, Pulse Width solo con Pulse, Unison Detune/Spread/Pan solo con Unison &gt; 1, Glide Time/Mode/Curve
+  solo con Glide acceso, Rate o Division dell'LFO secondo Sync, Ratio o Fixed Hz dell'operatore FM secondo la modalità.</li>
+<li><strong>Mod Env 2, Mod Env 3 e LFO 1–4</strong> non assegnati (nella Mod Matrix o nelle mandate fisse: Filter LFO Amount,
+  Filter 2 Env/LFO del Wavetable, profondità LFO dell'FM6) sono grigi e disattivati, con la scritta "not assigned".
+  Mod Env 1 è l'inviluppo del filtro (<strong>Filter Envelope</strong>); con Wavetable, Mod Env 2 è l'inviluppo del Filter 2.</li>
+<li>Cambiando engine si chiudono le finestre degli altri engine (es. il Wavetable Editor).</li>
+<li><strong>Zoom</strong> 75–200 % (menu zoom o trascinando l'angolo); oltre il 200 % il layout si allarga fino allo schermo intero.
+  La dimensione è salvata nel progetto.</li>
+<li><strong>Controlli</strong>: trascina per regolare, Shift + trascina per la regolazione fine, doppio clic = valore di default.
+  <strong>Valori da tastiera</strong>: clic sulla manopola e digita un numero (oppure doppio clic sul valore), Invio conferma, Esc
+  annulla; si possono usare le unità (<code>250 ms</code>, <code>1.2 s</code>, <code>1.2k</code>, <code>45 %</code>) e, per le liste, il nome della voce.
+  Clic destro: valore di default, MIDI Learn, assegna a Macro, assegna a slot automazione.</li>
+<li>Tooltip e menu contestuali sono in italiano; i nomi di moduli e parametri sono in inglese.</li>
+</ul></main></div></body></html>

@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="it"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Effetti e Master · CHROMA5YNTH</title><link rel="stylesheet" href="style.css"></head>
+<body><header class="top"><a class="brand" href="index.html">CHROMA5YNTH</a><span class="maker">TMFU audiovibe · Manuale · Versione 1.1.0</span>
+<span class="sp"></span><a href="CHROMA5YNTH-Manuale-IT.pdf">Scarica il PDF</a><a href="en/index.html">English</a></header>
+<div class="wrap"><nav class="side"><a href="index.html">CHROMA5YNTH – Manuale</a>
+<a href="installazione.html">Installazione</a>
+<a href="panoramica.html">Panoramica</a>
+<a href="engine.html">Engine</a>
+<a href="modulazione.html">Voce, filtri e modulazione</a>
+<a href="effetti.html" class=cur>Effetti e Master</a>
+<a href="presets-global.html">Preset, impostazioni globali e MIDI</a>
+<a href="factory-presets.html">Preset di fabbrica</a>
+<a href="parameters.html">Parametri</a></nav><main><h1 id="effetti-e-master">Effetti e Master</h1>
+<h2 id="layer-fx">Layer FX</h2>
+<p>Catena insert per ogni Layer, in ordine fisso; ogni effetto ha On/Off e quando è spento non usa CPU.
+La catena si mette a riposo dopo 2.5 s di silenzio.</p>
+<p><strong>Distortion → Chorus → Phaser → Flanger → Delay → Reverb → EQ → Compressor</strong></p>
+<table>
+<thead>
+<tr>
+<th>Effetto</th>
+<th>Parametri principali</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Distortion</td>
+<td>Type (Soft, Hard, Tube, Fuzz, Op-Amp Clip, Pedal Clip, Bitcrush), Drive, Tone, Mix, Output. Oversampling 2×, compensazione di volume.</td>
+</tr>
+<tr>
+<td>Chorus</td>
+<td>Rate, Depth, Delay, Feedback, Width, Mix</td>
+</tr>
+<tr>
+<td>Phaser</td>
+<td>Rate, Depth, Feedback, Frequency, Stages 2–12, Mix</td>
+</tr>
+<tr>
+<td>Flanger</td>
+<td>Rate, Depth, Feedback, Delay, Stereo, Mix</td>
+</tr>
+<tr>
+<td>Delay</td>
+<td>Time L/R, Sync, Feedback, HP/LP nel loop, Ping-Pong, Width, Mix</td>
+</tr>
+<tr>
+<td>Reverb</td>
+<td>Size, Decay, Pre-delay, Damping, Diffusion, Low/High Cut, Width, Mix</td>
+</tr>
+<tr>
+<td>EQ</td>
+<td>3 bande: Low Shelf, Peak, High Shelf (Freq, Gain, Q)</td>
+</tr>
+<tr>
+<td>Compressor</td>
+<td>Threshold, Ratio, Attack, Release, Knee, Makeup, Mix</td>
+</tr>
+</tbody>
+</table>
+<p>I parametri continui delle Layer FX sono destinazioni della Mod Matrix.</p>
+<h2 id="master-fx">Master FX</h2>
+<p>Sulla somma dei Layer (scheda <em>Master FX</em>), tutti automatizzabili dalla DAW:</p>
+<table>
+<thead>
+<tr>
+<th>Effetto</th>
+<th>Tipi / parametri</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Drive</td>
+<td>Tube, Overdrive, Op-Amp Clip, Pedal Clip, Fuzz, Tape</td>
+</tr>
+<tr>
+<td>Chorus</td>
+<td>Chorus I, Chorus II (BBD), Dimension 1–4 (ensemble in controfase), Custom</td>
+</tr>
+<tr>
+<td>Delay</td>
+<td>Digital, Tape, BBD, Ping-Pong, Dual L/R, Multitap; sync al tempo della DAW, modulazione, ducking</td>
+</tr>
+<tr>
+<td>Reverb</td>
+<td>Room, Plate, Hall, Large Hall</td>
+</tr>
+<tr>
+<td>Master Filter</td>
+<td>HP / BP / LP 12 dB con risonanza</td>
+</tr>
+</tbody>
+</table>
+<h2 id="uscita">Uscita</h2>
+<p><strong>Master Volume</strong> (−60…+6 dB) → <strong>Limiter</strong> true-peak a −1 dBTP (sempre attivo, look-ahead, latenza riportata alla DAW).
+<strong>Preset Trim</strong> (non visibile) è il trim di loudness scritto nei preset di fabbrica e si somma al Master Volume.</p></main></div></body></html>

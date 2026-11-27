@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="it"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Preset, impostazioni globali e MIDI · CHROMA5YNTH</title><link rel="stylesheet" href="style.css"></head>
+<body><header class="top"><a class="brand" href="index.html">CHROMA5YNTH</a><span class="maker">TMFU audiovibe · Manuale · Versione 1.1.0</span>
+<span class="sp"></span><a href="CHROMA5YNTH-Manuale-IT.pdf">Scarica il PDF</a><a href="en/index.html">English</a></header>
+<div class="wrap"><nav class="side"><a href="index.html">CHROMA5YNTH – Manuale</a>
+<a href="installazione.html">Installazione</a>
+<a href="panoramica.html">Panoramica</a>
+<a href="engine.html">Engine</a>
+<a href="modulazione.html">Voce, filtri e modulazione</a>
+<a href="effetti.html">Effetti e Master</a>
+<a href="presets-global.html" class=cur>Preset, impostazioni globali e MIDI</a>
+<a href="factory-presets.html">Preset di fabbrica</a>
+<a href="parameters.html">Parametri</a></nav><main><h1 id="preset-impostazioni-globali-e-midi">Preset, impostazioni globali e MIDI</h1>
+<h2 id="preset">Preset</h2>
+<ul>
+<li><strong>Multi preset</strong> (<code>.c5multi</code>): stato completo (Layer, Master, Macro, Automation Slot). Non contiene le impostazioni
+  globali: Master Tune, Oversampling, MPE, mappature MIDI learn e microtuning restano quelli correnti.</li>
+<li><strong>Layer preset</strong> (<code>.c5layer</code>): un singolo synth (parametri comuni + engine), caricabile in qualunque slot 1–12.</li>
+<li>Libreria: <code>~/Library/Audio/Presets/TMFU audiovibe/CHROMA5YNTH/{Multi,Layer}</code>; preferiti in <code>favourites.txt</code>.</li>
+<li>Browser (pulsante <strong>Presets</strong>): Multi/Layer, ricerca (tutte le parole su nome, categoria, autore, tag), filtri
+  categoria/tag/autore, preferiti, Save / Load (doppio clic) / Rename / Delete / Import / Export.</li>
+<li><strong>Preset di fabbrica</strong>: <strong>24 Multi</strong> che usano tutti e 12 i synth con NOTE ASSIGN (Synth 1 = Do, Synth 2 = Do#, …
+  Synth 12 = Si): i 12 synth di un Multi hanno suoni della stessa famiglia ma ognuno con carattere/timbro/filtro
+  proprio. Si parte da <em>01 Bass Multi</em>, poi Pad, Synth, Lead, Keys, Pluck, Chord, Percussive, Bell, Organ, Strings,
+  Brass e 12 Multi liberi. <strong>128 Layer</strong> (un solo synth, su tutte le note) nelle categorie Bass, Keys, Lead, Pad, Pluck,
+  Chord e Percussive. Sono incorporati nel plugin e copiati in <code>{Multi,Layer}/Factory</code> al primo uso (di nuovo solo
+  quando cambia il set di fabbrica). Elenco: <a href="factory-presets.html">factory-presets.md</a>.</li>
+<li><strong>Normalizzazione</strong>: ogni preset di fabbrica è renderizzato offline (nota C3, velocity 100, 4 s) e riceve un trim
+  per arrivare a −14 LUFS short-term max, mai sopra −1 dBTP (nei Multi NOTE ASSIGN ogni synth è livellato da solo): <strong>Preset Trim</strong> (Multi, sommato al Master Volume) e
+  <strong>Trim</strong> del Layer (Layer preset, dopo le Layer FX). Strumento: <code>tools/presetnorm</code> (vedi <code>presets/README.md</code>).</li>
+</ul>
+<h2 id="undoredo-ab-randomize-init">Undo/Redo, A/B, Randomize, Init</h2>
+<ul>
+<li><strong>Undo/Redo</strong>: ogni modifica (anche dei parametri interni dei Layer) diventa un passo dopo 0.4 s di inattività;
+  caricamento preset, A/B, Randomize e Init sono annullabili. Le impostazioni globali sono escluse.</li>
+<li><strong>A/B</strong>: due stati indipendenti; B alla prima apertura è una copia di A. <strong>A&gt;B</strong> copia lo stato corrente nell'altro slot.</li>
+<li><strong>Randomize</strong> (quantità con lo slider): globale (Layer accesi + Master FX), Layer, oppure sezione (es. "Layer · Filter",
+  "Analog" = tutte le sezioni Analog, "Master FX · Reverb"). Mai toccati: Master Volume, polifonia, Scale, MPE,
+  Global, Macro, Automation Slot, On/Engine/Volume/Mute/Solo/Transpose/range dei Layer; "Layer · Voice" e
+  "Layer · Performance" solo se scelte esplicitamente come sezione.</li>
+<li><strong>Init</strong>: riporta ai default <strong>solo il synth selezionato</strong> (resta acceso/spento com'era); gli altri 11 synth, Master,
+  impostazioni globali e mappature MIDI non cambiano.</li>
+</ul>
+<h2 id="midi-learn">MIDI learn</h2>
+<ul>
+<li>Clic destro su un controllo → <em>MIDI Learn</em>, poi muovere un controller: il CC (qualsiasi canale) viene assegnato.
+  Un CC controlla un solo parametro; <em>Rimuovi MIDI Learn</em> cancella l'assegnazione.</li>
+<li>Menu <strong>MIDI</strong>: salva/carica le mappature (<code>.c5midi</code>), cancella tutto. Le mappature sono salvate nel progetto.</li>
+</ul>
+<h2 id="accordatura">Accordatura</h2>
+<ul>
+<li><strong>Master Tune</strong>: La4 da 415 a 466 Hz.</li>
+<li><strong>Microtuning</strong> (menu <strong>Tuning</strong>): file Scala <code>.scl</code> (un <code>.kbm</code> con lo stesso nome nella stessa cartella viene usato
+  come mappatura) o AnaMark <code>.tun</code>. Mappatura di default <code>.scl</code>: grado 0 sul Do3 (nota 60), La4 = 440 Hz.
+  Tasti non mappati restano temperati. Il microtuning si somma al Master Tune ed è salvato nel progetto.</li>
+</ul>
+<h2 id="oversampling">Oversampling</h2>
+<ul>
+<li><strong>Oversampling</strong> (tempo reale, default 2×) e <strong>Offline Oversampling</strong> (render/bounce, default 4×) per gli
+  oscillatori di Analog, FM6, Wavetable e PD.</li>
+</ul></main></div></body></html>
