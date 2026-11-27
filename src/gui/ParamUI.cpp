@@ -635,8 +635,8 @@ void SectionPanel::refresh()
         if (cellShown[i] != nullptr && cellShown[i]() != cells[i]->isVisible()) changed = true;
     if (changed)
     {
-        if (relayout) relayout();
-        else resized();
+        resized();                  // apply cell visibility first: without it, relayout() -> Page::resized() -> refresh()
+        if (relayout) relayout();   // recursed forever when the panel bounds did not change (stack overflow / host crash)
     }
     if (titleNote != nullptr)
         if (auto n = titleNote(); n != note) { note = n; repaint(); }
