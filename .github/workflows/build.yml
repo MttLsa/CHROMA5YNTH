@@ -47,7 +47,7 @@ jobs:
       - name: Tests
         run: ctest --test-dir build -C Release --output-on-failure
       - name: QA report (CPU 12 layers / 36 voices, automation, host state)
-        run: build/chroma_tests_artefacts/Release/chroma_tests "[qa]" --success=false
+        run: build/chroma_tests_artefacts/Release/chroma_tests "[qa]"
       - name: Check Universal binaries
         run: |
           lipo -info "build/${PLUGIN}_artefacts/Release/VST3/${PLUGIN}.vst3/Contents/MacOS/${PLUGIN}"
