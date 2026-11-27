@@ -13,8 +13,22 @@ mkdir -p "$WORK/vst3/Library/Audio/Plug-Ins/VST3" "$WORK/au/Library/Audio/Plug-I
 cp -R "$ART/VST3/$PRODUCT.vst3" "$WORK/vst3/Library/Audio/Plug-Ins/VST3/"
 cp -R "$ART/AU/$PRODUCT.component" "$WORK/au/Library/Audio/Plug-Ins/Components/"
 
-pkgbuild --root "$WORK/vst3" --identifier "$BUNDLE.vst3" --version "$VERSION" --install-location / "$WORK/vst3.pkg"
-pkgbuild --root "$WORK/au"   --identifier "$BUNDLE.au"   --version "$VERSION" --install-location / "$WORK/au.pkg"
+# VST3 and AU share the same CFBundleIdentifier (JUCE BUNDLE_ID): with relocatable bundles (pkgbuild default)
+# Installer "relocates" the VST3 onto the existing .component and only the AU survives. Force fixed paths.
+PB=/usr/libexec/PlistBuddy
+for KIND in vst3 au; do
+  pkgbuild --analyze --root "$WORK/$KIND" "$WORK/$KIND-components.plist"
+  N=$($PB -c "Print" "$WORK/$KIND-components.plist" | grep -c "BundleIsRelocatable" || true)
+  for ((i = 0; i < N; i++)); do $PB -c "Set :$i:BundleIsRelocatable false" "$WORK/$KIND-components.plist"; done
+done
+
+pkgbuild --root "$WORK/vst3" --component-plist "$WORK/vst3-components.plist" --identifier "$BUNDLE.vst3" --version "$VERSION" --install-location / "$WORK/vst3.pkg"
+pkgbuild --root "$WORK/au"   --component-plist "$WORK/au-components.plist"   --identifier "$BUNDLE.au"   --version "$VERSION" --install-location / "$WORK/au.pkg"
+
+for KIND in vst3 au; do
+  rm -rf "$WORK/check-$KIND"; pkgutil --expand "$WORK/$KIND.pkg" "$WORK/check-$KIND"
+  if grep -q "<relocate>" "$WORK/check-$KIND/PackageInfo"; then echo "ERROR: $KIND package is relocatable"; exit 1; fi
+done
 
 cat > "$WORK/distribution.xml" <<XML
 <?xml version="1.0" encoding="utf-8"?>
