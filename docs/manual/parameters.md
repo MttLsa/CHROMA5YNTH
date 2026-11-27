@@ -134,7 +134,7 @@
 | Mod N Enable | Off / On | On |  | Abilita lo slot N. |
 | Mod N Source | 31 voci | Off |  | Sorgente dello slot N. |
 | Mod N CC | 0 … 127 | 1 |  | Numero CC quando la sorgente è MIDI CC. |
-| Mod N Destination | 391 voci | Off |  | Destinazione: qualunque parametro continuo del Layer. |
+| Mod N Destination | 385 voci | Off |  | Destinazione: qualunque parametro continuo del Layer. |
 | Mod N Amount | -1.0 … 1.0 | 0.0 |  | Quantità ±100% del range della destinazione. |
 | Mod N Via | 31 voci | Off |  | Sorgente che scala l'amount (Off = 1). |
 | Mod N Curve | Linear / Exponential / Logarithmic / S-Curve | Linear |  | Curva applicata alla sorgente. |
@@ -239,21 +239,29 @@
 | OSC N SuperSaw Voices | 2 … 7 | 7 |  | Numero di saw della SuperSaw. |
 | OSC N Stereo Width | 0.0 … 1.0 | 1.0 | % | Scala l'apertura stereo di unison e SuperSaw di questo oscillatore. |
 | OSC N Wave Mod | 0.0 … 1.0 | 0.0 | % | Morph della forma: Sine → auto-PM; Triangle → Saw; Saw → doppia saw (ottava); Square → Saw; Pulse → impulso stretto; SuperSaw → mix delle saw laterali; Half → raddrizzata intera; Narrow → 10% → 1%. |
+| OSC N Route | Filter / Bypass | Filter |  | Instradamento dell'oscillatore N: nel filtro o in bypass. |
 
-## Analog · Mixer
+## Analog · Sub
 
 | Parametro | Range | Default | Unità | Descrizione |
 |---|---|---|---|---|
-| Mixer OSC N Volume | 0.0 … 1.0 | 1.0 | % | Volume dell'oscillatore N nel mixer. |
-| Mixer OSC N Pan | -1.0 … 1.0 | 0.0 |  | Pan dell'oscillatore N nel mixer. |
-| Mixer OSC N Mute | Off / On | Off |  | Silenzia l'oscillatore N (continua a fare da sorgente di sync/FM/ring). |
-| Mixer OSC N Solo | Off / On | Off |  | Con un Solo attivo suonano solo gli oscillatori in Solo (Sub e Noise silenziati). |
-| Mixer OSC N Route | Filter / Bypass | Filter |  | Instradamento dell'oscillatore N: nel filtro o in bypass. |
-| Noise Level | 0.0 … 1.0 | 0.0 | % | Livello del generatore Noise (0 = zero CPU). |
-| Noise Route | Filter / Bypass | Filter |  | Instradamento del Noise: nel filtro o in bypass. |
+| Sub | Off / On | Off |  | Attiva il Sub (segue l'intonazione di OSC 1). |
+| Sub Wave | Sine / Square | Square |  | Forma del Sub. |
+| Sub Octave | -1 / -2 | -1 |  | Una o due ottave sotto OSC 1. |
 | Sub Level | 0.0 … 1.0 | 0.5 | % | Livello del Sub. |
+| Sub Phase | 0.0 … 360.0 | 0.0 | ° | Fase iniziale del Sub (riparte a ogni nota). |
 | Sub Route | Filter / Bypass | Filter |  | Instradamento del Sub: nel filtro o in bypass. |
-| Osc Master Level | 0.0 … 1.0 | 0.7 | % | Livello generale di oscillatori, Sub e Noise prima del filtro. |
+
+## Analog · Noise
+
+| Parametro | Range | Default | Unità | Descrizione |
+|---|---|---|---|---|
+| Noise Level | 0.0 … 1.0 | 0.0 | % | Livello del generatore Noise (0 = zero CPU). |
+| Noise Type | White / Pink | White |  | Rumore bianco o rosa. |
+| Noise Color | -1.0 … 1.0 | 0.0 |  | Tilt spettrale: < 0 più scuro, > 0 più brillante. |
+| Noise Pan | -1.0 … 1.0 | 0.0 |  | Pan del Noise. |
+| Noise Stereo Width | 0.0 … 1.0 | 0.0 | % | 0 = mono, 100% = canali L/R indipendenti. |
+| Noise Route | Filter / Bypass | Filter |  | Instradamento del Noise: nel filtro o in bypass. |
 
 ## Analog · Mod
 
@@ -264,23 +272,11 @@
 | FM 2→1 | 0.0 … 1.0 | 0.0 | % | FM lineare audio-rate (through-zero) di OSC 2 su OSC 1 (100% = deviazione 4× la frequenza di OSC 1). |
 | Ring Mod 1×2 | 0.0 … 1.0 | 0.0 | % | Crossfade di OSC 1 verso il prodotto OSC 1 × OSC 2. |
 
-## Analog · Sub
+## Analog · Output
 
 | Parametro | Range | Default | Unità | Descrizione |
 |---|---|---|---|---|
-| Sub | Off / On | Off |  | Attiva il Sub (segue l'intonazione di OSC 1). |
-| Sub Wave | Sine / Square | Square |  | Forma del Sub. |
-| Sub Octave | -1 / -2 | -1 |  | Una o due ottave sotto OSC 1. |
-| Sub Phase | 0.0 … 360.0 | 0.0 | ° | Fase iniziale del Sub (riparte a ogni nota). |
-
-## Analog · Noise
-
-| Parametro | Range | Default | Unità | Descrizione |
-|---|---|---|---|---|
-| Noise Type | White / Pink | White |  | Rumore bianco o rosa. |
-| Noise Color | -1.0 … 1.0 | 0.0 |  | Tilt spettrale: < 0 più scuro, > 0 più brillante. |
-| Noise Pan | -1.0 … 1.0 | 0.0 |  | Pan del Noise. |
-| Noise Stereo Width | 0.0 … 1.0 | 0.0 | % | 0 = mono, 100% = canali L/R indipendenti. |
+| Output Level | 0.0 … 1.0 | 0.7 | % | Livello generale di oscillatori, Sub e Noise prima del filtro. |
 
 ## FM6 · Op N
 
@@ -614,7 +610,17 @@
 
 | Parametro | Range | Default | Unità | Descrizione |
 |---|---|---|---|---|
-| Scale | Off / On | Off |  | SCALE attivo: ogni classe di nota suona solo i Layer assegnati al suo slot (slot vuoto = nota muta). Off = ogni Layer attivo suona tutte le note. |
+| Note Assign | Off / On | Off |  | NOTE ASSIGN attivo: ogni nota della scala cromatica suona solo il synth assegnato (menu sulla nota; Off = nota muta). Spento = ogni synth attivo suona tutte le note. |
+
+## Global Scale
+
+| Parametro | Range | Default | Unità | Descrizione |
+|---|---|---|---|---|
+| Global Scale | Off / On | Off |  | GLOBAL SCALE: corregge in tempo reale il pitch dell'uscita di ogni synth verso le note della scala scelta (correzione spettrale continua, come il motore MELODY di Groovulation). Agisce sul suono, non sui parametri. Aggiunge latenza (compensata dalla DAW). |
+| Global Scale Root | C / C# / D / D# / E / F / F# / G / G# / A / A# / B | C |  | Tonica della scala. |
+| Global Scale Type | 34 voci | Major |  | Scala (stesso elenco delle scale di Ableton Live). |
+| Global Scale Amount | 0.0 … 1.0 | 1.0 | % | Forza della correzione: 0% = suono originale, 100% = ogni componente intonata sulla nota di scala più vicina. |
+| Global Scale Smooth | 0.0 … 1.0 | 0.35 | % | Morbidezza: larghezza della transizione tra due note di scala. 0% = scatto netto da una nota all'altra, valori alti = passaggio continuo e graduale. |
 
 ## MPE
 

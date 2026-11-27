@@ -133,6 +133,8 @@ void ChromaProcessor::idle()
 {
     synth.pollMidiLearn();
     synth.flushMidiToHost();
+    if (const int lat = synth.getLatencySamples(); lat != getLatencySamples())
+        setLatencySamples (lat);                     // GLOBAL SCALE on/off changes the latency
     const auto now = juce::Time::getMillisecondCounterHiRes();
     if (const auto n = editCounter(); n != lastSeenEdits)
     {

@@ -136,7 +136,7 @@ Generated from the same source as the plug-in. Detailed descriptions of every pa
 | Mod N Enable | Off / On | On |  |  |
 | Mod N Source | 31 items | Off |  |  |
 | Mod N CC | 0 … 127 | 1 |  |  |
-| Mod N Destination | 391 items | Off |  |  |
+| Mod N Destination | 385 items | Off |  |  |
 | Mod N Amount | -1.0 … 1.0 | 0.0 |  |  |
 | Mod N Via | 31 items | Off |  |  |
 | Mod N Curve | Linear / Exponential / Logarithmic / S-Curve | Linear |  |  |
@@ -241,21 +241,29 @@ Generated from the same source as the plug-in. Detailed descriptions of every pa
 | OSC N SuperSaw Voices | 2 … 7 | 7 |  |  |
 | OSC N Stereo Width | 0.0 … 1.0 | 1.0 | % |  |
 | OSC N Wave Mod | 0.0 … 1.0 | 0.0 | % |  |
+| OSC N Route | Filter / Bypass | Filter |  |  |
 
-## Analog · Mixer
+## Analog · Sub
 
 | Parameter | Range | Default | Unit | Notes |
 |---|---|---|---|---|
-| Mixer OSC N Volume | 0.0 … 1.0 | 1.0 | % |  |
-| Mixer OSC N Pan | -1.0 … 1.0 | 0.0 |  |  |
-| Mixer OSC N Mute | Off / On | Off |  |  |
-| Mixer OSC N Solo | Off / On | Off |  |  |
-| Mixer OSC N Route | Filter / Bypass | Filter |  |  |
-| Noise Level | 0.0 … 1.0 | 0.0 | % |  |
-| Noise Route | Filter / Bypass | Filter |  |  |
+| Sub | Off / On | Off |  |  |
+| Sub Wave | Sine / Square | Square |  |  |
+| Sub Octave | -1 / -2 | -1 |  |  |
 | Sub Level | 0.0 … 1.0 | 0.5 | % |  |
+| Sub Phase | 0.0 … 360.0 | 0.0 | ° |  |
 | Sub Route | Filter / Bypass | Filter |  |  |
-| Osc Master Level | 0.0 … 1.0 | 0.7 | % |  |
+
+## Analog · Noise
+
+| Parameter | Range | Default | Unit | Notes |
+|---|---|---|---|---|
+| Noise Level | 0.0 … 1.0 | 0.0 | % |  |
+| Noise Type | White / Pink | White |  |  |
+| Noise Color | -1.0 … 1.0 | 0.0 |  |  |
+| Noise Pan | -1.0 … 1.0 | 0.0 |  |  |
+| Noise Stereo Width | 0.0 … 1.0 | 0.0 | % |  |
+| Noise Route | Filter / Bypass | Filter |  |  |
 
 ## Analog · Mod
 
@@ -266,23 +274,11 @@ Generated from the same source as the plug-in. Detailed descriptions of every pa
 | FM 2→1 | 0.0 … 1.0 | 0.0 | % |  |
 | Ring Mod 1×2 | 0.0 … 1.0 | 0.0 | % |  |
 
-## Analog · Sub
+## Analog · Output
 
 | Parameter | Range | Default | Unit | Notes |
 |---|---|---|---|---|
-| Sub | Off / On | Off |  |  |
-| Sub Wave | Sine / Square | Square |  |  |
-| Sub Octave | -1 / -2 | -1 |  |  |
-| Sub Phase | 0.0 … 360.0 | 0.0 | ° |  |
-
-## Analog · Noise
-
-| Parameter | Range | Default | Unit | Notes |
-|---|---|---|---|---|
-| Noise Type | White / Pink | White |  |  |
-| Noise Color | -1.0 … 1.0 | 0.0 |  |  |
-| Noise Pan | -1.0 … 1.0 | 0.0 |  |  |
-| Noise Stereo Width | 0.0 … 1.0 | 0.0 | % |  |
+| Output Level | 0.0 … 1.0 | 0.7 | % |  |
 
 ## FM6 · Op N
 
@@ -616,7 +612,17 @@ Generated from the same source as the plug-in. Detailed descriptions of every pa
 
 | Parameter | Range | Default | Unit | Notes |
 |---|---|---|---|---|
-| Scale | Off / On | Off |  |  |
+| Note Assign | Off / On | Off |  |  |
+
+## Global Scale
+
+| Parameter | Range | Default | Unit | Notes |
+|---|---|---|---|---|
+| Global Scale | Off / On | Off |  |  |
+| Global Scale Root | C / C# / D / D# / E / F / F# / G / G# / A / A# / B | C |  |  |
+| Global Scale Type | 34 items | Major |  |  |
+| Global Scale Amount | 0.0 … 1.0 | 1.0 | % |  |
+| Global Scale Smooth | 0.0 … 1.0 | 0.35 | % |  |
 
 ## MPE
 

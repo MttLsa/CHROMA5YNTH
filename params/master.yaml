@@ -34,11 +34,54 @@ params:
     automatable: false
 
   - id: scale_on
-    name: Scale
+    name: Note Assign
     type: bool
     default: false
     section: Scale
-    description: "SCALE attivo: ogni classe di nota suona solo i Layer assegnati al suo slot (slot vuoto = nota muta). Off = ogni Layer attivo suona tutte le note."
+    description: "NOTE ASSIGN attivo: ogni nota della scala cromatica suona solo il synth assegnato (menu sulla nota; Off = nota muta). Spento = ogni synth attivo suona tutte le note."
+
+  - id: gscale_on
+    name: Global Scale
+    type: bool
+    default: false
+    section: Global Scale
+    description: "GLOBAL SCALE: corregge in tempo reale il pitch dell'uscita di ogni synth verso le note della scala scelta (correzione spettrale continua, come il motore MELODY di Groovulation). Agisce sul suono, non sui parametri. Aggiunge latenza (compensata dalla DAW)."
+
+  - id: gscale_root
+    name: Global Scale Root
+    type: choice
+    choices: ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"]
+    default: "C"
+    section: Global Scale
+    description: Tonica della scala.
+
+  - id: gscale_scale
+    name: Global Scale Type
+    type: choice
+    choices: ["Major", "Minor", "Dorian", "Mixolydian", "Lydian", "Phrygian", "Locrian", "Whole Tone", "Half-whole Dim.", "Whole-half Dim.", "Minor Blues", "Minor Pentatonic", "Major Pentatonic", "Harmonic Minor", "Harmonic Major", "Dorian #4", "Phrygian Dominant", "Melodic Minor", "Lydian Augmented", "Lydian Dominant", "Super Locrian", "8-Tone Spanish", "Bhairav", "Hungarian Minor", "Hirajoshi", "In-Sen", "Iwato", "Kumoi", "Pelog Selisir", "Pelog Tembung", "Messiaen 3", "Messiaen 4", "Messiaen 5", "Chromatic"]
+    default: "Major"
+    section: Global Scale
+    description: Scala (stesso elenco delle scale di Ableton Live).
+
+  - id: gscale_amount
+    name: Global Scale Amount
+    type: float
+    min: 0.0
+    max: 1.0
+    default: 1.0
+    unit: "%"
+    section: Global Scale
+    description: "Forza della correzione: 0% = suono originale, 100% = ogni componente intonata sulla nota di scala più vicina."
+
+  - id: gscale_smooth
+    name: Global Scale Smooth
+    type: float
+    min: 0.0
+    max: 1.0
+    default: 0.35
+    unit: "%"
+    section: Global Scale
+    description: "Morbidezza: larghezza della transizione tra due note di scala. 0% = scatto netto da una nota all'altra, valori alti = passaggio continuo e graduale."
 
   - id: mpe_on
     name: MPE

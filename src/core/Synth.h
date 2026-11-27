@@ -1,4 +1,5 @@
 #pragma once
+#include "shared/ScaleCorrector.h"
 #include "LayerParamStore.h"
 #include "ParamIDs.h"
 #include "shared/Limiter.h"
@@ -45,7 +46,11 @@ public:
 
     void prepare (double sampleRate, int maxBlockSize, int numOutputChannels);
     void process (juce::AudioBuffer<float>&, const juce::MidiBuffer&, double bpm) noexcept;
-    int getLatencySamples() const noexcept { return limiter.getLatencySamples(); }
+    // Limiter look-ahead + GLOBAL SCALE (only while it is on).
+    int getLatencySamples() const noexcept
+    {
+        return limiter.getLatencySamples() + (gscaleActive.load (std::memory_order_relaxed) ? scaleFix[0].getLatency() : 0);
+    }
     float takeLimiterMinGain() noexcept { return limiter.takeMinGain(); }   // offline analysis only
 
     // ---- message thread
@@ -156,6 +161,11 @@ private:
     std::vector<juce::RangedAudioParameter*> hostParams;
     std::array<HostLayer, numLayers> hostLayers {};
     juce::RangedAudioParameter *masterVolume, *presetTrim, *polyphony, *scaleOn, *mpeOn, *mpeZone, *mpeBend;
+    juce::RangedAudioParameter *gscaleOn, *gscaleRoot, *gscaleScale, *gscaleAmount, *gscaleSmooth;
+    std::array<ScaleCorrector, numLayers> scaleFix;
+    std::array<bool, numLayers> scaleFixRunning {};
+    bool gscaleEnabled = false;
+    std::atomic<bool> gscaleActive { false };
     juce::RangedAudioParameter *masterTune, *osRealtime, *osOffline;
     std::array<juce::RangedAudioParameter*, 12> scaleSlots {};
     std::array<juce::RangedAudioParameter*, numMacros> macros {};

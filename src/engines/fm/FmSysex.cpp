@@ -52,7 +52,7 @@ FmPatch convertFmVoice (const uint8_t* d)
         set (lp::fmOpDetune[i], (float) (((o[12] >> 3) & 15) - 7));
         set (lp::fmOpAmSens[i], (float) (o[13] & 3) / 3.0f);
         set (lp::fmOpVelSens[i], (float) ((o[13] >> 2) & 7) / 7.0f);
-        set (lp::fmOpLevel[i], (float) std::min<int> (o[14], 99) / 99.0f);
+        set (lp::fmOpLevel[i], FmEngine::levelToKnob ((float) std::min<int> (o[14], 99) / 99.0f));
         const bool fixed = o[15] & 1;
         const int coarse = (o[15] >> 1) & 31, fine = std::min<int> (o[16], 99);
         set (lp::fmOpMode[i], fixed ? 1.0f : 0.0f);
