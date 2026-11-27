@@ -137,3 +137,6 @@
 - GLOBAL SCALE (host): correzione in tempo reale per synth con Signalsmith Stretch + YIN (motore/riconoscimento dei moduli MELODIC di Groovulation), Poly/Mono, 34 scale di Ableton, Amount/Smooth, ≈1 cent, latenza 64 ms riportata solo se attivo.
 - Preset: tools/gen_recipes.py → 24 Multi a 12 synth (synth n = nota n, si parte da "01 Bass Multi", ogni synth livellato da solo) + 128 Layer (7 categorie).
 - Test nuovi: test_gscale, FM via processore, rimappatura mm, parsing valori, set di fabbrica (24/128, nota→synth). Versione 1.1.0.
+
+## Fix crash Warp WT (v1.1.x) ✅
+- Crash in Live scegliendo un Warp nell'engine Wavetable: SectionPanel::refresh() con controllo condizionale (Warp Amount/Source) chiamava relayout() → Page::resized() → refresh() senza applicare la visibilità se i bounds non cambiavano → ricorsione infinita (stack overflow). Fix: resized() prima di relayout() (src/gui/ParamUI.cpp). 131/131 test verdi.
