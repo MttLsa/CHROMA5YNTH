@@ -120,3 +120,10 @@
 - CI: job `manual` (verifica tabelle generate aggiornate, build sito+PDF, artifact manual-pdf, deploy gh-pages su main/tag); release su tag = .pkg + 2 PDF + link al manuale. Versione 1.0.0.
 - Release v1.0.0 creata da workflow_dispatch (input `release_tag`; il push di tag dalla sessione è bloccato). Pages: branch gh-pages pubblicato, da attivare in Settings → Pages.
 - Aperti: `description_en` da compilare (colonna Notes EN vuota); nomi "SuperSaw"/"Dimension" da verificare legalmente; firma/notarizzazione solo con secrets.
+
+## FASE 13 – QA finale ✅
+- tests/test_qa.cpp (5 casi, [qa]): CPU 12 Layer attivi (5 engine a rotazione) × 36 voci, voice stealing a pieno carico, automazione di tutti i 435 parametri host (estremi, salti, rampe, testo↔valore), automazione da un altro thread durante il render, stato host (ripristino completo host+Layer su nuova istanza a fs/blocco diversi, salvataggio idempotente, ripristino mentre suona con editor aperto, stato corrotto/troncato/vuoto ignorato, parametri mancanti → default).
+- CPU (Release, 2× OS, 48 kHz/256): Linux container 32 % core (44 % con Chorus/Delay/Reverb su ogni Layer); CI macos-15-intel 45 % / 73 %.
+- pluginval livello 10 SUCCESS: VST3 + AU su macOS (CI, ora anche test GUI), VST3 su Linux con xvfb. auval -strict: AU VALIDATION SUCCEEDED.
+- CI: step "QA report" con i numeri CPU. 124/124 test verdi (Linux + macOS). Nessun bug trovato nel plugin; corretto solo il confronto dei parametri discreti nel test (host invia valori non quantizzati).
+- Aperti: misura CPU su Apple Silicon reale; prova d'ascolto (vedi chat fase 13).
