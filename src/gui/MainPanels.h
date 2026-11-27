@@ -58,7 +58,7 @@ private:
     bool selected = false, shownOn = false;
 };
 
-// SCALE (§1.1): 12 keys, each a mask of layers; clicks edit the selected layer's bit.
+// NOTE ASSIGN (§1.1): 12 keys; click = menu Synth 1–12 / Off (stored as a layer mask per note).
 class ScaleKeyboard : public juce::Component, public juce::SettableTooltipClient
 {
 public:

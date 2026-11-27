@@ -9,8 +9,8 @@
 
 namespace chroma
 {
-// Final editor (§7): header + toolbar, layer bar 1–12, engine/voice/mod/FX pages in the centre,
-// Master + Macro + SCALE on the right. Vector UI drawn at a logical 1280×800 base scaled 75–200 %;
+// Final editor (§7): header + toolbar, synth bar 1–12, engine/voice/mod/FX pages in the centre (modules in
+// signal-flow order, engine filter last), Master + Macro + NOTE ASSIGN + GLOBAL SCALE on the right. Vector UI drawn at a logical 1280×800 base scaled 75–200 %;
 // beyond that (up to the full screen) the layout grows. Meters/controls refresh on v-blank ≤ 60 fps,
 // reading lock-free values only.
 class ChromaEditor final : public juce::AudioProcessorEditor
@@ -77,7 +77,7 @@ private:
     int currentTab = tabEngine, builtEngine = -1, builtLayer = -1;
     ui::ToolsBlock* fmTools = nullptr;
 
-    std::unique_ptr<ui::SectionPanel> masterPanel, macroPanel, scalePanel;
+    std::unique_ptr<ui::SectionPanel> masterPanel, macroPanel, scalePanel, gscalePanel;
     ui::StereoMeter* stereoMeter = nullptr;
     ui::ScaleKeyboard* keyboard = nullptr;
 

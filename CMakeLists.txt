@@ -6,7 +6,7 @@ if(APPLE AND NOT CMAKE_OSX_ARCHITECTURES)
     set(CMAKE_OSX_ARCHITECTURES "x86_64;arm64" CACHE STRING "macOS architectures")
 endif()
 
-project(CHROMA5YNTH VERSION 1.0.0 LANGUAGES C CXX)
+project(CHROMA5YNTH VERSION 1.1.0 LANGUAGES C CXX)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -57,12 +57,13 @@ add_custom_command(
     COMMENT "Generating parameter code from params/*.yaml")
 add_custom_target(chroma_gen_params DEPENDS ${CHROMA_GEN_FILES})
 
-# ---------------------------------------------------------------- GUI assets (Inter, SIL OFL 1.1: assets/fonts/OFL.txt)
+# ---------------------------------------------------------------- GUI assets (Inter + Urbanist Light for the name, SIL OFL 1.1: assets/fonts/OFL.txt)
 juce_add_binary_data(chroma_assets
     HEADER_NAME BinaryData.h
     NAMESPACE   ChromaAssets
     SOURCES     assets/fonts/Inter-Regular.ttf
-                assets/fonts/Inter-SemiBold.ttf)
+                assets/fonts/Inter-SemiBold.ttf
+                assets/fonts/Urbanist-Light.ttf)
 set_target_properties(chroma_assets PROPERTIES POSITION_INDEPENDENT_CODE ON)
 
 # ---------------------------------------------------------------- Factory presets (§6, built by tools/presetnorm)
@@ -167,7 +168,7 @@ if(CHROMA_BUILD_TESTS)
     FetchContent_MakeAvailable(Catch2)
 
     juce_add_console_app(chroma_tests PRODUCT_NAME "chroma_tests")
-    target_sources(chroma_tests PRIVATE tests/test_params.cpp tests/test_processor.cpp tests/test_core.cpp tests/test_limiter.cpp tests/test_filter.cpp tests/test_analog.cpp tests/test_fx.cpp tests/test_fm.cpp tests/test_wavetable.cpp tests/test_additive.cpp tests/test_pd.cpp tests/test_global.cpp tests/test_gui.cpp tests/test_presets.cpp tests/test_qa.cpp
+    target_sources(chroma_tests PRIVATE tests/test_params.cpp tests/test_processor.cpp tests/test_core.cpp tests/test_limiter.cpp tests/test_filter.cpp tests/test_analog.cpp tests/test_fx.cpp tests/test_fm.cpp tests/test_wavetable.cpp tests/test_additive.cpp tests/test_pd.cpp tests/test_global.cpp tests/test_gui.cpp tests/test_presets.cpp tests/test_qa.cpp tests/test_gscale.cpp
         src/preset/PresetNormalizer.cpp)
     chroma_configure_target(chroma_tests)
     target_link_libraries(chroma_tests PRIVATE Catch2::Catch2WithMain)

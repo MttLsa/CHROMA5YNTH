@@ -449,17 +449,13 @@ bool AnalogEngine::renderBlock (VoiceState& vs, const EngineVoiceParams& p, floa
     }
 
     // --- which sources run
-    bool anySolo = false;
+    // (no separate mixer: an oscillator at Level 0 stays a silent sync/FM/ring source)
     std::array<bool, numOsc> on {}, audible {};
     for (int k = 0; k < numOsc; ++k)
     {
-        on[(size_t) k] = engineSwitch (p, lp::anOscOn[(size_t) k]);
-        anySolo = anySolo || (on[(size_t) k] && engineSwitch (p, lp::anMixSolo[(size_t) k]));
-    }
-    for (int k = 0; k < numOsc; ++k)
-    {
         const auto u = (size_t) k;
-        audible[u] = on[u] && ! engineSwitch (p, lp::anMixMute[u]) && (! anySolo || engineSwitch (p, lp::anMixSolo[u]));
+        on[u] = engineSwitch (p, lp::anOscOn[u]);
+        audible[u] = on[u] && engineParam (p, lp::anOscLevel[u]) > 0.0f;
     }
     const bool sync = engineSwitch (p, lp::anSync);
     const float fm3 = engineParam (p, lp::anFm3to1), fm2 = engineParam (p, lp::anFm2to1);
@@ -475,8 +471,8 @@ bool AnalogEngine::renderBlock (VoiceState& vs, const EngineVoiceParams& p, floa
         const auto u = (size_t) k;
         if (audible[u])
         {
-            const float lvl = engineParam (p, lp::anOscLevel[u]) * engineParam (p, lp::anMixVolume[u]) * master;
-            panGains (engineParam (p, lp::anOscPan[u]) + engineParam (p, lp::anMixPan[u]), tgL[u], tgR[u]);
+            const float lvl = engineParam (p, lp::anOscLevel[u]) * master;
+            panGains (engineParam (p, lp::anOscPan[u]), tgL[u], tgR[u]);
             tgL[u] *= lvl; tgR[u] *= lvl;
         }
         auto& o = vs.osc[u];
@@ -529,7 +525,7 @@ bool AnalogEngine::renderBlock (VoiceState& vs, const EngineVoiceParams& p, floa
     }
 
     // --- sub (follows OSC 1 pitch)
-    const bool subOn = engineSwitch (p, lp::anSubOn) && (! anySolo);
+    const bool subOn = engineSwitch (p, lp::anSubOn);
     const float subTarget = subOn ? engineParam (p, lp::anSubLevel) * master : 0.0f;
     const bool subRun = subTarget > 0.0f || vs.subGain > 0.0f;
     if (subRun)
@@ -567,7 +563,7 @@ bool AnalogEngine::renderBlock (VoiceState& vs, const EngineVoiceParams& p, floa
         const auto u = (size_t) k;
         auto& o = vs.osc[u];
         if (run[u] && (audible[u] || o.gainL > 0.0f || o.gainR > 0.0f))
-            mix (engineChoice (p, lp::anMixRoute[u]), oscL[u].data(), oscR[u].data(), o.gainL, o.gainR, tgL[u], tgR[u]);
+            mix (engineChoice (p, lp::anOscRoute[u]), oscL[u].data(), oscR[u].data(), o.gainL, o.gainR, tgL[u], tgR[u]);
     }
     if (subRun)
     {
@@ -596,7 +592,7 @@ bool AnalogEngine::renderBlock (VoiceState& vs, const EngineVoiceParams& p, floa
     bool bypass = canBypass && decimate (1, byL, byR);
 
     // --- noise (base rate, after decimation)
-    const float noiseLvl = (anySolo ? 0.0f : engineParam (p, lp::anNoiseLevel)) * master;
+    const float noiseLvl = engineParam (p, lp::anNoiseLevel) * master;
     if (noiseLvl > 0.0f || vs.noise.gainL > 0.0f || vs.noise.gainR > 0.0f)
     {
         float gl, gr;

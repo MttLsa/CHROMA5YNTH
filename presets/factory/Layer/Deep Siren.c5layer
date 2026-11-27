@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<CHROMA5YNTH_PRESET kind="layer" name="Deep Siren" category="Lead" author="TMFU audiovibe"
+                    tags="wavetable,lead" format="1">
+  <LAYER_PRESET on="1.0" engine="0.75" volume="0.8126519918441772" pan="0.5"
+                mute="0.0" solo="0.0" transpose="0.5" key_lo="0.0" key_hi="1.0"
+                vel_lo="0.0" vel_hi="1.0" midi_ch="0.0" max_voices="1.0">
+    <ENGINE mmver="2" layer_trim="-2.230000019073486" voice_mode="3.0" glide_on="1.0"
+            glide_time="0.07429999858140945" env1_decay="1.0" env1_sustain="0.8999999761581421"
+            env1_release="0.25" env1_velocity="0.25" lfo1_rate="0.7105000019073486"
+            lfo1_mode="0.0" lfo2_rate="5.171800136566162" lfo2_delay="0.4000000059604645"
+            mm1_source="1.0" mm1_dest="252.0" mm1_amount="0.2000000029802322"
+            mm2_source="2.0" mm2_dest="3.0" mm2_amount="0.004000000189989805"
+            wt_osc1_table="7.0" wt_osc1_pos="0.3131999969482422" wt_osc1_unison="3.0"
+            wt_osc1_uni_detune="12.0" fx_delay_on="1.0" fx_delay_sync="1.0"
+            fx_delay_div_r="2.0" fx_delay_feedback="0.300000011920929" fx_delay_mix="0.1800000071525574"/>
+  </LAYER_PRESET>
+</CHROMA5YNTH_PRESET>

@@ -28,7 +28,11 @@ public:
     };
     static const Algorithm& classic (int index) noexcept;          // 0..31
 
-    static float levelToAmp (float level) noexcept;               // 0..1 log law (−6 dB per 1/12)
+    static float levelToAmp (float level) noexcept;               // 0..1 log law (−6 dB per 1/12, internal 0–99 scale)
+    // Output Level knob (0..1) -> internal log level: amplitude = knob² (−12 dB at 50 %, −40 dB at 1 %),
+    // so every operator is clearly audible/modulating over most of the knob travel.
+    static float knobToLevel (float knob) noexcept;
+    static float levelToKnob (float level) noexcept;              // inverse (.syx import: OL/99 -> knob)
     static float keyScale (float level, int note, int breakpoint, float leftDepth, float rightDepth,
                            int leftCurve, int rightCurve) noexcept;
     static float wave (int type, double phaseCycles) noexcept;

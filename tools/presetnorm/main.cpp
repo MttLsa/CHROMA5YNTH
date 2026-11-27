@@ -7,14 +7,14 @@
 //
 // Recipe syntax (presets/recipes/*.txt, UTF-8):
 //   [Preset Name]                 starts a preset
-//   kind = layer | multi          layer: one-layer patch, written as .c5layer and as a one-layer .c5multi
+//   kind = layer | multi          layer: one-synth patch, written as .c5layer (Layer list only)
 //   category = Pad / tags = a, b / author = ...
 //   key = value                   layer recipes: layer keys (host layer suffix such as engine/volume/pan,
 //                                 or any layer parameter id from params/layer_*.yaml)
 //   L<n>.key = value              multi recipes: layer n (1..12); host parameters by id (scale_on, mfx_*, ...)
 //   L<n> = @Other Preset          multi recipes: copies the lines of a layer recipe into layer n
 //   macro<m> = L<n>.key min max   multi recipes: macro m (1..8) -> layer parameter, normalised range
-//   scale.L1+L3 = C D E G A       multi recipes: SCALE slots of these notes play these layers (turns SCALE on;
+//   scale.L1+L3 = C D E G A       multi recipes: NOTE ASSIGN slots of these notes play these layers (turns SCALE on;
 //                                 slots not listed in any scale.* line are muted)
 // Values: numbers in the parameter's units, choice labels (case-insensitive), On/Off for switches.
 #include "PluginProcessor.h"
@@ -242,6 +242,24 @@ void printResult (const juce::String& name, const juce::String& kind, const Pres
     std::fflush (stdout);
 }
 
+// Final check on the compacted content exactly as it will be loaded: re-trim if the loudness drifted (> 0.2 dB),
+// never above the true-peak ceiling.
+juce::ValueTree verifyCompact (PresetKind kind, juce::ValueTree content, PresetNormalizer::Result& res)
+{
+    for (int pass = 0; pass < 3; ++pass)
+    {
+        const auto m = PresetNormalizer::measure (kind, content);
+        const double headroom = PresetNormalizer::ceilingDbtp - PresetNormalizer::peakMargin - 0.7 - m.truePeak;
+        const double delta = juce::jmin (PresetNormalizer::targetLufs - m.lufs, headroom);
+        res.after = m;
+        if (std::abs (delta) < 0.2 || m.lufs < -150.0) break;
+        const float t = PresetNormalizer::getTrim (kind, content) + (float) delta;
+        PresetNormalizer::setTrim (kind, content, t);
+        res.trimDb = t;
+    }
+    return content;
+}
+
 int build (const juce::File& recipesDir, const juce::File& outDir, const juce::File& report)
 {
     const auto recipes = parseRecipes (recipesDir);
@@ -263,27 +281,37 @@ int build (const juce::File& recipesDir, const juce::File& outDir, const juce::F
         juce::ValueTree multi;
         if (r.layerKind)
         {
+            // Layer presets: one synth on every note (written as .c5layer only)
             ChromaProcessor proc;
             applyRecipe (r, recipes, proc);
             const auto layer = PresetNormalizer::normalize (PresetKind::Layer, proc.getSynth().copyLayer (0), &res);
             printResult (r.name, "layer", res);
             failures += res.silent ? 1 : 0;
             PresetManager::writeFile (outDir.getChildFile ("Layer/" + PresetManager::safeFileName (r.name) + PresetManager::layerExt),
-                                      PresetKind::Layer, PresetNormalizer::compact (PresetKind::Layer, layer), meta);
-            ChromaProcessor host;
-            host.getSynth().pasteLayer (0, layer);
-            multi = host.captureState (false);
+                                      PresetKind::Layer, verifyCompact (PresetKind::Layer, PresetNormalizer::compact (PresetKind::Layer, layer), res), meta);
+            md.add ("| " + r.name + " | " + r.category + " | " + engineNames (proc.captureState (false)) + " | " + r.tags.joinIntoString (", ")
+                    + " | " + juce::String (res.after.lufs, 1) + " | " + juce::String (res.after.truePeak, 1) + " dBTP | "
+                    + juce::String (res.trimDb, 2) + " dB |");
+            continue;
         }
-        else
         {
             ChromaProcessor proc;
             applyRecipe (r, recipes, proc);
+            // NOTE ASSIGN multis: each synth is levelled on its own first (every note of the Multi as loud as the others)
+            for (int l = 0; l < numLayers; ++l)
+            {
+                if (proc.getState().getParameter (ParamIDs::layerOn[(size_t) l])->getValue() < 0.5f) continue;
+                PresetNormalizer::Result lr;
+                proc.getSynth().pasteLayer (l, PresetNormalizer::normalize (PresetKind::Layer, proc.getSynth().copyLayer (l), &lr));
+                failures += lr.silent ? 1 : 0;
+                if (lr.silent) std::printf ("  synth %d of %s is SILENT\n", l + 1, r.name.toRawUTF8());
+            }
             multi = proc.captureState (false);
         }
         multi = PresetNormalizer::normalize (PresetKind::Multi, multi, &res);
         printResult (r.name, "multi", res);
         failures += res.silent ? 1 : 0;
-        multi = PresetNormalizer::compact (PresetKind::Multi, multi);
+        multi = verifyCompact (PresetKind::Multi, PresetNormalizer::compact (PresetKind::Multi, multi), res);
         PresetManager::writeFile (outDir.getChildFile ("Multi/" + PresetManager::safeFileName (r.name) + PresetManager::multiExt),
                                   PresetKind::Multi, multi, meta);
         md.add ("| " + r.name + " | " + r.category + " | " + engineNames (multi) + " | " + r.tags.joinIntoString (", ") + " | "

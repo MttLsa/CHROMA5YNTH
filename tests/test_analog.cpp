@@ -228,7 +228,7 @@ TEST_CASE ("Analog: hard sync 2->1, FM, ring mod", "[analog]")
     {
         AnalogRig rig (4);
         rig.set (lp::anOscOn[1], 1.0f);
-        rig.set (lp::anMixMute[1], 1.0f);          // OSC 2 inaudible, still the sync master
+        rig.set (lp::anOscLevel[1], 0.0f);         // OSC 2 inaudible, still the sync master
         rig.set (lp::anOscSemi[0], 7.3f);          // slave at a non-harmonic ratio
         rig.set (lp::anOscFine[0], 31.0f);
         rig.note (f0);
@@ -250,7 +250,7 @@ TEST_CASE ("Analog: hard sync 2->1, FM, ring mod", "[analog]")
             rig.set (lp::anOscWave[0], AnalogEngine::Sine);
             rig.set (lp::anOscOn[(size_t) src], 1.0f);
             rig.set (lp::anOscWave[(size_t) src], AnalogEngine::Sine);
-            rig.set (lp::anMixMute[(size_t) src], 1.0f);
+            rig.set (lp::anOscLevel[(size_t) src], 0.0f);
             rig.set (lp::anOscOctave[(size_t) src], 1.0f);   // modulator at 2 f
             rig.note (f0);
             rig.render (l, r, fftSize);
@@ -271,7 +271,7 @@ TEST_CASE ("Analog: hard sync 2->1, FM, ring mod", "[analog]")
         rig.set (lp::anOscWave[0], AnalogEngine::Sine);
         rig.set (lp::anOscOn[1], 1.0f);
         rig.set (lp::anOscWave[1], AnalogEngine::Sine);
-        rig.set (lp::anMixMute[1], 1.0f);
+        rig.set (lp::anOscLevel[1], 0.0f);
         rig.set (lp::anOscSemi[1], 7.0f);
         rig.set (lp::anRing, 1.0f);
         rig.note (f0);
@@ -351,7 +351,7 @@ TEST_CASE ("Analog: sub, noise, mixer and routing", "[analog]")
         CHECK (std::fabs (c / (rms (l) * rms (r) * (double) l.size())) < 0.05);
     }
 
-    SECTION ("mute, solo, level 0 and all-off silence")
+    SECTION ("level 0 and all-off silence")
     {
         AnalogRig rig (2);
         rig.set (lp::anOscOn[1], 1.0f);
@@ -360,13 +360,13 @@ TEST_CASE ("Analog: sub, noise, mixer and routing", "[analog]")
         rig.set (lp::anOscOctave[1], 1.0f);
         const double f0 = binAligned (300.0);
         rig.note (f0);
-        rig.set (lp::anMixSolo[1], 1.0f);
+        rig.set (lp::anOscLevel[0], 0.0f);
         rig.render (l, r, fftSize);
         auto m = spectrum (l);
         CHECK (level (m, f0) < -90.0);
-        CHECK (level (m, 2.0 * f0) > -0.5);
-        rig.set (lp::anMixSolo[1], 0.0f);
-        rig.set (lp::anMixMute[1], 1.0f);
+        CHECK (level (m, 2.0 * f0) > -3.0);
+        rig.set (lp::anOscLevel[0], 0.8f);
+        rig.set (lp::anOscLevel[1], 0.0f);
         rig.render (l, r, fftSize);
         m = spectrum (l);
         CHECK (level (m, 2.0 * f0) < -90.0);
@@ -382,7 +382,7 @@ TEST_CASE ("Analog: sub, noise, mixer and routing", "[analog]")
     SECTION ("Filter/Bypass routing per source")
     {
         AnalogRig rig (2);
-        rig.set (lp::anMixRoute[0], 1.0f);
+        rig.set (lp::anOscRoute[0], 1.0f);
         rig.note (440.0);
         rig.render (l, r, 9600);
         CHECK (rms (l) < 1.0e-6);

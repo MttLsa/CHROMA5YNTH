@@ -106,8 +106,9 @@ LayerTile::LayerTile (UiContext& c, int l)
     power.setTooltip ("Accende / spegne il Layer " + String (l + 1) + " (spento = zero CPU).");
     mute.setTooltip ("Mute del Layer " + String (l + 1) + ".");
     solo.setTooltip ("Solo del Layer " + String (l + 1) + ".");
-    mute.onColour = style::accent2;
+    mute.onColour = style::accentG;
     solo.onColour = style::accentG;
+    power.onColour = style::accent;
     setTooltip ("Layer " + String (l + 1) + ": clic per selezionarlo, clic sull'engine per cambiarlo, clic destro per copia/incolla/preset.");
     for (auto* ch : std::initializer_list<Component*> { &power, &mute, &solo, &meter })
         addAndMakeVisible (ch);
@@ -164,7 +165,7 @@ void LayerTile::paint (Graphics& g)
     g.drawFittedText (String (engineNames[(size_t) jlimit (0, 4, engineIndex)]) + utf8 ("  ▾"), ea, Justification::centredLeft, 1, 0.7f);
     if (voices > 0)
     {
-        g.setColour (style::accent2);
+        g.setColour (style::accent);
         g.setFont (style::font (10.5f));
         g.drawText (String (voices), ea, Justification::centredRight);
     }
@@ -209,8 +210,7 @@ ScaleKeyboard::ScaleKeyboard (UiContext& c) : ctx (c)
 {
     for (int k = 0; k < 12; ++k)
         slots[(size_t) k] = ctx.hostParam (String ("scale_") + scaleKeys[k]);
-    setTooltip ("SCALE: clic = assegna/togli la nota al Layer selezionato; Shift+clic = tutti i Layer / nessuno; "
-                "Alt+clic = solo il Layer selezionato. Nota senza Layer = muta.");
+    setTooltip (utf8 ("NOTE ASSIGN: clic su una nota per scegliere il synth (1–12) che la suona, oppure Off (nota muta)."));
 }
 
 void ScaleKeyboard::refresh()
@@ -233,7 +233,7 @@ Rectangle<float> ScaleKeyboard::keyRect (int k) const
     static const int whiteIndex[] { 0, 0, 1, 1, 2, 3, 3, 4, 4, 5, 5, 6 };
     if (! isBlack (k))
         return { r.getX() + ww * (float) whiteIndex[k], r.getY(), ww - 1.5f, r.getHeight() };
-    return { r.getX() + ww * (float) (whiteIndex[k] + 1) - ww * 0.32f, r.getY(), ww * 0.64f, r.getHeight() * 0.58f };
+    return { r.getX() + ww * (float) (whiteIndex[k] + 1) - ww * 0.32f, r.getY(), ww * 0.64f, r.getHeight() * 0.56f };
 }
 
 int ScaleKeyboard::keyAt (Point<float> p) const
@@ -243,6 +243,16 @@ int ScaleKeyboard::keyAt (Point<float> p) const
     for (int k = 0; k < 12; ++k)
         if (! isBlack (k) && keyRect (k).contains (p)) return k;
     return -1;
+}
+
+static String synthLabel (int mask)
+{
+    if (mask == 0) return utf8 ("×");
+    if (mask == 4095) return "All";
+    String s;
+    for (int l = 0; l < 12; ++l)
+        if ((mask >> l) & 1) s << (s.isEmpty() ? "" : "+") << String (l + 1);
+    return s;
 }
 
 void ScaleKeyboard::paint (Graphics& g)
@@ -255,23 +265,21 @@ void ScaleKeyboard::paint (Graphics& g)
             const auto r = keyRect (k);
             const int m = masks[(size_t) k];
             const bool mine = (m & bit) != 0;
-            Colour base = isBlack (k) ? style::panel2 : style::track.brighter (0.25f);
-            if (mine) base = style::accent;
-            if (m == 0) base = style::outline;
+            Colour base = isBlack (k) ? style::panel2 : style::track.brighter (0.2f);
+            if (m != 0) base = mine ? style::accent : style::accent.withMultipliedSaturation (0.55f).withMultipliedBrightness (0.7f);
+            else base = style::outline;
             g.setColour (base);
             g.fillRoundedRectangle (r, 2.0f);
             g.setColour (style::outline);
             g.drawRoundedRectangle (r, 2.0f, 1.0f);
-            g.setColour (mine ? Colours::black : (m == 0 ? style::textDim : style::text));
-            g.setFont (style::font (10.0f, mine));
-            g.drawText (m == 0 ? String (utf8 ("×")) : String (noteNames[k]), r.withTrimmedTop (r.getHeight() - 16.0f), Justification::centred);
-            // dots: how many layers share this note
-            const int n = jmin (12, BigInteger (m).countNumberOfSetBits());
-            for (int i = 0; i < n; ++i)
-            {
-                g.setColour (mine ? Colours::black.withAlpha (0.6f) : style::accent2);
-                g.fillEllipse (r.getX() + 3.0f + (float) (i % 4) * 4.5f, r.getY() + 4.0f + (float) (i / 4) * 4.5f, 3.0f, 3.0f);
-            }
+            // assigned synth (number) on top, note name at the bottom
+            g.setColour (m == 0 ? style::textDim : Colours::black);
+            g.setFont (style::font (isBlack (k) ? 10.0f : 11.5f, true));
+            g.drawFittedText (synthLabel (m), r.withHeight (isBlack (k) ? r.getHeight() * 0.6f : 22.0f).toNearestInt(),
+                              Justification::centred, 1, 0.6f);
+            g.setColour (m == 0 ? style::textDim : Colours::black.withAlpha (0.7f));
+            g.setFont (style::font (9.5f));
+            g.drawText (noteNames[k], r.withTrimmedTop (r.getHeight() - 14.0f), Justification::centred);
         }
 }
 
@@ -279,16 +287,23 @@ void ScaleKeyboard::mouseDown (const MouseEvent& e)
 {
     const int k = keyAt (e.position);
     if (k < 0 || slots[(size_t) k] == nullptr) return;
-    const int bit = 1 << ctx.layer;
-    int m = masks[(size_t) k];
-    if (e.mods.isShiftDown()) m = m == 4095 ? 0 : 4095;
-    else if (e.mods.isAltDown()) m = bit;
-    else m ^= bit;
     auto* p = slots[(size_t) k];
-    p->beginChangeGesture();
-    p->setValueNotifyingHost (p->convertTo0to1 ((float) m));
-    p->endChangeGesture();
-    refresh();
+    auto set = [this, p] (int m)
+    {
+        p->beginChangeGesture();
+        p->setValueNotifyingHost (p->convertTo0to1 ((float) m));
+        p->endChangeGesture();
+        refresh();
+    };
+    const int m = masks[(size_t) k];
+    PopupMenu menu;
+    menu.addSectionHeader (String ("Nota ") + noteNames[k]);
+    for (int l = 0; l < 12; ++l)
+        menu.addItem ("Synth " + String (l + 1), true, m == (1 << l), [set, l] { set (1 << l); });
+    menu.addSeparator();
+    menu.addItem (utf8 ("Off (nota muta)"), true, m == 0, [set] { set (0); });
+    menu.showMenuAsync (PopupMenu::Options().withTargetScreenArea (localAreaToGlobal (keyRect (k).toNearestInt()))
+                                            .withMinimumWidth (110));
 }
 
 //============================================================================== additive editor
@@ -381,7 +396,7 @@ void AdditiveEditor::refresh()
 
 void AdditiveEditor::paint (Graphics& g)
 {
-    drawPanelFrame (g, getLocalBounds().toFloat(), utf8 ("Additive · Custom Spectrum"), style::accent);
+    drawPanelFrame (g, getLocalBounds().toFloat(), utf8 ("Additive · Custom Spectrum"), style::module);
     const auto r = bars();
     g.setColour (style::outline);
     g.fillRoundedRectangle (r.expanded (2.0f), style::controlRadius);
@@ -395,7 +410,7 @@ void AdditiveEditor::paint (Graphics& g)
     {
         const float y = r.getBottom() - jlimit (0.0f, 1.0f, toNorm (f, spec.get (f, k))) * r.getHeight();
         const bool muted = spec.get (add::fMute, k) > 0.5f;
-        g.setColour (k == hover ? style::accent2 : (muted ? style::track : style::accent));
+        g.setColour (k == hover ? style::accentG : (muted ? style::track : style::module));
         g.fillRect (Rectangle<float> (r.getX() + bw * (float) k + (bw > 4.0f ? 0.5f : 0.0f), jmin (y, zeroY),
                                       jmax (1.0f, bw - (bw > 4.0f ? 1.0f : 0.0f)), jmax (1.0f, std::abs (zeroY - y))));
     }
@@ -517,7 +532,7 @@ int PdCurveEditor::pointAt (Point<float> p) const
 
 void PdCurveEditor::paint (Graphics& g)
 {
-    drawPanelFrame (g, getLocalBounds().toFloat(), utf8 ("PD · Custom Phase Curve"), style::accent);
+    drawPanelFrame (g, getLocalBounds().toFloat(), utf8 ("PD · Custom Phase Curve"), style::module);
     const auto r = plot();
     g.setColour (style::outline);
     g.fillRoundedRectangle (r.expanded (6.0f), style::controlRadius);
@@ -535,13 +550,13 @@ void PdCurveEditor::paint (Graphics& g)
         const float px = r.getX() + x * r.getWidth(), py = r.getBottom() - jlimit (0.0f, 1.0f, y) * r.getHeight();
         if (i == 0) p.startNewSubPath (px, py); else p.lineTo (px, py);
     }
-    g.setColour (style::accent);
+    g.setColour (style::module);
     g.strokePath (p, PathStrokeType (1.8f, PathStrokeType::curved, PathStrokeType::rounded));
     for (size_t i = 0; i < pts.size(); ++i)
     {
         const bool fixed = i == 0 || i + 1 == pts.size();
         const Point<float> q (r.getX() + pts[i].x * r.getWidth(), r.getBottom() - pts[i].y * r.getHeight());
-        g.setColour (fixed ? style::textDim : ((int) i == drag ? style::accent2 : style::text));
+        g.setColour (fixed ? style::textDim : ((int) i == drag ? style::accentG : style::text));
         g.fillEllipse (Rectangle<float> (9.0f, 9.0f).withCentre (q));
     }
 }
@@ -605,7 +620,7 @@ void ToolsBlock::resized()
 
 void ToolsBlock::paint (Graphics& g)
 {
-    drawPanelFrame (g, getLocalBounds().toFloat(), title, style::accent);
+    drawPanelFrame (g, getLocalBounds().toFloat(), title, style::module);
     g.setColour (style::textDim);
     g.setFont (style::font (11.0f));
     g.drawFittedText (info, getLocalBounds().withTrimmedTop (style::panelHeaderH + 38).reduced (8, 0).removeFromTop (22),

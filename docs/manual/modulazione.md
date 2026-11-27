@@ -1,6 +1,6 @@
 # Voce, filtri e modulazione
 
-Questi moduli sono comuni a tutti gli engine (scheda *Voice* e *Modulation*).
+Questi moduli sono comuni a tutti gli engine (scheda *Voice* e *Modulation*; il **Filter** è l'ultimo modulo della scheda *Engine*).
 
 ## Voice
 - **Mode**: Mono, Poly, Unison, Legato. **Max Voices** per Layer.

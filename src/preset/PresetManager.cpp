@@ -42,7 +42,7 @@ juce::File PresetManager::defaultRoot()
 juce::StringArray PresetManager::defaultCategories()
 {
     return { "Arp", "Bass", "Bell", "Brass", "Chord", "Drum", "FX", "Keys", "Lead", "Organ", "Pad",
-             "Pluck", "Sequence", "Strings", "Texture", "Other" };
+             "Percussive", "Pluck", "Sequence", "Strings", "Texture", "Other" };
 }
 
 PresetManager::PresetManager (juce::File r) : root (std::move (r))
@@ -160,6 +160,14 @@ int PresetManager::installFactory (bool force)
     const auto marker = root.getChildFile (".factory");
     const auto stamp = juce::String::toHexString (id.hashCode64());
     if (! force && marker.loadFileAsString().trim() == stamp) return 0;
+    // a new factory set replaces the old one: factory files that are no longer in the set are removed
+    // (only inside the Factory folders; the user's own presets are never touched)
+    juce::StringArray current;
+    for (int i = 0; i < ChromaFactory::namedResourceListSize; ++i)
+        current.add (juce::String::fromUTF8 (ChromaFactory::originalFilenames[i]));
+    for (auto k : { PresetKind::Multi, PresetKind::Layer })
+        for (const auto& f : folder (k).getChildFile ("Factory").findChildFiles (juce::File::findFiles, false, juce::String ("*") + extension (k)))
+            if (! current.contains (f.getFileName())) f.deleteFile();
     for (int i = 0; i < ChromaFactory::namedResourceListSize; ++i)
     {
         int size = 0;

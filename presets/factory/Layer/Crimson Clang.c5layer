@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<CHROMA5YNTH_PRESET kind="layer" name="Crimson Clang" category="Percussive" author="TMFU audiovibe"
+                    tags="analog,percussive" format="1">
+  <LAYER_PRESET on="1.0" engine="0.0" volume="0.8126519918441772" pan="0.5" mute="0.0"
+                solo="0.0" transpose="0.5" key_lo="0.0" key_hi="1.0" vel_lo="0.0"
+                vel_hi="1.0" midi_ch="0.0" max_voices="1.0">
+    <ENGINE mmver="2" layer_trim="1.470000028610229" filter_on="1.0" filter_model="2.0"
+            filter_cutoff="2114.00341796875" filter_resonance="0.3499999940395355"
+            filter_keytrack="0.800000011920929" filter_env_amount="0.5" env1_attack="0.0005000000237487257"
+            env1_decay="0.167600005865097" env1_sustain="0.0" env1_release="0.2000000029802322"
+            env1_velocity="0.6000000238418579" env2_attack="0.002000000094994903"
+            env2_decay="0.07999999821186066" env2_sustain="0.0" an_osc1_wave="0.0"
+            an_osc2_on="1.0" an_osc2_wave="3.0" an_osc2_semi="11.0" an_osc2_level="0.300000011920929"
+            an_noise_level="0.3402000069618225" fx_reverb_on="1.0" fx_reverb_size="0.4000000059604645"
+            fx_reverb_decay="1.200000047683716" fx_reverb_mix="0.2000000029802322"/>
+  </LAYER_PRESET>
+</CHROMA5YNTH_PRESET>

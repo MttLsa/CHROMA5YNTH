@@ -166,7 +166,7 @@ juce::ValueTree PresetNormalizer::compact (PresetKind kind, const juce::ValueTre
     if (kind == PresetKind::Layer)
     {
         auto e = c.getChildWithName ("ENGINE");
-        if (e.isValid()) compactStore (e, defStore, { lp::descs[(size_t) lp::layerTrim].id });
+        if (e.isValid()) compactStore (e, defStore, { lp::descs[(size_t) lp::layerTrim].id, "mmver" });
         return c;
     }
     ChromaProcessor ref;
@@ -183,8 +183,8 @@ juce::ValueTree PresetNormalizer::compact (PresetKind kind, const juce::ValueTre
     {
         auto l = core.getChild (i);
         if (! l.hasType ("LAYER")) continue;
-        compactStore (l, defStore, { "index" });
-        if (l.getNumProperties() <= 1 && l.getNumChildren() == 0) core.removeChild (i, nullptr);
+        compactStore (l, defStore, { "index", "mmver" });   // mmver: Mod Matrix format, must survive compaction
+        if (l.getNumProperties() <= 2 && l.getNumChildren() == 0) core.removeChild (i, nullptr);
     }
     return c;
 }

@@ -2,6 +2,7 @@
 
 #include <juce_audio_processors/juce_audio_processors.h>
 #include <juce_gui_basics/juce_gui_basics.h>
+#include <optional>
 
 // =====================================================================================
 //  TMFU audiovibe visual language (from DUALBOX): flat, minimal, dark device view.
@@ -17,9 +18,10 @@ const juce::Colour outline { 0xff121212 };
 const juce::Colour track   { 0xff4a4a4a };   // knob / slider track
 const juce::Colour text    { 0xffd0d0d0 };
 const juce::Colour textDim { 0xff8c8c8c };
-const juce::Colour accent  { 0xff4f8cff };   // primary accent - blue
-const juce::Colour accent2 { 0xffb4dc3c };   // secondary accent - lime
-const juce::Colour accentG { 0xffeeeeee };   // global / output - white
+const juce::Colour accent  { 0xff4f8cff };   // blue: synth (layer) selection, page tabs, NOTE ASSIGN / GLOBAL SCALE
+const juce::Colour accent2 { 0xffb4dc3c };   // lime (legacy, unused by the main view)
+const juce::Colour accentG { 0xffeeeeee };   // white: toolbar selections, Master, Macro
+const juce::Colour module  { 0xffff9636 };   // orange: modules and their parameters
 
 // Inter (SIL OFL 1.1): Regular for text, SemiBold for titles/buttons/bold. Embedded from assets/fonts.
 juce::Typeface::Ptr uiTypeface (bool bold);
@@ -59,6 +61,7 @@ struct Binding
     std::function<void (float)> set;
     std::function<void()> beginGesture, endGesture;
     juce::String format (float v) const;       // value + unit for readouts
+    std::optional<float> parse (const juce::String& text) const;   // typed value ("250 ms", "1.2k", "45%", choice label)
     juce::NormalisableRange<double> range() const;
 };
 using BindingPtr = std::shared_ptr<Binding>;
@@ -94,6 +97,7 @@ public:
     void focusGained (FocusChangeType) override { repaintParent(); }
     void focusLost (FocusChangeType) override { repaintParent(); }
     int dragPixels = 700;
+    std::function<bool (juce::juce_wchar)> onTypedChar;   // digits / sign / point start numeric entry
 
 private:
     void repaintParent() { if (auto* p = getParentComponent()) p->repaint(); }
@@ -107,6 +111,9 @@ public:
     void attach (juce::AudioProcessorValueTreeState&, const juce::String& paramId);
     void bind (BindingPtr);
     void refresh();                                // pulls the bound value (GUI timer)
+    bool isEditing() const noexcept { return editor != nullptr; }
+    void beginTextEntry (const juce::String& initial);  // numeric entry with the keyboard (Enter = apply, Esc = cancel)
+    void mouseDoubleClick (const juce::MouseEvent&) override;
     void setAccent (juce::Colour);
     void resized() override;
     void paint (juce::Graphics&) override;
@@ -118,6 +125,8 @@ private:
     juce::RangedAudioParameter* param = nullptr;
     BindingPtr binding;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> att;
+    std::unique_ptr<juce::TextEditor> editor;
+    void endTextEntry (bool apply);
 };
 
 // Segmented selector for choice / bool / int parameters (e.g. LP | BP | HP).
@@ -156,6 +165,11 @@ private:
     juce::Colour accent;
 };
 
-// Header bar: "CHROMA" + dimmed "5YNTH" wordmark, maker line, subtitle, version.
+// Name font of the header (Urbanist Light, as the GROOVULATION header; SIL OFL 1.1).
+juce::Font nameFont (float h);
+// Colour of the k-th (0..11) rainbow bar of the header at vertical position t (0 = top, 1 = bottom).
+juce::Colour rainbow (int k, float t);
+
+// Header bar: "CHROMA5YNTH" wordmark (Urbanist Light), maker line, 12 rainbow bars, subtitle, version.
 void drawHeader (juce::Graphics&, juce::Rectangle<float> bar, const juce::String& subtitle, const juce::String& version);
 } // namespace chroma

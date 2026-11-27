@@ -83,6 +83,23 @@ TEST_CASE ("Presets: trim parameters, normalisation and compact files", "[preset
     REQUIRE (PresetNormalizer::getTrim (PresetKind::Multi, compact) == Approx (r.trimDb));
 }
 
+TEST_CASE ("Presets: compaction keeps the Mod Matrix destinations", "[presets]")
+{
+    ChromaProcessor proc;
+    auto& st = proc.getSynth().layerStore (0);
+    st.set (lp::mmSource[0], 1.0f);
+    st.set (lp::mmDest[0], (float) (lp::list_modDestinations_size - 3));   // near the end of the list
+    for (auto kind : { PresetKind::Layer, PresetKind::Multi })
+    {
+        const auto full = kind == PresetKind::Layer ? proc.getSynth().copyLayer (0) : proc.captureState (false);
+        const auto c = PresetNormalizer::compact (kind, full);
+        ChromaProcessor other;
+        if (kind == PresetKind::Layer) other.getSynth().pasteLayer (0, c);
+        else other.restoreState (c, false);
+        CHECK ((int) other.getSynth().layerStore (0).get (lp::mmDest[0]) == lp::list_modDestinations_size - 3);
+    }
+}
+
 TEST_CASE ("Presets: factory set", "[presets]")
 {
     const int n = PresetManager::numFactoryPresets();
@@ -92,47 +109,66 @@ TEST_CASE ("Presets: factory set", "[presets]")
     REQUIRE (pm.installFactory() == n);
     REQUIRE (pm.installFactory() == 0);              // marker: once per factory set
     REQUIRE (pm.installFactory (true) == n);
+    {   // presets of an older factory set disappear when the set changes; user presets stay
+        const auto stale = tmp.dir.getChildFile ("Layer/Factory/Old Factory Patch.c5layer");
+        const auto mine = tmp.dir.getChildFile ("Layer/My Patch.c5layer");
+        REQUIRE (stale.replaceWithText ("x"));
+        REQUIRE (mine.replaceWithText ("x"));
+        tmp.dir.getChildFile (".factory").replaceWithText ("old");
+        REQUIRE (pm.installFactory() == n);
+        REQUIRE_FALSE (stale.existsAsFile());
+        REQUIRE (mine.existsAsFile());
+        mine.deleteFile();
+        pm.rescan();
+    }
 
-    int multis = 0, layers = 0, scaleMultis = 0;
+    int multis = 0, layers = 0;
     std::set<juce::String> names;
     std::array<int, 5> perEngine {};
+    juce::String firstMulti;
     for (const auto& info : pm.all())
     {
         INFO (info.meta.name.toStdString());
         REQUIRE (info.file.getParentDirectory().getFileName() == "Factory");
         REQUIRE (info.meta.category.isNotEmpty());
         REQUIRE (PresetManager::defaultCategories().contains (info.meta.category));
+        REQUIRE (names.insert (info.meta.name).second);
         auto content = PresetManager::load (info.file);
         REQUIRE (content);
         test::Rig rig;
         if (info.kind == PresetKind::Layer)
         {
+            // LAYER: one synth, playing every note
             ++layers;
             REQUIRE (content->hasType ("LAYER_PRESET"));
             rig.proc.loadLayerPreset (2, info.file);
             continue;
         }
+        // MULTI: all 12 synths on, NOTE ASSIGN on, synth n plays note n (1 = C ... 12 = B)
         ++multis;
-        REQUIRE (names.insert (info.meta.name).second);
+        if (firstMulti.isEmpty()) firstMulti = info.meta.name;
         REQUIRE (rig.proc.loadMultiPreset (info.file));
         REQUIRE (rig.proc.getCurrentPresetName() == info.meta.name);
-        const bool scale = rig.proc.getState().getParameter (ParamIDs::scaleOn)->getValue() > 0.5f;
-        int onCount = 0, engine = 0;
+        auto plain = [&rig] (const char* id) { auto* p = rig.proc.getState().getParameter (id); return p->convertFrom0to1 (p->getValue()); };
+        REQUIRE (plain (ParamIDs::scaleOn) > 0.5f);
         for (int l = 0; l < numLayers; ++l)
-            if (rig.proc.getState().getParameter (ParamIDs::layerOn[(size_t) l])->getValue() > 0.5f)
-            {
-                ++onCount;
-                engine = juce::roundToInt (rig.proc.getState().getParameter (ParamIDs::layerEngine[(size_t) l])->convertFrom0to1 (
-                    rig.proc.getState().getParameter (ParamIDs::layerEngine[(size_t) l])->getValue()));
-            }
-        REQUIRE (onCount >= 1);
-        if (scale) { ++scaleMultis; REQUIRE (onCount >= 2); }
-        else if (onCount == 1) ++perEngine[(size_t) engine];
+        {
+            REQUIRE (plain (ParamIDs::layerOn[(size_t) l]) > 0.5f);
+            REQUIRE (juce::roundToInt (plain (ParamIDs::scaleSlot[(size_t) l])) == (1 << l));
+            ++perEngine[(size_t) juce::roundToInt (plain (ParamIDs::layerEngine[(size_t) l]))];
+        }
+        for (int k = 0; k < 12; ++k)       // each note sounds its own synth only
+        {
+            rig.noteOn (60 + k, 0.8f);
+            rig.run ({}, 4);
+            REQUIRE (rig.layersPlaying (60 + k) == (1 << k));
+            rig.noteOff (60 + k);
+        }
     }
-    REQUIRE (multis == 64);
-    REQUIRE (layers == 40);
-    REQUIRE (scaleMultis >= 24);
-    for (int e = 0; e < 5; ++e) REQUIRE (perEngine[(size_t) e] >= 8);
+    REQUIRE (multis == 24);
+    REQUIRE (layers == 128);
+    REQUIRE (firstMulti == "01 Bass Multi");
+    for (int e = 0; e < 5; ++e) REQUIRE (perEngine[(size_t) e] >= 12);
 }
 
 TEST_CASE ("Presets: factory loudness", "[presets][.slow]")
@@ -147,6 +183,8 @@ TEST_CASE ("Presets: factory loudness", "[presets][.slow]")
         const auto m = PresetNormalizer::measure (info.kind, *content);
         REQUIRE (m.truePeak <= PresetNormalizer::ceilingDbtp + 0.05);
         REQUIRE (m.lufs <= PresetNormalizer::targetLufs + 0.5);
-        REQUIRE (m.lufs >= PresetNormalizer::targetLufs - 8.0);   // peak-limited presets sit below the target
+        // short percussive sounds are limited by their peak (−1.8 dBTP), not by the 3 s short-term loudness
+        if (m.lufs < PresetNormalizer::targetLufs - 8.0)
+            REQUIRE (m.truePeak >= PresetNormalizer::ceilingDbtp - 1.5);
     }
 }

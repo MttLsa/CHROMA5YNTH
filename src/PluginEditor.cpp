@@ -74,7 +74,7 @@ ChromaEditor::ChromaEditor (ChromaProcessor& p) : AudioProcessorEditor (p), proc
     randomAmount.setValue (0.5, juce::dontSendNotification);
     randomAmount.setTooltip (utf8 ("Quantità di randomizzazione (0–100%)."));
     root.addAndMakeVisible (randomAmount);
-    tool (initButton, "Riporta l'intera patch ai valori iniziali (le impostazioni globali restano).", [this] { proc.initAll(); });
+    tool (initButton, "Riporta il synth selezionato ai valori iniziali (gli altri 11 synth non cambiano).", [this] { proc.initLayer (ctx.layer); });
     tool (tuningButton, "Microtuning: carica un file .scl (con .kbm opzionale) o .tun.", [this] { showTuningMenu(); });
     tool (midiButton, "Mappature MIDI learn: salva, carica, cancella.", [this] { showMidiMenu(); });
 
@@ -89,7 +89,7 @@ ChromaEditor::ChromaEditor (ChromaProcessor& p) : AudioProcessorEditor (p), proc
 
     // ---- centre: tabs + pages
     static const char* const tabNames[] { "Engine", "Voice", "Modulation", "Layer FX", "Master FX", "Global" };
-    static const char* const tabTips[] { "Parametri dell'engine del Layer selezionato.", "Layer, voce, filtro, drift e inviluppo d'ampiezza.",
+    static const char* const tabTips[] { "Moduli dell'engine del synth selezionato, nell'ordine del segnale (filtro in fondo).", "Synth, voce, performance, drift e inviluppo d'ampiezza.",
                                          "Inviluppi di modulazione, LFO e Mod Matrix.", "Effetti del Layer selezionato.",
                                          "Effetti sulla somma di tutti i Layer.", "Impostazioni globali e MPE." };
     for (int t = 0; t < numTabs; ++t)
@@ -99,6 +99,7 @@ ChromaEditor::ChromaEditor (ChromaProcessor& p) : AudioProcessorEditor (p), proc
         b.setTooltip (tabTips[t]);
         b.setClickingTogglesState (true);
         b.setRadioGroupId (77);
+        b.setColour (juce::TextButton::buttonOnColourId, style::accent);   // page tabs: blue
         b.onClick = [this, t] { selectTab (t); };
         root.addAndMakeVisible (b);
         root.addChildComponent (pages[(size_t) t]);
@@ -114,17 +115,20 @@ ChromaEditor::ChromaEditor (ChromaProcessor& p) : AudioProcessorEditor (p), proc
     masterPanel->addHostParam (ParamIDs::masterPolyphony, "Polyphony");
     root.addAndMakeVisible (*masterPanel);
 
-    macroPanel = std::make_unique<ui::SectionPanel> (ctx, "Macro", style::accent2);
+    macroPanel = std::make_unique<ui::SectionPanel> (ctx, "Macro", style::accentG);
     for (int m = 1; m <= numMacros; ++m)
         macroPanel->addHostParam ("macro" + juce::String (m), "Macro " + juce::String (m));
     root.addAndMakeVisible (*macroPanel);
 
-    scalePanel = std::make_unique<ui::SectionPanel> (ctx, "Scale", style::accent);
+    scalePanel = std::make_unique<ui::SectionPanel> (ctx, "Note Assign", style::accent);
     scalePanel->setHeaderToggle (ctx.host (ParamIDs::scaleOn));
     auto kb = std::make_unique<ui::ScaleKeyboard> (ctx);
     keyboard = kb.get();
-    scalePanel->setDisplay (std::move (kb), 84);
+    scalePanel->setDisplay (std::move (kb), 78);
     root.addAndMakeVisible (*scalePanel);
+
+    gscalePanel = ui::makeHostSection (ctx, "Global Scale", "Global Scale", style::accent);
+    root.addAndMakeVisible (*gscalePanel);
 
     // ---- overlays
     wtEditor = std::make_unique<WavetableEditor> (p.getSynth());
@@ -234,7 +238,7 @@ void ChromaEditor::layoutRoot()
     wtEditor->setBounds (body.getUnion (right));
     browser->setBounds (body.getUnion (right));
 
-    for (auto* panel : { masterPanel.get(), macroPanel.get(), scalePanel.get() })
+    for (auto* panel : { masterPanel.get(), macroPanel.get(), scalePanel.get(), gscalePanel.get() })
     {
         const int h = panel->heightFor (right.getWidth());
         panel->setBounds (right.removeFromTop (h));
@@ -246,35 +250,58 @@ void ChromaEditor::layoutRoot()
 //------------------------------------------------------------------------------ pages
 void ChromaEditor::buildStaticPages()
 {
-    // Voice
+    auto sec = [this] (const juce::String& s) { return ui::makeLayerSection (ctx, s, shortTitle (s)); };
+
+    // Voice: synth -> voice -> performance, then drift and the amp envelope (the filter is in the engine page)
     auto& voice = pages[tabVoice];
-    auto layerPanel = std::make_unique<ui::SectionPanel> (ctx, "Layer", style::accentG);
+    auto layerPanel = std::make_unique<ui::SectionPanel> (ctx, "Synth");
     for (const char* s : { "volume", "pan", "transpose", "key_lo", "key_hi", "vel_lo", "vel_hi", "midi_ch", "max_voices" })
         layerPanel->addHostOfLayer (s, {});
     voice.add (std::move (layerPanel));
-    for (const auto& s : { utf8 ("Layer · Voice"), utf8 ("Layer · Performance"), utf8 ("Layer · Filter"), utf8 ("Layer · Drift"), utf8 ("Layer · Amp Env") })
-        voice.add (ui::makeLayerSection (ctx, s, shortTitle (s)));
+    voice.add (sec (utf8 ("Layer · Voice")));
+    voice.add (sec (utf8 ("Layer · Performance")));
+    voice.newRow();
+    voice.add (sec (utf8 ("Layer · Amp Env")))->weight = 2.0f;
+    voice.add (sec (utf8 ("Layer · Drift")));
 
-    // Modulation
+    // Modulation: sources (envelopes, LFOs) then the matrix. Unassigned Mod Env 2/3 and LFOs are greyed out.
     auto& mod = pages[tabMod];
-    for (const auto& s : layerSections (utf8 ("Layer · ")))
-        if (s.contains ("Env") && s != utf8 ("Layer · Amp Env")) mod.add (ui::makeLayerSection (ctx, s, shortTitle (s)));
-    for (const auto& s : layerSections (utf8 ("Layer · LFO")))
-        mod.add (ui::makeLayerSection (ctx, s, shortTitle (s), style::accent2));
+    mod.newRow();
+    for (int e = 1; e <= 3; ++e)
+    {
+        auto p = sec (utf8 ("Layer · Mod Env ") + juce::String (e));
+        if (e == 1) p->setTitleNote ([] { return juce::String ("(Filter Envelope)"); });
+        if (e == 2) p->setTitleNote ([this]
+        {
+            return builtEngine == 3 ? juce::String ("(Wavetable Filter 2 Envelope)") : juce::String();
+        });
+        if (e >= 2) p->setInUse ([this, e] { return ui::modSourceInUse (ctx, 5 + e); },
+                                 utf8 ("Non assegnato: scegli Mod Env ") + juce::String (e) + utf8 (" come sorgente nella Mod Matrix per attivarlo."));
+        mod.add (std::move (p));
+    }
+    mod.newRow();
+    for (int l = 1; l <= 4; ++l)
+    {
+        auto p = sec (utf8 ("Layer · LFO ") + juce::String (l));
+        p->setInUse ([this, l] { return ui::modSourceInUse (ctx, l); },
+                     utf8 ("Non assegnato: scegli LFO ") + juce::String (l) + utf8 (" come sorgente nella Mod Matrix per attivarlo."));
+        mod.add (std::move (p));
+    }
+    mod.newRow();
     mod.add (std::make_unique<ui::ModMatrixBlock> (ctx));
 
-    // Layer FX
+    // Layer FX (chain order)
     for (const auto& s : layerSections (utf8 ("Layer FX · ")))
-        pages[tabFx].add (ui::makeLayerSection (ctx, s, shortTitle (s)));
+        pages[tabFx].add (sec (s));
 
     // Master FX + Global (host)
     for (const auto* s : gui::sections)
     {
-        const auto sec = utf8 (s);
-        if (sec.startsWith (utf8 ("Master FX · ")))
-            pages[tabMasterFx].add (ui::makeHostSection (ctx, sec, shortTitle (sec), style::accentG));
-        else if (sec == "Global" || sec == "MPE")
-            pages[tabGlobal].add (ui::makeHostSection (ctx, sec, sec, style::accentG));
+        const auto hs = utf8 (s);
+        if (hs.startsWith (utf8 ("Master FX · ")))
+            pages[tabMasterFx].add (ui::makeHostSection (ctx, hs, shortTitle (hs)));
+        else if (hs == "Global" || hs == "MPE")
+            pages[tabGlobal].add (ui::makeHostSection (ctx, hs, hs));
     }
 }
 
@@ -282,26 +309,114 @@ void ChromaEditor::buildEnginePage (int engine)
 {
     builtEngine = engine;
     fmTools = nullptr;
+    if (engine != 3 && wtEditor != nullptr && wtEditor->isVisible())
+        wtEditor->setVisible (false);               // windows of another engine close with the engine change
     auto& page = pages[tabEngine];
     page.clear();
-    static const char* const prefixes[] { "Analog \u00B7 ", "Additive \u00B7 ", "FM6 \u00B7 ", "Wavetable \u00B7 ", "PD \u00B7 " };
-    if (engine == 2)
+    auto sec = [this] (const juce::String& s, float w = 1.0f)
     {
-        auto tools = std::make_unique<ui::ToolsBlock> (utf8 ("FM6 · Bank"), "Importa un banco di 32 voci (.syx) nel Layer selezionato.");
-        tools->addButton ("Import .syx", "Importa un banco .syx a 32 voci e scegli la voce da caricare.", [this] (juce::Component& c) { importFmBank (c); });
-        fmTools = tools.get();
-        page.add (std::move (tools));
-    }
-    if (engine == 3)
+        auto p = ui::makeLayerSection (ctx, s, shortTitle (s));
+        p->weight = w;
+        return p;
+    };
+    auto add = [&page] (std::unique_ptr<ui::SectionPanel> p, float w) { p->weight = w; page.add (std::move (p)); };
+
+    switch (juce::jlimit (0, 4, engine))
     {
-        auto tools = std::make_unique<ui::ToolsBlock> (utf8 ("Wavetable · User Tables"), utf8 ("Disegna, importa e modifica le tabelle User 1–3 del Layer."));
-        tools->addButton ("WT Editor", "Apri l'editor delle wavetable utente.", [this] (juce::Component&) { if (ctx.openWavetableEditor) ctx.openWavetableEditor(); });
-        page.add (std::move (tools));
+        case 0:   // Analog: OSC 1-3 -> Mod / Sub / Noise -> Output -> Filter
+            page.newRow();
+            for (int o = 1; o <= 3; ++o) page.add (sec (utf8 ("Analog · OSC ") + juce::String (o)));
+            page.newRow();
+            page.add (sec (utf8 ("Analog · Mod")));
+            page.add (sec (utf8 ("Analog · Sub")));
+            page.add (sec (utf8 ("Analog · Noise")));
+            page.newRow();
+            page.add (sec (utf8 ("Analog · Output"), 1.0f));
+            page.add (sec (utf8 ("Layer · Filter"), 3.0f));
+            break;
+
+        case 1:   // Additive: spectrum (+ editor) -> envelopes -> FM / AM -> stereo -> Filter
+            page.newRow();
+            page.add (sec (utf8 ("Additive · Spectrum")));
+            page.newRow();
+            page.add (std::make_unique<ui::AdditiveEditor> (ctx));
+            page.newRow();
+            page.add (sec (utf8 ("Additive · Partial Env")));
+            page.add (sec (utf8 ("Additive · Spectral Env")));
+            page.newRow();
+            page.add (sec (utf8 ("Additive · FM")));
+            page.add (sec (utf8 ("Additive · AM")));
+            page.add (sec (utf8 ("Additive · Stereo")));
+            page.newRow();
+            page.add (sec (utf8 ("Layer · Filter")));
+            break;
+
+        case 2:   // FM6: algorithm -> each operator next to its envelope -> pitch env / LFO -> Filter
+        {
+            page.newRow();
+            auto tools = std::make_unique<ui::ToolsBlock> (utf8 ("FM6 · Bank"), "Importa un banco di 32 voci (.syx) nel synth selezionato.");
+            tools->addButton ("Import .syx", "Importa un banco .syx a 32 voci e scegli la voce da caricare.", [this] (juce::Component& c) { importFmBank (c); });
+            fmTools = tools.get();
+            page.add (sec (utf8 ("FM6 · Algorithm"), 2.0f));
+            tools->weight = 1.0f;
+            page.add (std::move (tools));
+            for (int o = 1; o <= 6; ++o)
+            {
+                page.newRow();
+                add (sec (utf8 ("FM6 · Op ") + juce::String (o)), 3.0f);
+                add (sec (utf8 ("FM6 · Op ") + juce::String (o) + " Env"), 2.0f);
+            }
+            page.newRow();
+            auto custom = sec (utf8 ("FM6 · Custom"));
+            custom->shown = [this]   // only with the Custom algorithm (A or B)
+            {
+                const int c = (int) lp::descs[(size_t) lp::fmAlgorithm].numChoices - 1;
+                return juce::roundToInt (ctx.store().get (lp::fmAlgorithm)) == c || juce::roundToInt (ctx.store().get (lp::fmAlgorithmB)) == c;
+            };
+            page.add (std::move (custom));
+            page.newRow();
+            page.add (sec (utf8 ("FM6 · Pitch Env")));
+            page.add (sec (utf8 ("FM6 · LFO")));
+            page.newRow();
+            page.add (sec (utf8 ("Layer · Filter")));
+            break;
+        }
+
+        case 3:   // Wavetable: each OSC next to its advanced module -> Sub/Noise -> Filter 1 + Filter 2
+        {
+            page.newRow();
+            auto tools = std::make_unique<ui::ToolsBlock> (utf8 ("Wavetable · User Tables"), utf8 ("Disegna, importa e modifica le tabelle User 1–3 del synth."));
+            tools->addButton ("WT Editor", "Apri l'editor delle wavetable utente.", [this] (juce::Component&) { if (ctx.openWavetableEditor) ctx.openWavetableEditor(); });
+            for (int o = 1; o <= 3; ++o)
+            {
+                page.newRow();
+                add (sec (utf8 ("Wavetable · OSC ") + juce::String (o)), 3.0f);
+                add (sec (utf8 ("Wavetable · OSC ") + juce::String (o) + " Advanced"), 2.0f);
+            }
+            page.newRow();
+            page.add (sec (utf8 ("Wavetable · Sub/Noise"), 2.0f));
+            page.add (std::move (tools));
+            page.newRow();
+            page.add (sec (utf8 ("Layer · Filter")));
+            page.add (sec (utf8 ("Wavetable · Filter 2")));
+            break;
+        }
+
+        default:  // PD: each line (oscillator -> distortion -> PD env) -> lines mix + curve -> Filter
+            for (int l = 1; l <= 2; ++l)
+            {
+                page.newRow();
+                page.add (sec (utf8 ("PD · Line ") + juce::String (l)));
+                page.add (sec (utf8 ("PD · Line ") + juce::String (l) + " Distortion"));
+                page.add (sec (utf8 ("PD · Line ") + juce::String (l) + " PD Env"));
+            }
+            page.newRow();
+            page.add (sec (utf8 ("PD · Lines")));
+            page.add (std::make_unique<ui::PdCurveEditor> (ctx))->weight = 2.0f;
+            page.newRow();
+            page.add (sec (utf8 ("Layer · Filter")));
+            break;
     }
-    for (const auto& s : layerSections (utf8 (prefixes[juce::jlimit (0, 4, engine)])))
-        page.add (ui::makeLayerSection (ctx, s, shortTitle (s)));
-    if (engine == 1) page.add (std::make_unique<ui::AdditiveEditor> (ctx));
-    if (engine == 4) page.add (std::make_unique<ui::PdCurveEditor> (ctx));
     page.resized();
     root.repaint();
 }
@@ -350,6 +465,7 @@ void ChromaEditor::refreshControls()
     masterPanel->refresh();
     macroPanel->refresh();
     scalePanel->refresh();
+    gscalePanel->refresh();
     keyboard->refresh();
 }
 

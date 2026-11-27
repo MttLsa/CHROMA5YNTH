@@ -58,7 +58,8 @@ public:
     void commitHistory();                            // records pending edits as an undo step now
     void selectAB (int slot);
     int randomize (const RandomizeScope&, float amount, juce::int64 seed = 0);   // seed 0 = time based
-    void initAll();                                  // Init: whole patch back to defaults (Global kept)
+    void initAll();                                  // whole patch back to defaults (Global kept)
+    void initLayer (int layer);                      // Init button: only the selected synth (its On state is kept)
 
     PresetManager& getPresets();
     void setPresetRoot (const juce::File&);          // tests / custom library location

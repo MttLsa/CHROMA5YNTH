@@ -7,8 +7,10 @@
 - Library: `~/Library/Audio/Presets/TMFU audiovibe/CHROMA5YNTH/{Multi,Layer}`; favourites in `favourites.txt`.
 - Browser (**Presets** button): Multi/Layer, search (all words over name, category, author, tags), category/tag/author
   filters, favourites, Save / Load (double-click) / Rename / Delete / Import / Export.
-- **Factory presets**: 64 Multis (40 single-Layer patches, 8 per engine, + 24 Multis using SCALE) and the 40 patches
-  also as Layer presets. They are embedded in the plug-in and copied to `{Multi,Layer}/Factory` on first use.
+- **Factory presets**: **24 Multis** using all 12 synths with NOTE ASSIGN (Synth 1 = C, Synth 2 = C#, … Synth 12 = B):
+  the 12 synths of a Multi share a sound family but each has its own character/timbre/filter. The list starts with
+  *01 Bass Multi*, then Pad, Synth, Lead, Keys, Pluck, Chord, Percussive, Bell, Organ, Strings, Brass and 12 free
+  Multis. **128 Layers** (one synth, every note): Bass, Keys, Lead, Pad, Pluck, Chord and Percussive. They are embedded in the plug-in and copied to `{Multi,Layer}/Factory` on first use.
   List: [factory-presets.md](factory-presets.md).
 - **Loudness**: each factory preset is rendered offline (note C3, velocity 100, 4 s) and trimmed to −14 LUFS
   short-term max, never above −1 dBTP (**Preset Trim** for Multis, Layer **Trim** for Layer presets).
@@ -19,7 +21,8 @@
 - **A/B**: two independent states; B starts as a copy of A. **A>B** copies the current state to the other slot.
 - **Randomize** (amount slider): global (active Layers + Master FX), Layer, or section. Never touched: Master Volume,
   polyphony, Scale, MPE, Global, Macros, Automation Slots, Layer On/Engine/Volume/Mute/Solo/Transpose/ranges.
-- **Init**: resets the patch to defaults (global settings and MIDI mappings stay).
+- **Init**: resets **only the selected synth** (its On state is kept); the other 11 synths, Master, global settings and
+  MIDI mappings stay.
 
 ## MIDI learn
 - Right-click a control → *MIDI Learn*, then move a controller: the CC (any channel) is assigned.

@@ -24,34 +24,30 @@ blocks:
       - { id: "an_osc{n}_ss_voices", array: anOscSsVoices, name: "OSC {n} SuperSaw Voices", type: int, min: 2, max: 7, default: 7, description: "Numero di saw della SuperSaw." }
       - { id: "an_osc{n}_width", array: anOscWidth, name: "OSC {n} Stereo Width", type: float, min: 0.0, max: 1.0, default: 1.0, unit: "%", description: "Scala l'apertura stereo di unison e SuperSaw di questo oscillatore." }
       - { id: "an_osc{n}_wave_mod", array: anOscWaveMod, name: "OSC {n} Wave Mod", type: float, min: 0.0, max: 1.0, default: 0.0, unit: "%", description: "Morph della forma: Sine → auto-PM; Triangle → Saw; Saw → doppia saw (ottava); Square → Saw; Pulse → impulso stretto; SuperSaw → mix delle saw laterali; Half → raddrizzata intera; Narrow → 10% → 1%." }
+      - { id: "an_osc{n}_route", array: anOscRoute, name: "OSC {n} Route", type: choice, choices_from: analog_route, default: Filter, description: "Instradamento dell'oscillatore {n}: nel filtro o in bypass." }
 
-  - repeat: { count: 3 }
-    section: "Analog · Mixer"
-    params:
-      - { id: "an_mix{n}_volume", array: anMixVolume, name: "Mixer OSC {n} Volume", type: float, min: 0.0, max: 1.0, default: 1.0, unit: "%", description: "Volume dell'oscillatore {n} nel mixer." }
-      - { id: "an_mix{n}_pan", array: anMixPan, name: "Mixer OSC {n} Pan", type: float, min: -1.0, max: 1.0, default: 0.0, description: "Pan dell'oscillatore {n} nel mixer." }
-      - { id: "an_mix{n}_mute", array: anMixMute, name: "Mixer OSC {n} Mute", type: bool, default: false, description: "Silenzia l'oscillatore {n} (continua a fare da sorgente di sync/FM/ring)." }
-      - { id: "an_mix{n}_solo", array: anMixSolo, name: "Mixer OSC {n} Solo", type: bool, default: false, description: "Con un Solo attivo suonano solo gli oscillatori in Solo (Sub e Noise silenziati)." }
-      - { id: "an_mix{n}_route", array: anMixRoute, name: "Mixer OSC {n} Route", type: choice, choices_from: analog_route, default: Filter, description: "Instradamento dell'oscillatore {n}: nel filtro o in bypass." }
 
   - params:
+      - { id: an_sub_on, name: Sub, type: bool, default: false, section: "Analog · Sub", description: "Attiva il Sub (segue l'intonazione di OSC 1)." }
+      - { id: an_sub_wave, name: Sub Wave, type: choice, choices: [Sine, Square], default: Square, section: "Analog · Sub", description: "Forma del Sub." }
+      - { id: an_sub_octave, name: Sub Octave, type: choice, choices: ["-1", "-2"], default: "-1", section: "Analog · Sub", description: "Una o due ottave sotto OSC 1." }
+      - { id: an_sub_level, name: Sub Level, type: float, min: 0.0, max: 1.0, default: 0.5, unit: "%", section: "Analog · Sub", description: "Livello del Sub." }
+      - { id: an_sub_phase, name: Sub Phase, type: float, min: 0.0, max: 360.0, default: 0.0, unit: "°", section: "Analog · Sub", description: "Fase iniziale del Sub (riparte a ogni nota)." }
+      - { id: an_sub_route, name: Sub Route, type: choice, choices_from: analog_route, default: Filter, section: "Analog · Sub", description: "Instradamento del Sub: nel filtro o in bypass." }
+
+      - { id: an_noise_level, name: Noise Level, type: float, min: 0.0, max: 1.0, default: 0.0, unit: "%", section: "Analog · Noise", description: "Livello del generatore Noise (0 = zero CPU)." }
+      - { id: an_noise_type, name: Noise Type, type: choice, choices: [White, Pink], default: White, section: "Analog · Noise", description: "Rumore bianco o rosa." }
+      - { id: an_noise_color, name: Noise Color, type: float, min: -1.0, max: 1.0, default: 0.0, section: "Analog · Noise", description: "Tilt spettrale: < 0 più scuro, > 0 più brillante." }
+      - { id: an_noise_pan, name: Noise Pan, type: float, min: -1.0, max: 1.0, default: 0.0, section: "Analog · Noise", description: "Pan del Noise." }
+      - { id: an_noise_width, name: Noise Stereo Width, type: float, min: 0.0, max: 1.0, default: 0.0, unit: "%", section: "Analog · Noise", description: "0 = mono, 100% = canali L/R indipendenti." }
+      - { id: an_noise_route, name: Noise Route, type: choice, choices_from: analog_route, default: Filter, section: "Analog · Noise", description: "Instradamento del Noise: nel filtro o in bypass." }
+
       - { id: an_sync, name: "Hard Sync 2→1", type: bool, default: false, section: "Analog · Mod", description: "OSC 2 (master) riavvia la fase di OSC 1 a ogni suo ciclo (band-limited)." }
       - { id: an_fm_3to1, name: "FM 3→1", type: float, min: 0.0, max: 1.0, default: 0.0, unit: "%", section: "Analog · Mod", description: "FM lineare audio-rate (through-zero) di OSC 3 su OSC 1 (100% = deviazione 4× la frequenza di OSC 1)." }
       - { id: an_fm_2to1, name: "FM 2→1", type: float, min: 0.0, max: 1.0, default: 0.0, unit: "%", section: "Analog · Mod", description: "FM lineare audio-rate (through-zero) di OSC 2 su OSC 1 (100% = deviazione 4× la frequenza di OSC 1)." }
       - { id: an_ring, name: "Ring Mod 1×2", type: float, min: 0.0, max: 1.0, default: 0.0, unit: "%", section: "Analog · Mod", description: "Crossfade di OSC 1 verso il prodotto OSC 1 × OSC 2." }
 
-      - { id: an_noise_level, name: Noise Level, type: float, min: 0.0, max: 1.0, default: 0.0, unit: "%", section: "Analog · Mixer", description: "Livello del generatore Noise (0 = zero CPU)." }
-      - { id: an_noise_route, name: Noise Route, type: choice, choices_from: analog_route, default: Filter, section: "Analog · Mixer", description: "Instradamento del Noise: nel filtro o in bypass." }
-      - { id: an_sub_level, name: Sub Level, type: float, min: 0.0, max: 1.0, default: 0.5, unit: "%", section: "Analog · Mixer", description: "Livello del Sub." }
-      - { id: an_sub_route, name: Sub Route, type: choice, choices_from: analog_route, default: Filter, section: "Analog · Mixer", description: "Instradamento del Sub: nel filtro o in bypass." }
-      - { id: an_master_level, name: Osc Master Level, type: float, min: 0.0, max: 1.0, default: 0.7, unit: "%", section: "Analog · Mixer", description: "Livello generale di oscillatori, Sub e Noise prima del filtro." }
+      - { id: an_master_level, name: Output Level, type: float, min: 0.0, max: 1.0, default: 0.7, unit: "%", section: "Analog · Output", description: "Livello generale di oscillatori, Sub e Noise prima del filtro." }
 
-      - { id: an_sub_on, name: Sub, type: bool, default: false, section: "Analog · Sub", description: "Attiva il Sub (segue l'intonazione di OSC 1)." }
-      - { id: an_sub_wave, name: Sub Wave, type: choice, choices: [Sine, Square], default: Square, section: "Analog · Sub", description: "Forma del Sub." }
-      - { id: an_sub_octave, name: Sub Octave, type: choice, choices: ["-1", "-2"], default: "-1", section: "Analog · Sub", description: "Una o due ottave sotto OSC 1." }
-      - { id: an_sub_phase, name: Sub Phase, type: float, min: 0.0, max: 360.0, default: 0.0, unit: "°", section: "Analog · Sub", description: "Fase iniziale del Sub (riparte a ogni nota)." }
 
-      - { id: an_noise_type, name: Noise Type, type: choice, choices: [White, Pink], default: White, section: "Analog · Noise", description: "Rumore bianco o rosa." }
-      - { id: an_noise_color, name: Noise Color, type: float, min: -1.0, max: 1.0, default: 0.0, section: "Analog · Noise", description: "Tilt spettrale: < 0 più scuro, > 0 più brillante." }
-      - { id: an_noise_pan, name: Noise Pan, type: float, min: -1.0, max: 1.0, default: 0.0, section: "Analog · Noise", description: "Pan del Noise." }
-      - { id: an_noise_width, name: Noise Stereo Width, type: float, min: 0.0, max: 1.0, default: 0.0, unit: "%", section: "Analog · Noise", description: "0 = mono, 100% = canali L/R indipendenti." }
+

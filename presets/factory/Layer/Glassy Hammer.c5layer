@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<CHROMA5YNTH_PRESET kind="layer" name="Glassy Hammer" category="Keys" author="TMFU audiovibe"
+                    tags="analog,keys" format="1">
+  <LAYER_PRESET on="1.0" engine="0.0" volume="0.8126519918441772" pan="0.5" mute="0.0"
+                solo="0.0" transpose="0.5" key_lo="0.0" key_hi="1.0" vel_lo="0.0"
+                vel_hi="1.0" midi_ch="0.0" max_voices="1.0">
+    <ENGINE mmver="2" layer_trim="3.599999904632568" filter_on="1.0" filter_model="2.0"
+            filter_cutoff="1075.874877929688" filter_resonance="0.1000000014901161"
+            filter_keytrack="0.5" filter_env_amount="0.3499999940395355"
+            env1_attack="0.002000000094994903" env1_decay="2.641599893569946"
+            env1_sustain="0.0" env1_release="0.5" env1_velocity="0.449999988079071"
+            env2_attack="0.002000000094994903" env2_decay="0.699999988079071"
+            env2_sustain="0.25" an_osc1_wave="1.0" an_osc2_on="1.0" an_osc2_wave="1.0"
+            an_osc2_octave="1.0" an_osc2_fine="4.0" an_osc2_level="0.300000011920929"
+            fx_reverb_on="1.0" fx_reverb_size="0.6000000238418579" fx_reverb_decay="2.200000047683716"
+            fx_reverb_mix="0.1800000071525574"/>
+  </LAYER_PRESET>
+</CHROMA5YNTH_PRESET>

@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<CHROMA5YNTH_PRESET kind="layer" name="Copper Haze" category="Pad" author="TMFU audiovibe"
+                    tags="fm6,pad" format="1">
+  <LAYER_PRESET on="1.0" engine="0.5" volume="0.8126519918441772" pan="0.5" mute="0.0"
+                solo="0.0" transpose="0.5" key_lo="0.0" key_hi="1.0" vel_lo="0.0"
+                vel_hi="1.0" midi_ch="0.0" max_voices="1.0">
+    <ENGINE mmver="2" layer_trim="-4.820000171661377" env1_attack="1.174299955368042"
+            env1_decay="1.5" env1_sustain="0.8500000238418579" env1_release="2.726399898529053"
+            env1_velocity="0.1500000059604645" fm_op1_level="0.949999988079071"
+            fm_op2_level="0.300000011920929" fm_op3_ratio="2.0" fm_op3_detune="5.0"
+            fm_op3_level="0.800000011920929" fm_op4_level="0.2800000011920929"
+            fm_op5_ratio="0.5" fm_op5_detune="-4.0" fm_op5_level="0.699999988079071"
+            fm_op6_on="0.0" fm_op1_decay="4.0" fm_op1_sustain="0.8999999761581421"
+            fm_op1_release="2.5" fm_op2_decay="4.0" fm_op2_sustain="0.800000011920929"
+            fm_op2_release="2.0" fm_op3_decay="4.0" fm_op3_sustain="0.8999999761581421"
+            fm_op3_release="2.5" fm_op4_decay="4.0" fm_op4_sustain="0.800000011920929"
+            fm_op4_release="2.0" fm_op5_decay="4.0" fm_op5_sustain="0.8999999761581421"
+            fm_op5_release="2.5" fm_algorithm="21.0" fx_chorus_on="1.0" fx_chorus_mix="0.300000011920929"
+            fx_reverb_on="1.0" fx_reverb_size="0.8500000238418579" fx_reverb_decay="4.5"
+            fx_reverb_mix="0.3199999928474426"/>
+  </LAYER_PRESET>
+</CHROMA5YNTH_PRESET>

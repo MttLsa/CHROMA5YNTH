@@ -38,6 +38,12 @@ Synth::Synth (juce::AudioProcessor& p, juce::AudioProcessorValueTreeState& s) : 
     polyphony = get (ParamIDs::masterPolyphony);
     scaleOn = get (ParamIDs::scaleOn);
     mpeOn = get (ParamIDs::mpeOn);
+    gscaleOn = get (ParamIDs::gscaleOn);
+    gscaleRoot = get (ParamIDs::gscaleRoot);
+    gscaleScale = get (ParamIDs::gscaleScale);
+    gscaleMode = get (ParamIDs::gscaleMode);
+    gscaleAmount = get (ParamIDs::gscaleAmount);
+    gscaleSmooth = get (ParamIDs::gscaleSmooth);
     mpeZone = get (ParamIDs::mpeZone);
     mpeBend = get (ParamIDs::mpeBendRange);
     masterTune = get (ParamIDs::masterTune);
@@ -95,6 +101,8 @@ Synth::~Synth() = default;
 void Synth::prepare (double sr, int maxBlockSize, int numOutputChannels)
 {
     sampleRate = sr;
+    for (auto& c : scaleFix) c.prepare (sr, juce::jmax (maxBlockSize, controlBlock));
+    scaleFixRunning.fill (false);
     for (size_t l = 0; l < numLayers; ++l)
     {
         analogEngines[l]->prepare (sr, controlBlock, maxPoolVoices);
@@ -196,6 +204,15 @@ void Synth::readHostParams() noexcept
     static constexpr int poolSizes[] { 12, 24, 36 };
     pool = poolSizes[juce::jlimit (0, 2, idx (hostValue (polyphony)))];
     scaleEnabled = on (hostValue (scaleOn));
+    gscaleEnabled = on (hostValue (gscaleOn));
+    gscaleActive.store (gscaleEnabled, std::memory_order_relaxed);
+    if (gscaleEnabled)
+    {
+        const float a4 = hostValue (masterTune);
+        for (auto& c : scaleFix)
+            c.setScale (idx (hostValue (gscaleRoot)), idx (hostValue (gscaleScale)), hostValue (gscaleAmount),
+                        hostValue (gscaleSmooth), a4, idx (hostValue (gscaleMode)) == 1);
+    }
     for (size_t i = 0; i < 12; ++i)
         scaleMasks[i] = (uint16_t) juce::jlimit (0, 4095, idx (hostValue (scaleSlots[i])));
     globals.mpe.enabled = on (hostValue (mpeOn));
@@ -532,7 +549,14 @@ void Synth::renderChunk (float* const* out, int numChannels, int start, int n) n
         auto& st = layers[l];
         if (st.gainL.current == 0.0f && st.gainR.current == 0.0f && st.gainL.target == 0.0f && st.gainR.target == 0.0f)
             continue;
-        layerFx[l].process (st.bufL.data(), st.bufR.data(), n);   // Engine -> Layer FX -> Layer mixer
+        layerFx[l].process (st.bufL.data(), st.bufR.data(), n);   // Engine -> Layer FX -> GLOBAL SCALE -> Layer mixer
+        if (gscaleEnabled)
+        {
+            if (! scaleFixRunning[l]) { scaleFix[l].reset(); scaleFixRunning[l] = true; }
+            scaleFix[l].process (st.bufL.data(), st.bufR.data(), n);
+        }
+        else
+            scaleFixRunning[l] = false;
         for (int i = 0; i < n; ++i)
         {
             const float a = st.bufL[(size_t) i] * st.gainL.next();

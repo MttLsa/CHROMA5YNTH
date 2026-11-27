@@ -142,11 +142,11 @@ TEST_CASE ("FM6: two-operator FM sidebands follow Bessel functions", "[fm]")
     setAlgorithm (r, 5);                         // 2 → 1
     r.set (lp::fmOpRatio[0], 4.0f);              // carrier 1000 Hz
     r.set (lp::fmOpRatio[1], 1.0f);              // modulator 250 Hz
-    const float level = 0.75f;
+    const float level = 0.3536f;                 // amplitude 0.125 (index ≈ 1.57 rad)
     r.set (lp::fmOpLevel[1], level);
     r.hz (250.0);
     const auto x = r.render (32768);
-    const double beta = 2.0 * pi * FmEngine::modScale * FmEngine::levelToAmp (level);
+    const double beta = 2.0 * pi * FmEngine::modScale * FmEngine::levelToAmp (FmEngine::knobToLevel (level));
     const double c = mag (x, 1000.0);
     for (int k = 1; k <= 2; ++k)
     {
@@ -161,7 +161,7 @@ TEST_CASE ("FM6: Mod Index scales modulation, 0 = pure carrier", "[fm]")
 {
     FmRig r;
     setAlgorithm (r, 5);
-    r.set (lp::fmOpLevel[1], 0.9f);
+    r.set (lp::fmOpLevel[1], 0.66f);
     r.set (lp::fmModIndex, 0.0f);
     r.hz (300.0);
     auto x = r.render (16384);
@@ -239,6 +239,9 @@ TEST_CASE ("FM6: velocity sensitivity and level law", "[fm]")
 {
     CHECK (db (FmEngine::levelToAmp (0.5f)) == Catch::Approx (-36.12).margin (0.05));
     CHECK (FmEngine::levelToAmp (0.0f) == 0.0f);
+    // Output Level knob: amplitude = knob² (usable over the whole travel), exact inverse for .syx import
+    CHECK (db (FmEngine::levelToAmp (FmEngine::knobToLevel (0.5f))) == Catch::Approx (-12.04).margin (0.05));
+    CHECK (FmEngine::knobToLevel (FmEngine::levelToKnob (0.7f)) == Catch::Approx (0.7f));
     FmRig hi, lo;
     for (auto* r : { &hi, &lo }) r->set (lp::fmOpVelSens[0], 1.0f);
     hi.hz (440.0, 1.0f);
@@ -482,7 +485,7 @@ TEST_CASE ("FM6: .syx 32-voice bank import", "[fm]")
     CHECK (value (p, lp::fmOpMode[0]) == 1.0f);
     CHECK (value (p, lp::fmOpFixed[0]) == Catch::Approx (100.0f));
     CHECK (value (p, lp::fmOpLevel[5]) == Catch::Approx (1.0f));    // op 6 stored first, level 99
-    CHECK (value (p, lp::fmOpLevel[0]) == Catch::Approx (94.0f / 99.0f));
+    CHECK (value (p, lp::fmOpLevel[0]) == Catch::Approx (FmEngine::levelToKnob (94.0f / 99.0f)));
     CHECK (value (p, lp::fmOpKsBreak[0]) == 60.0f);
     CHECK (value (p, lp::fmOpKsRightCurve[0]) == 3.0f);
     CHECK (value (p, lp::fmOpDetune[0]) == 3.0f);
@@ -567,4 +570,60 @@ TEST_CASE ("FM6: CPU of one voice (6 ops, feedback, 2x)", "[.bench]")
     r.render ((int) fs * seconds, 0);
     const double el = std::chrono::duration<double> (std::chrono::steady_clock::now() - t0).count();
     WARN ("FM6 voice: " << 100.0 * el / seconds << " % of one core @48 kHz");
+}
+
+// Full processor path (store -> Synth -> Voice -> FmEngine): every operator must sound as a carrier
+// and modulate as a modulator, not only Op 1.
+#include "TestHelpers.h"
+namespace
+{
+std::vector<float> fmRender (std::function<void (chroma::LayerParamStore&)> setup)
+{
+    test::Rig r;
+    test::setParam (r.proc, chroma::ParamIDs::layerEngine[0], 2.0f);
+    auto& s = r.synth().layerStore (0);
+    setup (s);
+    r.noteOn (60, 0.9f);
+    r.run ({}, 20);
+    std::vector<float> out;
+    for (int b = 0; b < 100; ++b)
+    {
+        r.run();
+        for (int i = 0; i < 64; ++i) out.push_back (r.buffer.getSample (0, i));
+    }
+    return out;
+}
+double fmRms (std::function<void (chroma::LayerParamStore&)> setup)
+{
+    const auto x = fmRender (std::move (setup));
+    double e = 0.0;
+    for (float v : x) e += (double) v * v;
+    return std::sqrt (e / (double) x.size());
+}
+} // namespace
+
+TEST_CASE ("FM6: every operator sounds and modulates through the synth", "[fm]")
+{
+    using namespace chroma;
+    for (int op = 1; op < 6; ++op)
+    {
+        // Op n alone as a carrier (algorithm 32: all carriers)
+        const double alone = fmRms ([op] (LayerParamStore& s)
+        {
+            s.set (lp::fmAlgorithm, 31.0f); s.set (lp::fmOpLevel[0], 0.0f); s.set (lp::fmOpLevel[(size_t) op], 1.0f);
+        });
+        INFO ("op " << op + 1 << " carrier rms " << alone);
+        CHECK (alone > 0.01);
+    }
+    // Op 2 modulating Op 1 (algorithm 1) changes the sound
+    const auto a = fmRender ([] (LayerParamStore&) {});
+    const auto b = fmRender ([] (LayerParamStore& s) { s.set (lp::fmOpLevel[1], 0.5f); s.set (lp::fmOpRatio[1], 3.0f); });
+    double diff = 0.0;
+    for (size_t i = 0; i < a.size(); ++i) diff += std::abs ((double) a[i] - b[i]);
+    INFO ("waveform difference " << diff / (double) a.size());
+    CHECK (diff / (double) a.size() > 0.05);
+    const double plain = fmRms ([] (LayerParamStore&) {});
+    // half-way knob on a carrier is clearly audible (≈ −12 dB), not −36 dB
+    const double half = fmRms ([] (LayerParamStore& s) { s.set (lp::fmAlgorithm, 31.0f); s.set (lp::fmOpLevel[0], 0.0f); s.set (lp::fmOpLevel[2], 0.5f); });
+    CHECK (20.0 * std::log10 (half / plain) > -14.0);
 }

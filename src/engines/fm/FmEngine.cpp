@@ -149,6 +149,16 @@ float FmEngine::levelToAmp (float level) noexcept
     return level <= 0.0f ? 0.0f : std::exp2 (-12.0f * (1.0f - std::min (level, 1.0f)));
 }
 
+float FmEngine::knobToLevel (float knob) noexcept
+{
+    return knob <= 0.0f ? 0.0f : std::max (1.0e-6f, 1.0f + std::log2 (std::min (knob, 1.0f)) / 6.0f);
+}
+
+float FmEngine::levelToKnob (float level) noexcept
+{
+    return level <= 0.0f ? 0.0f : std::exp2 (6.0f * (std::min (level, 1.0f) - 1.0f));
+}
+
 float FmEngine::keyScale (float level, int note, int bp, float ld, float rd, int lc, int rc) noexcept
 {
     if (level <= 0.0f || note == bp)
@@ -315,7 +325,7 @@ void FmEngine::computeTargets (VoiceState& vs, const EngineVoiceParams& p, int n
         float amp = 0.0f;
         if (engineSwitch (p, lp::fmOpOn[i]))
         {
-            float level = engineParam (p, lp::fmOpLevel[i]);
+            float level = knobToLevel (engineParam (p, lp::fmOpLevel[i]));
             level = keyScale (level, vs.note, engineChoice (p, lp::fmOpKsBreak[i]),
                               engineParam (p, lp::fmOpKsLeftDepth[i]), engineParam (p, lp::fmOpKsRightDepth[i]),
                               engineChoice (p, lp::fmOpKsLeftCurve[i]), engineChoice (p, lp::fmOpKsRightCurve[i]));

@@ -133,6 +133,8 @@ void ChromaProcessor::idle()
 {
     synth.pollMidiLearn();
     synth.flushMidiToHost();
+    if (const int lat = synth.getLatencySamples(); lat != getLatencySamples())
+        setLatencySamples (lat);                     // GLOBAL SCALE on/off changes the latency
     const auto now = juce::Time::getMillisecondCounterHiRes();
     if (const auto n = editCounter(); n != lastSeenEdits)
     {
@@ -186,6 +188,16 @@ void ChromaProcessor::initAll()
     restoreState (empty, true);
     synth.resetAll();
     currentPresetName = "Init";
+    commitHistory();
+}
+
+void ChromaProcessor::initLayer (int layer)
+{
+    history.commit();
+    auto* on = state.getParameter (ParamIDs::layerOn[(size_t) juce::jlimit (0, numLayers - 1, layer)]);
+    const float wasOn = on != nullptr ? on->getValue() : 0.0f;
+    synth.initLayer (layer);
+    if (on != nullptr) on->setValueNotifyingHost (wasOn);
     commitHistory();
 }
 
