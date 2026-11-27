@@ -41,6 +41,7 @@ Synth::Synth (juce::AudioProcessor& p, juce::AudioProcessorValueTreeState& s) : 
     gscaleOn = get (ParamIDs::gscaleOn);
     gscaleRoot = get (ParamIDs::gscaleRoot);
     gscaleScale = get (ParamIDs::gscaleScale);
+    gscaleMode = get (ParamIDs::gscaleMode);
     gscaleAmount = get (ParamIDs::gscaleAmount);
     gscaleSmooth = get (ParamIDs::gscaleSmooth);
     mpeZone = get (ParamIDs::mpeZone);
@@ -210,7 +211,7 @@ void Synth::readHostParams() noexcept
         const float a4 = hostValue (masterTune);
         for (auto& c : scaleFix)
             c.setScale (idx (hostValue (gscaleRoot)), idx (hostValue (gscaleScale)), hostValue (gscaleAmount),
-                        hostValue (gscaleSmooth), a4);
+                        hostValue (gscaleSmooth), a4, idx (hostValue (gscaleMode)) == 1);
     }
     for (size_t i = 0; i < 12; ++i)
         scaleMasks[i] = (uint16_t) juce::jlimit (0, 4095, idx (hostValue (scaleSlots[i])));

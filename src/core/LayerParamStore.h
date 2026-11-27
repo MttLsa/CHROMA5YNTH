@@ -79,6 +79,7 @@ public:
     juce::ValueTree toTree (const juce::Identifier& type) const
     {
         juce::ValueTree t (type);
+        t.setProperty ("mmver", 2, nullptr);   // 2: Mod Matrix destinations without the Analog mixer (v1.1)
         for (int i = 0; i < lp::count; ++i)
             t.setProperty (lp::descs[(size_t) i].id, get (i), nullptr);
         for (size_t l = 0; l < custom.size(); ++l)
@@ -129,6 +130,9 @@ public:
         for (int i = 0; i < lp::count; ++i)
             if (t.hasProperty (lp::descs[(size_t) i].id))
                 set (i, (float) t.getProperty (lp::descs[(size_t) i].id));
+        if ((int) t.getProperty ("mmver", 1) < 2)
+            for (auto id : lp::mmDest)
+                set (id, (float) upgradeDestV1 ((int) std::lround (get (id))));
         for (size_t l = 0; l < custom.size(); ++l)
         {
             const auto key = "lfo" + juce::String ((int) l + 1) + "_custom";
@@ -173,6 +177,28 @@ public:
             for (auto& x : fr) if (! std::isfinite (x)) x = 0.0f;
             setUserTable (u, std::move (fr), nf);
         }
+    }
+
+    // v1.0 state: Mod Matrix destination index -> current index (the Analog mixer was removed in v1.1).
+    static int upgradeDestV1 (int i)
+    {
+        static const char* const oldAnalog[] { "OSC 1 Fine", "OSC 1 Level", "OSC 1 Pan", "OSC 1 Phase", "OSC 1 Pulse Width",
+            "OSC 1 SuperSaw Detune", "OSC 1 SuperSaw Spread", "OSC 1 Stereo Width", "OSC 1 Wave Mod", "OSC 2 Fine", "OSC 2 Level",
+            "OSC 2 Pan", "OSC 2 Phase", "OSC 2 Pulse Width", "OSC 2 SuperSaw Detune", "OSC 2 SuperSaw Spread", "OSC 2 Stereo Width",
+            "OSC 2 Wave Mod", "OSC 3 Fine", "OSC 3 Level", "OSC 3 Pan", "OSC 3 Phase", "OSC 3 Pulse Width", "OSC 3 SuperSaw Detune",
+            "OSC 3 SuperSaw Spread", "OSC 3 Stereo Width", "OSC 3 Wave Mod", "Mixer OSC 1 Volume", "Mixer OSC 1 Pan",
+            "Mixer OSC 2 Volume", "Mixer OSC 2 Pan", "Mixer OSC 3 Volume", "Mixer OSC 3 Pan", "FM 3\xe2\x86\x92" "1", "FM 2\xe2\x86\x92" "1",
+            "Ring Mod 1\xc3\x97" "2", "Noise Level", "Sub Level", "Output Level", "Sub Phase", "Noise Color", "Noise Pan", "Noise Stereo Width" };
+        constexpr int oldCount = (int) (sizeof (oldAnalog) / sizeof (oldAnalog[0]));
+        const int n = lp::list_modDestinations_size;
+        int a = 0;
+        while (a < n && std::strcmp (lp::list_modDestinations[a], "OSC 1 Fine") != 0) ++a;
+        if (a >= n || i < a) return i;
+        const int newCount = (int) [&] { int k = a; while (k < n && std::strncmp (lp::list_modDestinations[k], "Op 1", 4) != 0) ++k; return k - a; }();
+        if (i >= a + oldCount) return i - oldCount + newCount;
+        for (int k = a; k < a + newCount; ++k)
+            if (std::strcmp (lp::list_modDestinations[k], oldAnalog[i - a]) == 0) return k;
+        return 0;   // mixer destinations no longer exist
     }
 
 private:

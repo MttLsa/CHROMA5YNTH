@@ -253,7 +253,7 @@ struct ParamWidget::Bar final : FineSlider
         const float z = bipolar ? (float) valueToProportionOfLength (0.0) : 0.0f;
         auto in = r.reduced (1.5f);
         const float x0 = in.getX() + in.getWidth() * jmin (p, z), x1 = in.getX() + in.getWidth() * jmax (p, z);
-        g.setColour (style::accent.withAlpha (isMouseOverOrDragging() ? 0.9f : 0.65f));
+        g.setColour (style::module.withAlpha (isMouseOverOrDragging() ? 0.9f : 0.65f));
         g.fillRoundedRectangle (Rectangle<float> (x0, in.getY(), jmax (1.5f, x1 - x0), in.getHeight()), 1.5f);
         g.setColour (style::text);
         g.setFont (style::font (11.0f));
@@ -427,9 +427,9 @@ public:
         x += tr * k; p.quadraticTo (x - tr * k * 0.6f, y0, x, y0);
         Path fill (p);
         fill.closeSubPath();
-        g.setColour (style::accent.withAlpha (0.16f));
+        g.setColour (style::module.withAlpha (0.16f));
         g.fillPath (fill);
-        g.setColour (style::accent);
+        g.setColour (style::module);
         g.strokePath (p, PathStrokeType (1.6f, PathStrokeType::curved, PathStrokeType::rounded));
     }
 
@@ -495,7 +495,7 @@ public:
             const float x = r.getX() + ph * r.getWidth(), y = r.getCentreY() - v * r.getHeight() * 0.46f;
             if (i == 0) p.startNewSubPath (x, y); else p.lineTo (x, y);
         }
-        g.setColour (style::accent2);
+        g.setColour (style::module);
         g.strokePath (p, PathStrokeType (1.6f, PathStrokeType::curved, PathStrokeType::rounded));
     }
 
@@ -507,6 +507,13 @@ private:
 
 //============================================================================== section panel
 SectionPanel::SectionPanel (UiContext& c, const String& t, Colour a) : ctx (c), title (t), accent (a) {}
+
+void SectionPanel::setCellCondition (std::function<bool()> visible)
+{
+    if (cells.empty()) return;
+    cellShown.resize (cells.size());
+    cellShown.back() = std::move (visible);
+}
 
 void SectionPanel::addWidget (std::unique_ptr<ParamWidget> w)
 {
@@ -564,9 +571,17 @@ int SectionPanel::layoutCells (int width, bool apply)
     int x = 0, y = 0;
     std::vector<std::pair<size_t, size_t>> rows;   // [begin, end) per row
     size_t rowStart = 0;
+    cellShown.resize (cells.size());
+    std::vector<size_t> vis;                         // indices of the visible cells
     for (size_t i = 0; i < cells.size(); ++i)
+        if (cellShown[i] == nullptr || cellShown[i]())
+            vis.push_back (i);
+        else if (apply)
+            cells[i]->setVisible (false);
+    for (size_t vi = 0; vi < vis.size(); ++vi)
     {
-        const int w = jmin (innerW, cellW[i]);
+        const size_t i = vi;
+        const int w = jmin (innerW, cellW[vis[i]]);
         if (x > 0 && x + w > innerW)
         {
             rows.push_back ({ rowStart, i });
@@ -575,22 +590,23 @@ int SectionPanel::layoutCells (int width, bool apply)
         }
         x += w + 4;
     }
-    if (rowStart < cells.size()) rows.push_back ({ rowStart, cells.size() });
+    if (rowStart < vis.size()) rows.push_back ({ rowStart, vis.size() });
     if (apply)
     {
         for (const auto& [b, e] : rows)
         {
             // spread the row's free space evenly between cells
             int used = 0;
-            for (size_t i = b; i < e; ++i) used += jmin (innerW, cellW[i]);
+            for (size_t i = b; i < e; ++i) used += jmin (innerW, cellW[vis[i]]);
             const int gaps = (int) (e - b);
             const int free = jmax (0, innerW - used - 4 * (gaps - 1));
-            const int extra = (e - b) > 1 || cellW[b] > knobW ? jmin (free / jmax (1, gaps), 24) : 0;
+            const int extra = (e - b) > 1 || cellW[vis[b]] > knobW ? jmin (free / jmax (1, gaps), 20) : 0;
             x = 6;
             for (size_t i = b; i < e; ++i)
             {
-                const int w = jmin (innerW, cellW[i]) + extra;
-                cells[i]->setBounds (x, top + y, w, cellH);
+                const int w = jmin (innerW, cellW[vis[i]]) + extra;
+                cells[vis[i]]->setBounds (x, top + y, w, cellH);
+                cells[vis[i]]->setVisible (true);
                 x += w + 4;
             }
             y += cellH;
@@ -612,6 +628,30 @@ void SectionPanel::resized()
 
 void SectionPanel::refresh()
 {
+    // conditional cells: relayout (and resize the page) when one appears / disappears
+    bool changed = false;
+    cellShown.resize (cells.size());
+    for (size_t i = 0; i < cells.size(); ++i)
+        if (cellShown[i] != nullptr && cellShown[i]() != cells[i]->isVisible()) changed = true;
+    if (changed)
+    {
+        if (relayout) relayout();
+        else resized();
+    }
+    if (titleNote != nullptr)
+        if (auto n = titleNote(); n != note) { note = n; repaint(); }
+    if (usage != nullptr)
+    {
+        const bool u = usage();
+        if (u != inUse)
+        {
+            inUse = u;
+            for (auto& c : cells) c->setEnabled (u);
+            if (display != nullptr) display->setAlpha (u ? 1.0f : 0.35f);
+            setTooltip (u ? String() : usageHint);
+            repaint();
+        }
+    }
     for (auto& c : cells)
         if (auto* w = dynamic_cast<ParamWidget*> (c.get())) w->refresh();
     if (toggle != nullptr)
@@ -619,8 +659,10 @@ void SectionPanel::refresh()
         const bool was = toggle->isOn();
         toggle->refresh();
         if (was != toggle->isOn()) repaint();
-        for (auto& c : cells) c->setAlpha (toggle->isOn() ? 1.0f : 0.45f);
+        for (auto& c : cells) c->setAlpha (toggle->isOn() && inUse ? 1.0f : 0.45f);
     }
+    else
+        for (auto& c : cells) c->setAlpha (inUse ? 1.0f : 0.35f);
     if (auto* e = dynamic_cast<EnvView*> (display.get())) e->refresh();
     if (auto* l = dynamic_cast<LfoView*> (display.get())) l->refresh();
 }
@@ -634,13 +676,23 @@ void SectionPanel::paint (Graphics& g)
     g.setColour (style::header);
     g.fillRoundedRectangle (h, style::panelRadius);
     g.fillRect (h.withTrimmedTop (h.getHeight() * 0.5f));
-    const bool on = toggle == nullptr || toggle->isOn();
+    const bool on = (toggle == nullptr || toggle->isOn()) && inUse;
     g.setColour (on ? accent : style::track);
     g.fillRect (Rectangle<float> (h.getX(), h.getY() + 4.0f, 3.0f, h.getHeight() - 8.0f));
     g.setColour (on ? style::text : style::textDim);
     g.setFont (style::font (12.0f, true));
-    g.drawFittedText (title.toUpperCase(), h.withTrimmedLeft (10).withTrimmedRight (toggle != nullptr ? 26 : 10).toNearestInt(),
-                      Justification::centredLeft, 1, 0.8f);
+    auto tr = h.withTrimmedLeft (10).withTrimmedRight (toggle != nullptr ? 26 : 10).toNearestInt();
+    const auto t = title.toUpperCase();
+    g.drawFittedText (t, tr, Justification::centredLeft, 1, 0.8f);
+    String extra = note;
+    if (! inUse) extra = (extra.isNotEmpty() ? extra + "  " : String()) + "- not assigned";
+    if (extra.isNotEmpty())
+    {
+        const int tw = GlyphArrangement::getStringWidthInt (style::font (12.0f, true), t) + 8;
+        g.setColour (on ? accent : style::textDim);
+        g.setFont (style::font (11.0f));
+        g.drawFittedText (extra, tr.withTrimmedLeft (tw), Justification::centredLeft, 1, 0.8f);
+    }
 }
 
 //============================================================================== section factories
@@ -660,6 +712,95 @@ static String commonPrefix (const StringArray& names)
     return words.joinIntoString (" ");
 }
 
+static int lpIdOf (const String& id)
+{
+    for (int i = 0; i < lp::count; ++i)
+        if (id == lp::descs[(size_t) i].id) return i;
+    return -1;
+}
+
+bool modSourceInUse (UiContext& ctx, int source)
+{
+    auto& st = ctx.store();
+    for (size_t k = 0; k < lp::mmEnable.size(); ++k)
+    {
+        if (st.get (lp::mmEnable[k]) < 0.5f || roundToInt (st.get (lp::mmDest[k])) == 0) continue;
+        if (roundToInt (st.get (lp::mmSource[k])) == source || roundToInt (st.get (lp::mmVia[k])) == source) return true;
+    }
+    auto* e = ctx.layerHostParam (ctx.layer, "engine");
+    const int engine = e != nullptr ? roundToInt (e->convertFrom0to1 (e->getValue())) : 0;
+    const bool filter = st.get (lp::filterOn) > 0.5f;
+    const bool f2 = engine == 3 && st.get (lp::wtF2On) > 0.5f;
+    switch (source)
+    {
+        case 1: return (filter && st.get (lp::filterLfoAmount) != 0.0f)
+                    || (engine == 2 && (st.get (lp::fmLfoPitch[0]) != 0.0f || st.get (lp::fmLfoAmp[0]) != 0.0f || st.get (lp::fmLfoOp[0]) != 0.0f));
+        case 2: return (f2 && st.get (lp::wtF2LfoAmount) != 0.0f)
+                    || (engine == 2 && (st.get (lp::fmLfoPitch[1]) != 0.0f || st.get (lp::fmLfoAmp[1]) != 0.0f || st.get (lp::fmLfoOp[1]) != 0.0f));
+        case 6: return true;                                         // Mod Env 1 = filter envelope
+        case 7: return f2 && st.get (lp::wtF2EnvAmount) != 0.0f;     // Mod Env 2 = Wavetable Filter 2 envelope
+        default: return false;
+    }
+}
+
+// Conditional controls: a control is shown only when its mode is selected ({n} = same index as the control).
+namespace
+{
+struct Condition { const char* id; const char* ctrl; std::function<bool (float)> when; };
+const std::vector<Condition>& conditions()
+{
+    static const std::vector<Condition> c {
+        { "unison_detune", "unison", [] (float v) { return v > 1.5f; } },
+        { "unison_spread", "unison", [] (float v) { return v > 1.5f; } },
+        { "unison_pan", "unison", [] (float v) { return v > 1.5f; } },
+        { "glide_time", "glide_on", [] (float v) { return v > 0.5f; } },
+        { "glide_mode", "glide_on", [] (float v) { return v > 0.5f; } },
+        { "glide_curve", "glide_on", [] (float v) { return v > 0.5f; } },
+        { "an_osc{n}_pw", "an_osc{n}_wave", [] (float v) { return roundToInt (v) == 4; } },
+        { "an_osc{n}_ss_detune", "an_osc{n}_wave", [] (float v) { return roundToInt (v) == 5; } },
+        { "an_osc{n}_ss_spread", "an_osc{n}_wave", [] (float v) { return roundToInt (v) == 5; } },
+        { "an_osc{n}_ss_voices", "an_osc{n}_wave", [] (float v) { return roundToInt (v) == 5; } },
+        { "an_osc{n}_width", "an_osc{n}_wave", [] (float v) { return roundToInt (v) == 5; } },
+        { "fm_op{n}_ratio", "fm_op{n}_mode", [] (float v) { return roundToInt (v) == 0; } },
+        { "fm_op{n}_fixed", "fm_op{n}_mode", [] (float v) { return roundToInt (v) == 1; } },
+        { "fm_op{n}_phase", "fm_op{n}_reset", [] (float v) { return v > 0.5f; } },
+        { "wt_osc{n}_uni_detune", "wt_osc{n}_unison", [] (float v) { return v > 1.5f; } },
+        { "wt_osc{n}_uni_spread", "wt_osc{n}_unison", [] (float v) { return v > 1.5f; } },
+        { "wt_osc{n}_uni_width", "wt_osc{n}_unison", [] (float v) { return v > 1.5f; } },
+        { "wt_osc{n}_warp_amount", "wt_osc{n}_warp", [] (float v) { return roundToInt (v) != 0; } },
+        { "wt_osc{n}_warp_src", "wt_osc{n}_warp", [] (float v) { return roundToInt (v) >= 9; } },
+        { "wt_osc{n}_grain_size", "wt_osc{n}_grain", [] (float v) { return v > 0.0f; } },
+        { "lfo{n}_rate", "lfo{n}_sync", [] (float v) { return v < 0.5f; } },
+        { "lfo{n}_division", "lfo{n}_sync", [] (float v) { return v > 0.5f; } },
+        { "wt_filter_mix", "wt_filter_routing", [] (float v) { return roundToInt (v) == 1; } },
+    };
+    return c;
+}
+
+// Condition for a layer parameter id, or nullptr.
+std::function<bool()> conditionFor (UiContext& ctx, const String& id)
+{
+    for (const auto& c : conditions())
+    {
+        String pat (c.id), ctrl (c.ctrl);
+        if (pat.contains ("{n}"))
+        {
+            const auto pre = pat.upToFirstOccurrenceOf ("{n}", false, false), post = pat.fromFirstOccurrenceOf ("{n}", false, false);
+            if (! id.startsWith (pre) || ! id.endsWith (post)) continue;
+            const auto n = id.substring (pre.length(), id.length() - post.length());
+            if (n.isEmpty() || ! n.containsOnly ("0123456789")) continue;
+            ctrl = ctrl.replace ("{n}", n);
+        }
+        else if (id != pat) continue;
+        const int ctrlId = lpIdOf (ctrl);
+        if (ctrlId < 0) continue;
+        auto when = c.when;
+        return [&ctx, ctrlId, when] { return when (ctx.store().get (ctrlId)); };
+    }
+    return nullptr;
+}
+} // namespace
+
 std::unique_ptr<SectionPanel> makeLayerSection (UiContext& ctx, const String& section, const String& title, Colour accent)
 {
     auto panel = std::make_unique<SectionPanel> (ctx, title, accent);
@@ -668,7 +809,7 @@ std::unique_ptr<SectionPanel> makeLayerSection (UiContext& ctx, const String& se
     for (int i = 0; i < lp::count; ++i)
         if (section == utf8 (lp::descs[(size_t) i].section)) { ids.push_back (i); names.add (utf8 (lp::descs[(size_t) i].name)); }
     if (ids.empty()) return panel;
-    panel->wide = ids.size() > 28;
+    panel->wide = ids.size() > 30;
 
     size_t first = 0;
     const auto& d0 = lp::descs[(size_t) ids[0]];
@@ -688,6 +829,7 @@ std::unique_ptr<SectionPanel> makeLayerSection (UiContext& ctx, const String& se
         if (prefix.isNotEmpty() && cap.startsWith (prefix + " ")) cap = cap.substring (prefix.length() + 1);
         else if (cap.startsWithIgnoreCase (title + " ")) cap = cap.substring (title.length() + 1);
         panel->addLayerParam (ids[k], cap);
+        if (auto cond = conditionFor (ctx, id)) panel->setCellCondition (std::move (cond));
         if (id.endsWith ("_attack")) a = ids[k];
         else if (id.endsWith ("_hold")) h = ids[k];
         else if (id.endsWith ("_decay")) d = ids[k];
@@ -747,7 +889,7 @@ ModMatrixBlock::ModMatrixBlock (UiContext& c) : ctx (c)
         for (const char* f : { "source", "cc", "dest", "amount", "via", "curve", "smooth" })
         {
             const int lid = id (s, f);
-            auto w = std::make_unique<ParamWidget> (ctx, ctx.layerParam (lid), String(), lid, String(), style::accent, true);
+            auto w = std::make_unique<ParamWidget> (ctx, ctx.layerParam (lid), String(), lid, String(), style::module, true);
             widgets.push_back (w.get());
             addAndMakeVisible (*w);
             row[s].push_back (std::move (w));
@@ -794,7 +936,7 @@ void ModMatrixBlock::paint (Graphics& g)
     g.setColour (style::header);
     g.fillRoundedRectangle (h, style::panelRadius);
     g.fillRect (h.withTrimmedTop (h.getHeight() * 0.5f));
-    g.setColour (style::accent2);
+    g.setColour (style::module);
     g.fillRect (Rectangle<float> (h.getX(), h.getY() + 4.0f, 3.0f, h.getHeight() - 8.0f));
     g.setColour (style::text);
     g.setFont (style::font (12.0f, true));
@@ -825,24 +967,40 @@ Page::Page()
     addAndMakeVisible (viewport);
 }
 
-void Page::add (std::unique_ptr<Block> b)
+Block* Page::add (std::unique_ptr<Block> b)
 {
     content.addAndMakeVisible (*b);
+    b->relayout = [this] { resized(); };
+    rowStart.push_back (pendingRow || blocks.empty());
+    pendingRow = false;
     blocks.push_back (std::move (b));
+    return blocks.back().get();
+}
+
+void Page::newRow()
+{
+    pendingRow = true;
+    explicitRows = true;
 }
 
 void Page::clear()
 {
     blocks.clear();
+    rowStart.clear();
+    pendingRow = explicitRows = false;
     viewport.setViewPosition (0, 0);
 }
 
 void Page::refresh()
 {
     if (! isVisible()) return;
+    bool shownChanged = false;
+    for (auto& b : blocks)
+        if (b->shown != nullptr && b->shown() != b->isVisible()) shownChanged = true;
+    if (shownChanged) resized();
     const auto view = viewport.getViewArea();
     for (auto& b : blocks)
-        if (b->getBounds().intersects (view)) b->refresh();
+        if (b->isVisible() && b->getBounds().intersects (view)) b->refresh();
 }
 
 void Page::resized()
@@ -850,25 +1008,46 @@ void Page::resized()
     viewport.setBounds (getLocalBounds());
     const int w = getWidth() - viewport.getScrollBarThickness() - 2;
     const int gap = style::margin;
-    const int cols = jmax (1, (w + gap) / (340 + gap));
-    const int colW = (w - (cols - 1) * gap) / cols;
-    std::vector<int> colY ((size_t) cols, 0);
-    for (auto& b : blocks)
+
+    // rows of visible blocks (explicit rows, or automatic wrapping in columns of ~300 px)
+    std::vector<std::vector<Block*>> rows;
+    const int autoCols = jmax (1, (w + gap) / (300 + gap));
+    for (size_t i = 0; i < blocks.size(); ++i)
     {
-        if (b->wide)
-        {
-            const int y = *std::max_element (colY.begin(), colY.end());
-            const int h = b->heightFor (w);
-            b->setBounds (0, y, w, h);
-            std::fill (colY.begin(), colY.end(), y + h + gap);
-            continue;
-        }
-        const auto c = (size_t) (std::min_element (colY.begin(), colY.end()) - colY.begin());
-        const int h = b->heightFor (colW);
-        b->setBounds ((int) c * (colW + gap), colY[c], colW, h);
-        colY[c] += h + gap;
+        auto* b = blocks[i].get();
+        const bool vis = b->shown == nullptr || b->shown();
+        b->setVisible (vis);
+        if (! vis) continue;
+        const bool start = rows.empty() || b->wide || (! rows.back().empty() && rows.back().front()->wide)
+                           || (explicitRows ? (bool) rowStart[i] : (int) rows.back().size() >= autoCols);
+        if (start) rows.emplace_back();
+        rows.back().push_back (b);
     }
-    content.setSize (w, jmax (1, *std::max_element (colY.begin(), colY.end())));
-    for (auto& b : blocks) b->refresh();
+    int y = 0;
+    for (auto& row : rows)
+    {
+        float total = 0.0f;
+        for (auto* b : row) total += b->weight;
+        const int avail = w - gap * ((int) row.size() - 1);
+        std::vector<int> widths;
+        int used = 0;
+        for (size_t k = 0; k < row.size(); ++k)
+        {
+            const int cw = k + 1 == row.size() ? avail - used : roundToInt ((float) avail * row[k]->weight / total);
+            widths.push_back (cw);
+            used += cw;
+        }
+        int h = 0;
+        for (size_t k = 0; k < row.size(); ++k) h = jmax (h, row[k]->heightFor (widths[k]));
+        int x = 0;
+        for (size_t k = 0; k < row.size(); ++k)
+        {
+            row[k]->setBounds (x, y, widths[k], h);
+            x += widths[k] + gap;
+        }
+        y += h + gap;
+    }
+    content.setSize (w, jmax (1, y));
+    for (auto& b : blocks) if (b->isVisible()) b->refresh();
 }
 } // namespace chroma::ui

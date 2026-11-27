@@ -16,7 +16,8 @@
 - Release: tag con prefisso del prodotto, es. `chroma5ynth-v1.0.0`.
 
 ## Font e lingua dell'interfaccia
-- Font per tutte le scritte: **Inter** (SIL OFL 1.1) — **Regular** testi, **SemiBold** titoli/pulsanti/grassetto. Urbanist non si usa.
+- Font per tutte le scritte: **Inter** (SIL OFL 1.1) — **Regular** testi, **SemiBold** titoli/pulsanti/grassetto. Unica eccezione (richiesta
+  dell'autore): il nome CHROMA5YNTH nell'intestazione usa **Urbanist Light** come l'intestazione di GROOVULATION (`assets/fonts/Urbanist-Light.ttf`).
   Incorporato nel binario (`assets/fonts/Inter-Regular.ttf` + `Inter-SemiBold.ttf` in `juce_add_binary_data`, licenza OFL accanto),
   usato via `Typeface::createSystemTypefaceFor` + `setDefaultSansSerifTypeface`/`getTypefaceForFont` nel LookAndFeel. Anche il manuale PDF usa Inter.
 - GUI: usa sempre STYLE.md e StyleLookAndFeel

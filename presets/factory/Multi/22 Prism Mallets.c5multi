@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<CHROMA5YNTH_PRESET kind="multi" name="22 Prism Mallets" category="Percussive" author="TMFU audiovibe"
+                    tags="multi,mallets,note assign" format="1">
+  <CHROMA5YNTH>
+    <PARAM id="layer10_on" value="1.0"/>
+    <PARAM id="layer10_pan" value="0.2230000495910645"/>
+    <PARAM id="layer11_engine" value="1.0"/>
+    <PARAM id="layer11_on" value="1.0"/>
+    <PARAM id="layer11_pan" value="-0.2229999899864197"/>
+    <PARAM id="layer12_engine" value="2.0"/>
+    <PARAM id="layer12_on" value="1.0"/>
+    <PARAM id="layer12_pan" value="0.09500002861022949"/>
+    <PARAM id="layer1_engine" value="1.0"/>
+    <PARAM id="layer1_pan" value="-0.3499999642372131"/>
+    <PARAM id="layer2_engine" value="2.0"/>
+    <PARAM id="layer2_on" value="1.0"/>
+    <PARAM id="layer2_pan" value="-0.03199994564056396"/>
+    <PARAM id="layer3_engine" value="3.0"/>
+    <PARAM id="layer3_on" value="1.0"/>
+    <PARAM id="layer3_pan" value="0.2860000133514404"/>
+    <PARAM id="layer4_engine" value="4.0"/>
+    <PARAM id="layer4_on" value="1.0"/>
+    <PARAM id="layer4_pan" value="-0.1589999794960022"/>
+    <PARAM id="layer5_on" value="1.0"/>
+    <PARAM id="layer5_pan" value="0.159000039100647"/>
+    <PARAM id="layer6_engine" value="1.0"/>
+    <PARAM id="layer6_on" value="1.0"/>
+    <PARAM id="layer6_pan" value="-0.2859999537467957"/>
+    <PARAM id="layer7_engine" value="2.0"/>
+    <PARAM id="layer7_on" value="1.0"/>
+    <PARAM id="layer7_pan" value="0.03200006484985352"/>
+    <PARAM id="layer8_engine" value="3.0"/>
+    <PARAM id="layer8_on" value="1.0"/>
+    <PARAM id="layer8_pan" value="0.3500000238418579"/>
+    <PARAM id="layer9_engine" value="4.0"/>
+    <PARAM id="layer9_on" value="1.0"/>
+    <PARAM id="layer9_pan" value="-0.09499996900558472"/>
+    <PARAM id="preset_trim" value="0.0"/>
+    <PARAM id="scale_a" value="512.0"/>
+    <PARAM id="scale_as" value="1024.0"/>
+    <PARAM id="scale_b" value="2048.0"/>
+    <PARAM id="scale_cs" value="2.0"/>
+    <PARAM id="scale_d" value="4.0"/>
+    <PARAM id="scale_ds" value="8.0"/>
+    <PARAM id="scale_e" value="16.0"/>
+    <PARAM id="scale_f" value="32.0"/>
+    <PARAM id="scale_fs" value="64.0"/>
+    <PARAM id="scale_g" value="128.0"/>
+    <PARAM id="scale_gs" value="256.0"/>
+    <PARAM id="scale_on" value="1.0"/>
+    <CORE>
+      <LAYER mmver="2" layer_trim="8.210000038146973" env1_attack="0.0005000000237487257"
+             env1_decay="0.2612999975681305" env1_sustain="0.0" env1_release="0.2000000029802322"
+             env1_velocity="0.6000000238418579" add_partials="32.0" add_spectrum_a="9.0"
+             add_inharm="0.4302000105381012" add_penv_amount="0.8999999761581421"
+             add_penv_decay="0.1500000059604645" index="0"/>
+      <LAYER mmver="2" layer_trim="2.759999990463257" env1_attack="0.0005000000237487257"
+             env1_decay="0.2700000107288361" env1_sustain="0.0" env1_release="0.2000000029802322"
+             env1_velocity="0.6000000238418579" fm_op2_ratio="2.759999990463257"
+             fm_op2_level="0.550000011920929" fm_op3_ratio="2.5" fm_op3_level="0.699999988079071"
+             fm_op4_ratio="3.140000104904175" fm_op4_level="0.4000000059604645"
+             fm_op5_on="0.0" fm_op6_on="0.0" fm_op1_decay="0.4318000078201294"
+             fm_op1_sustain="0.0" fm_op1_release="0.2000000029802322" fm_op2_decay="0.119999997317791"
+             fm_op2_sustain="0.0" fm_op2_release="0.1000000014901161" fm_op3_decay="0.4000000059604645"
+             fm_op3_sustain="0.0" fm_op4_decay="0.1000000014901161" fm_op4_sustain="0.0"
+             fm_op4_release="0.1000000014901161" fm_penv_amount="7.0" fm_penv_decay="0.08190000057220459"
+             fx_dist_on="1.0" fx_dist_type="1.0" fx_dist_drive="0.2000000029802322"
+             fx_dist_mix="0.300000011920929" fx_reverb_on="1.0" fx_reverb_size="0.4000000059604645"
+             fx_reverb_decay="1.200000047683716" fx_reverb_mix="0.2000000029802322"
+             index="1"/>
+      <LAYER mmver="2" layer_trim="2.460000038146973" filter_on="1.0" filter_model="2.0"
+             filter_cutoff="2125.0" filter_resonance="0.300000011920929" filter_keytrack="0.699999988079071"
+             filter_env_amount="0.4000000059604645" env1_attack="0.0005000000237487257"
+             env1_decay="0.3655999898910522" env1_sustain="0.0" env1_release="0.2000000029802322"
+             env1_velocity="0.6000000238418579" env2_attack="0.002000000094994903"
+             env2_decay="0.1000000014901161" env2_sustain="0.0" wt_osc1_table="12.0"
+             wt_osc1_pos="0.1897000074386597" index="2"/>
+      <LAYER mmver="2" layer_trim="5.090000152587891" env1_attack="0.0005000000237487257"
+             env1_decay="0.1870000064373016" env1_sustain="0.0" env1_release="0.2000000029802322"
+             env1_velocity="0.6000000238418579" pd_l1_wave="2.0" pd_l1_amount="0.1000000014901161"
+             pd_l1_env_amount="0.800000011920929" pd_l1_env_attack="0.001000000047497451"
+             pd_l1_env_decay="0.07999999821186066" pd_l1_env_sustain="0.0"
+             fx_reverb_on="1.0" fx_reverb_size="0.4000000059604645" fx_reverb_decay="1.200000047683716"
+             fx_reverb_mix="0.2000000029802322" index="3"/>
+      <LAYER mmver="2" layer_trim="2.359999895095825" filter_on="1.0" filter_model="2.0"
+             filter_cutoff="2144.202880859375" filter_resonance="0.3499999940395355"
+             filter_keytrack="0.800000011920929" filter_env_amount="0.5" env1_attack="0.0005000000237487257"
+             env1_decay="0.2551999986171722" env1_sustain="0.0" env1_release="0.2000000029802322"
+             env1_velocity="0.6000000238418579" env2_attack="0.002000000094994903"
+             env2_decay="0.07999999821186066" env2_sustain="0.0" an_osc1_wave="0.0"
+             an_osc2_on="1.0" an_osc2_wave="3.0" an_osc2_semi="5.0" an_osc2_level="0.300000011920929"
+             an_noise_level="0.3959999978542328" fx_dist_on="1.0" fx_dist_type="1.0"
+             fx_dist_drive="0.2000000029802322" fx_dist_mix="0.300000011920929"
+             index="4"/>
+      <LAYER mmver="2" layer_trim="9.619999885559082" env1_attack="0.0005000000237487257"
+             env1_decay="0.4487999975681305" env1_sustain="0.0" env1_release="0.2000000029802322"
+             env1_velocity="0.6000000238418579" add_partials="32.0" add_spectrum_a="9.0"
+             add_inharm="0.5134999752044678" add_penv_amount="0.8999999761581421"
+             add_penv_decay="0.1500000059604645" fx_reverb_on="1.0" fx_reverb_size="0.4000000059604645"
+             fx_reverb_decay="1.200000047683716" fx_reverb_mix="0.2000000029802322"
+             index="5"/>
+      <LAYER mmver="2" layer_trim="-0.5299999713897705" env1_attack="0.0005000000237487257"
+             env1_decay="0.2623000144958496" env1_sustain="0.0" env1_release="0.2000000029802322"
+             env1_velocity="0.6000000238418579" fm_op2_ratio="5.190000057220459"
+             fm_op2_level="0.550000011920929" fm_op3_level="0.699999988079071"
+             fm_op4_ratio="7.099999904632568" fm_op4_level="0.4000000059604645"
+             fm_op5_on="0.0" fm_op6_on="0.0" fm_op1_decay="0.3741999864578247"
+             fm_op1_sustain="0.0" fm_op1_release="0.2000000029802322" fm_op2_decay="0.119999997317791"
+             fm_op2_sustain="0.0" fm_op2_release="0.1000000014901161" fm_op3_decay="0.4000000059604645"
+             fm_op3_sustain="0.0" fm_op4_decay="0.1000000014901161" fm_op4_sustain="0.0"
+             fm_op4_release="0.1000000014901161" fm_algorithm="6.0" fm_penv_amount="12.0"
+             fm_penv_decay="0.05810000002384186" index="6"/>
+      <LAYER mmver="2" layer_trim="5.150000095367432" filter_on="1.0" filter_model="2.0"
+             filter_cutoff="2750.0" filter_resonance="0.300000011920929" filter_keytrack="0.699999988079071"
+             filter_env_amount="0.4000000059604645" env1_attack="0.0005000000237487257"
+             env1_decay="0.2748000025749207" env1_sustain="0.0" env1_release="0.2000000029802322"
+             env1_velocity="0.6000000238418579" env2_attack="0.002000000094994903"
+             env2_decay="0.1000000014901161" env2_sustain="0.0" wt_osc1_table="24.0"
+             wt_osc1_pos="0.7484999895095825" fx_dist_on="1.0" fx_dist_type="1.0"
+             fx_dist_drive="0.2000000029802322" fx_dist_mix="0.300000011920929"
+             fx_reverb_on="1.0" fx_reverb_size="0.4000000059604645" fx_reverb_decay="1.200000047683716"
+             fx_reverb_mix="0.2000000029802322" index="7"/>
+      <LAYER mmver="2" layer_trim="4.570000171661377" env1_attack="0.0005000000237487257"
+             env1_decay="0.2353000044822693" env1_sustain="0.0" env1_release="0.2000000029802322"
+             env1_velocity="0.6000000238418579" pd_l1_wave="5.0" pd_l1_amount="0.1000000014901161"
+             pd_l1_env_amount="0.800000011920929" pd_l1_env_attack="0.001000000047497451"
+             pd_l1_env_decay="0.07999999821186066" pd_l1_env_sustain="0.0"
+             index="8"/>
+      <LAYER mmver="2" layer_trim="1.559999942779541" filter_on="1.0" filter_model="2.0"
+             filter_cutoff="3032.626708984375" filter_resonance="0.3499999940395355"
+             filter_keytrack="0.800000011920929" filter_env_amount="0.5" env1_attack="0.0005000000237487257"
+             env1_decay="0.2852999866008759" env1_sustain="0.0" env1_release="0.2000000029802322"
+             env1_velocity="0.6000000238418579" env2_attack="0.002000000094994903"
+             env2_decay="0.07999999821186066" env2_sustain="0.0" an_osc1_wave="1.0"
+             an_osc2_on="1.0" an_osc2_wave="3.0" an_osc2_semi="11.0" an_osc2_level="0.300000011920929"
+             an_noise_level="0.3892000019550323" fx_reverb_on="1.0" fx_reverb_size="0.4000000059604645"
+             fx_reverb_decay="1.200000047683716" fx_reverb_mix="0.2000000029802322"
+             index="9"/>
+      <LAYER mmver="2" layer_trim="3.369999885559082" env1_attack="0.0005000000237487257"
+             env1_decay="0.2939000129699707" env1_sustain="0.0" env1_release="0.2000000029802322"
+             env1_velocity="0.6000000238418579" add_partials="32.0" add_spectrum_a="13.0"
+             add_inharm="0.5295000076293945" add_penv_amount="0.8999999761581421"
+             add_penv_decay="0.1500000059604645" fx_dist_on="1.0" fx_dist_type="1.0"
+             fx_dist_drive="0.2000000029802322" fx_dist_mix="0.300000011920929"
+             index="10"/>
+      <LAYER mmver="2" layer_trim="0.7699999809265137" env1_attack="0.0005000000237487257"
+             env1_decay="0.4339999854564667" env1_sustain="0.0" env1_release="0.2000000029802322"
+             env1_velocity="0.6000000238418579" fm_op2_ratio="1.409999966621399"
+             fm_op2_level="0.550000011920929" fm_op3_ratio="2.5" fm_op3_level="0.699999988079071"
+             fm_op4_ratio="7.099999904632568" fm_op4_level="0.4000000059604645"
+             fm_op5_on="0.0" fm_op6_on="0.0" fm_op1_decay="0.5354999899864197"
+             fm_op1_sustain="0.0" fm_op1_release="0.2000000029802322" fm_op2_decay="0.119999997317791"
+             fm_op2_sustain="0.0" fm_op2_release="0.1000000014901161" fm_op3_decay="0.4000000059604645"
+             fm_op3_sustain="0.0" fm_op4_decay="0.1000000014901161" fm_op4_sustain="0.0"
+             fm_op4_release="0.1000000014901161" fm_algorithm="6.0" fm_penv_amount="24.0"
+             fm_penv_decay="0.05189999938011169" fx_reverb_on="1.0" fx_reverb_size="0.4000000059604645"
+             fx_reverb_decay="1.200000047683716" fx_reverb_mix="0.2000000029802322"
+             index="11"/>
+      <MACROS/>
+      <AUTOMATION/>
+    </CORE>
+  </CHROMA5YNTH>
+</CHROMA5YNTH_PRESET>

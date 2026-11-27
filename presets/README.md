@@ -1,12 +1,14 @@
 # presets/ – preset di fabbrica (§6)
 
-- `recipes/*.txt`: ricette testuali (sintassi in testa a `tools/presetnorm/main.cpp`), unica fonte dei preset di fabbrica.
+- `recipes/*.txt`: ricette testuali (sintassi in testa a `tools/presetnorm/main.cpp`), generate da `tools/gen_recipes.py`
+  (128 Layer a un synth + 24 Multi NOTE ASSIGN: synth n = nota n). Nelle ricette `#` apre un commento: note con i bemolle (Db, Eb…).
 - `factory/{Multi,Layer}/`: file generati, normalizzati e compatti (solo valori diversi dal default), incorporati nel
   plugin (`juce_add_binary_data` → `ChromaFactory`) e installati in `<libreria>/{Multi,Layer}/Factory`.
 
 Rigenerare (build con `-DCHROMA_BUILD_TOOLS=ON`):
 
 ```bash
+python3 tools/gen_recipes.py
 cmake -S . -B build -DCHROMA_BUILD_TOOLS=ON && cmake --build build --target presetnorm
 build/presetnorm_artefacts/Release/presetnorm build presets/recipes presets/factory --report docs/manual/factory-presets.md
 ```

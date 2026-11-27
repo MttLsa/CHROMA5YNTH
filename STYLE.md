@@ -11,17 +11,18 @@ Codice: `src/gui/StyleLookAndFeel.{h,cpp}` (namespace `chroma::style` + `StyleLo
 | outline | `#121212` | bordi 1 px, fondo dei segmented |
 | track | `#4a4a4a` | traccia knob/slider |
 | text / textDim | `#d0d0d0` / `#8c8c8c` | testo / caption, frecce, versione |
-| accent | `#4f8cff` | accento primario (blu): arco knob, selezione, highlight |
-| accent2 | `#b4dc3c` | accento secondario (lime) |
-| accentG | `#eeeeee` | globale/uscita (bianco) |
+| accent | `#4f8cff` | blu: synth selezionato, schede selezionate, NOTE ASSIGN, GLOBAL SCALE |
+| accent2 | `#b4dc3c` | lime (non più usato nella vista principale) |
+| accentG | `#eeeeee` | bianco: pulsanti selezionati della toolbar, Master, Macro |
+| module | `#ff9636` | arancione: moduli e loro parametri (knob, segmented, viste ENV/LFO, Mod Matrix) |
 Testo su accento: nero. Disabilitato: alpha 0.5 o textDim.
 
 ## Font
 Inter (OFL, `assets/fonts/`, binary data `ChromaAssets`): Regular testi, SemiBold titoli/selezione. Sempre `style::font (h, bold)`.
-Dimensioni: wordmark 26 SemiBold kerning 0.18; titolo pannello 12 SemiBold MAIUSCOLO; pulsanti ≤12.5; combo 10–12; caption/segmented 11; valori 11; maker line 9.5 kerning 0.12; popup 13.
+Dimensioni: nome CHROMA5YNTH 31 **Urbanist Light** (come l'intestazione di GROOVULATION) kerning 0.02; titolo pannello 12 SemiBold MAIUSCOLO; pulsanti ≤12.5; combo 10–12; caption/segmented 11; valori 11; maker line 9.5 kerning 0.12; popup 13.
 
 ## Dimensioni
-margin 8 px; header editor 56 px (wordmark "CHROMA" + "5YNTH" al 55 %, sotto "TMFU audiovibe", due barrette 6×16 accent/accent2, sottotitolo textDim, versione a destra).
+margin 8 px; header editor 56 px (nome "CHROMA5YNTH" in Urbanist Light, sotto "TMFU audiovibe", 12 barrette 6×20 arcobaleno rosso→viola, una per nota, sfumate in verticale chiaro→saturo (`style::rainbow`), sottotitolo textDim, versione a destra).
 Raggi: pannello 4, controlli 2.5, segment 3/2. Bordi 1 px outline.
 
 ## Knob (`Knob` + `FineSlider`)
@@ -38,6 +39,6 @@ Raggi: pannello 4, controlli 2.5, segment 3/2. Bordi 1 px outline.
 
 ## GUI definitiva (§7, `src/PluginEditor.cpp`, `src/gui/ParamUI.*`, `src/gui/MainPanels.*`)
 - Base logica 1280×800 disegnata su un `Root` scalato con `AffineTransform`: scala = min(W/1280, H/800) limitata a 75–200 %; oltre, il layout cresce (fino all'area dello schermo, limite massimo = display più grande). Dimensione salvata nello stato host (`uiWidth/uiHeight`).
-- Struttura: header + toolbar, barra Layer 1–12 (numero, engine ▾, M/S/power, meter), centro a schede (Engine, Voice, Modulation, Layer FX, Master FX, Global) con pannelli a mosaico (colonne ≥ 340 px), colonna destra Master (meter L/R) + Macro (accent2) + Scale (tastiera).
+- Struttura: header + toolbar, barra Layer 1–12 (numero, engine ▾, M/S/power, meter), centro a schede (Engine, Voice, Modulation, Layer FX, Master FX, Global) con moduli in **righe nell'ordine del segnale** (`Page::newRow`, larghezza per peso; filtro ultimo nella scheda Engine, Op n accanto a Op n Env), knob 52 px / celle 66 px, colonna destra Master (meter L/R) + Macro + NOTE ASSIGN (tastiera con menu Synth 1–12/Off) + GLOBAL SCALE. Controlli condizionali (`SectionPanel::setCellCondition`), moduli non assegnati grigi (`setInUse`), valori digitabili (Knob: cifre o doppio clic sul valore).
 - Pannelli generati da `lp::descs` / `gui::params` (mai parametri hard-coded): un `*_on` iniziale diventa il power nell'header, prefisso comune tolto dalle caption, vista ENV/LFO automatica.
 - Aggiornamento su v-blank ≤ 60 fps: meter (lock-free, `Synth::takeLayerPeak/takeMasterPeak`), controlli a 30 Hz solo per la pagina visibile. Stringhe con caratteri non ASCII sempre via `utf8 ("…")`.

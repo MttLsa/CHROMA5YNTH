@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<CHROMA5YNTH_PRESET kind="layer" name="Quiet Kalimba" category="Pluck" author="TMFU audiovibe"
+                    tags="pd,pluck" format="1">
+  <LAYER_PRESET on="1.0" engine="1.0" volume="0.8126519918441772" pan="0.5" mute="0.0"
+                solo="0.0" transpose="0.5" key_lo="0.0" key_hi="1.0" vel_lo="0.0"
+                vel_hi="1.0" midi_ch="0.0" max_voices="1.0">
+    <ENGINE mmver="2" layer_trim="4.920000076293945" env1_attack="0.001000000047497451"
+            env1_decay="0.6439999938011169" env1_sustain="0.0" env1_release="0.3499999940395355"
+            env1_velocity="0.4000000059604645" pd_l1_amount="0.1500000059604645"
+            pd_l1_env_amount="0.699999988079071" pd_l1_env_attack="0.001000000047497451"
+            pd_l1_env_decay="0.2161999940872192" pd_l1_env_sustain="0.0"
+            fx_delay_on="1.0" fx_delay_sync="1.0" fx_delay_div_r="3.0" fx_delay_mix="0.2199999988079071"
+            fx_reverb_on="1.0" fx_reverb_decay="1.799999952316284" fx_reverb_mix="0.1500000059604645"/>
+  </LAYER_PRESET>
+</CHROMA5YNTH_PRESET>

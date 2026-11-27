@@ -5,4 +5,4 @@ Third-party code (MIT licence, see the LICENSE.txt files):
 
 Local changes: the `#include` of `stft.h` in `signalsmith-stretch.h` points to the vendored copy; `findPeaks()` measures
 each peak's exact frequency from the phase advance of its strongest bin (marked `CHROMA5YNTH local change`), for GLOBAL SCALE.
-Same code as Groovulation's MELODY engine (copied from `TMFU-audiovibe/Groovulation/third_party`).
+Same code as Groovulation's MELODIC modules engine (copied from `TMFU-audiovibe/Groovulation/third_party`).

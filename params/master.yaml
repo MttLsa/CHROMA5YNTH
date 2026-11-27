@@ -45,7 +45,7 @@ params:
     type: bool
     default: false
     section: Global Scale
-    description: "GLOBAL SCALE: corregge in tempo reale il pitch dell'uscita di ogni synth verso le note della scala scelta (correzione spettrale continua, come il motore MELODY di Groovulation). Agisce sul suono, non sui parametri. Aggiunge latenza (compensata dalla DAW)."
+    description: "GLOBAL SCALE: corregge in tempo reale il pitch dell'uscita di ogni synth verso le note della scala scelta (correzione spettrale continua, come il motore e il riconoscimento dei moduli MELODIC di Groovulation). Agisce sul suono, non sui parametri. Aggiunge latenza (compensata dalla DAW)."
 
   - id: gscale_root
     name: Global Scale Root
@@ -62,6 +62,14 @@ params:
     default: "Major"
     section: Global Scale
     description: Scala (stesso elenco delle scale di Ableton Live).
+
+  - id: gscale_mode
+    name: Global Scale Mode
+    type: choice
+    choices: [Poly, Mono]
+    default: Poly
+    section: Global Scale
+    description: "Poly = ogni componente dello spettro va sulla nota di scala più vicina (accordi, suoni inarmonici). Mono = riconosce la fondamentale (YIN, come Groovulation) e sposta tutto il suono dello stesso intervallo: timbro armonico intatto (lead, bassi)."
 
   - id: gscale_amount
     name: Global Scale Amount

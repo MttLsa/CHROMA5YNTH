@@ -161,7 +161,7 @@ private:
     std::vector<juce::RangedAudioParameter*> hostParams;
     std::array<HostLayer, numLayers> hostLayers {};
     juce::RangedAudioParameter *masterVolume, *presetTrim, *polyphony, *scaleOn, *mpeOn, *mpeZone, *mpeBend;
-    juce::RangedAudioParameter *gscaleOn, *gscaleRoot, *gscaleScale, *gscaleAmount, *gscaleSmooth;
+    juce::RangedAudioParameter *gscaleOn, *gscaleRoot, *gscaleScale, *gscaleMode, *gscaleAmount, *gscaleSmooth;
     std::array<ScaleCorrector, numLayers> scaleFix;
     std::array<bool, numLayers> scaleFixRunning {};
     bool gscaleEnabled = false;

@@ -9,13 +9,14 @@ The oscillators of Analog, FM6, Wavetable and PD run with internal oversampling 
 Virtual-analog subtractive engine with band-limited oscillators.
 
 - **3 OSC**: On, Wave (Sine, Triangle, Saw, Square, Pulse, SuperSaw, Half, Narrow), Octave ±4, Semitone ±12,
-  Fine ±100 ct, Level, Pan, Phase, Phase Reset, Pulse Width 1–99 %, SuperSaw Detune/Spread/Voices 2–7,
-  Stereo Width, Wave Mod.
+  Fine ±100 ct, Level, Pan, Phase, Phase Reset, Wave Mod, **Route** (Filter / Bypass); Pulse Width 1–99 % only with
+  Pulse; SuperSaw Detune/Spread/Voices 2–7 and Stereo Width only with SuperSaw. An OSC at Level 0 is still a silent
+  sync/FM/ring source.
 - **Mod**: Hard Sync 2→1, FM 3→1 and 2→1 (linear, audio rate), Ring 1×2.
-- **Mixer**: Volume, Pan, Mute/Solo per OSC; Sub and Noise levels; Osc Master. Each source goes to the filter
-  (**Filter**) or around it (**Bypass**).
-- **Sub**: Sine/Square, −1/−2 octaves below OSC 1, Level, Phase.
-- **Noise**: White/Pink, Level, Color, Pan, Stereo Width.
+- **Sub**: Sine/Square, −1/−2 octaves below OSC 1, Level, Phase, Route.
+- **Noise**: Level, White/Pink, Color, Pan, Stereo Width, Route.
+- **Output**: overall level of the sources before the filter. (The former Mixer module is gone: level and pan live in
+  the oscillators.)
 
 ## Additive
 Bank of up to **256 partials** (default 64); partials above Nyquist are faded out automatically.
@@ -36,6 +37,8 @@ Bank of up to **256 partials** (default 64); partials above Nyquist are faded ou
 - Per operator: On, Ratio/Fixed, Ratio, Coarse, Fine, Fixed Hz, Detune, Wave (Sine, Half Sine, Abs Sine,
   Pulse Sine, Alt Sine, Camel Sine, Square, Saw), Phase, Phase Reset, Sync, Feedback, Output Level,
   Velocity and AM Sens, Pan, key scaling (Breakpoint, Depth, ±Lin/±Exp curves), Rate Scaling.
+  **Output Level**: amplitude = value² (50 % ≈ −12 dB as a carrier; clearly audible modulation over most of the
+  travel). .syx banks are converted with the same law, so they sound as before.
 - **Per-operator ENV**: AHDSR with curves, Loop and Time Scale.
 - **Algorithm**: 32 classic algorithms + **Custom** (6×6 matrix + outputs; the diagonal is feedback).
   **Algorithm A/B + Morph** blends connections, feedback and carriers between two algorithms.

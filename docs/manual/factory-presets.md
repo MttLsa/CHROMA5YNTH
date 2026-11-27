@@ -6,67 +6,155 @@ Normalizzati con `tools/presetnorm`: nota C3, velocity 100, 4 s, render offline;
 
 | Preset | Categoria | Engine | Tag | LUFS (short-term max) | True peak | Trim |
 |---|---|---|---|---|---|---|
-| Copper Bass | Bass | Analog | analog, mono, punchy | -14.0 | -8.8 dBTP | 0.00 dB |
-| Nimbus Field | Pad | Analog | analog, wide, warm, slow | -14.0 | -5.3 dBTP | 0.00 dB |
-| Bright Horns | Brass | Analog | analog, section, bright | -14.0 | -8.0 dBTP | 0.00 dB |
-| Razor Sync | Lead | Analog | analog, sync, mono, aggressive | -14.0 | -10.0 dBTP | 0.00 dB |
-| Velvet Pulse | Keys | Analog | analog, pwm, soft | -14.1 | -1.8 dBTP | 0.00 dB |
-| Glass Drop | Pluck | Analog | analog, short, bright | -16.2 | -1.8 dBTP | 0.00 dB |
-| Silk Ensemble | Strings | Analog | analog, ensemble, slow | -14.0 | -3.7 dBTP | 0.00 dB |
-| Ocean Static | FX | Analog | analog, noise, sweep, ambient | -14.0 | -5.5 dBTP | 0.00 dB |
-| Crystal Tines | Keys | FM6 | fm, electric piano, bell | -14.0 | -3.6 dBTP | 0.00 dB |
-| Temple Chime | Bell | FM6 | fm, bell, long | -14.0 | -4.1 dBTP | 0.00 dB |
-| Rubber Low | Bass | FM6 | fm, mono, round | -14.0 | -9.6 dBTP | 0.00 dB |
-| Drawbar Haze | Organ | FM6 | fm, organ, sustained | -14.0 | -6.8 dBTP | 0.00 dB |
-| Fanfare Steel | Brass | FM6 | fm, brass, bright | -14.0 | -6.9 dBTP | 0.00 dB |
-| Wood Mallet | Pluck | FM6 | fm, mallet, percussive | -14.7 | -1.8 dBTP | 0.00 dB |
-| Glass Choir | Pad | FM6 | fm, pad, airy, slow | -14.0 | -6.6 dBTP | 0.00 dB |
-| Ember Lead | Lead | FM6 | fm, mono, feedback | -14.0 | -10.1 dBTP | 0.00 dB |
-| Vowel Drift | Pad | Wavetable | wavetable, vowel, moving | -14.0 | -4.6 dBTP | 0.00 dB |
-| Gravel Bass | Bass | Wavetable | wavetable, growl, mono | -14.0 | -6.3 dBTP | 0.00 dB |
-| Prism Keys | Keys | Wavetable | wavetable, glassy, bright | -15.5 | -1.8 dBTP | 0.00 dB |
-| Spectral Lead | Lead | Wavetable | wavetable, sweep, unison | -14.0 | -6.9 dBTP | 0.00 dB |
-| Distant Voices | Pad | Wavetable | wavetable, choir, ambient | -14.0 | -4.6 dBTP | 0.00 dB |
-| Pulse Strings | Strings | Wavetable | wavetable, pwm, ensemble | -14.0 | -4.7 dBTP | 0.00 dB |
-| Steel Pluck | Pluck | Wavetable | wavetable, metallic, short | -14.1 | -1.8 dBTP | 0.00 dB |
-| Tidal Grain | Texture | Wavetable | wavetable, granular, evolving | -14.0 | -5.4 dBTP | 0.00 dB |
-| Cathedral Pipes | Organ | Additive | additive, organ, majestic | -14.0 | -7.0 dBTP | 0.00 dB |
-| Hollow Glow | Pad | Additive | additive, morph, warm | -14.0 | -6.6 dBTP | 0.00 dB |
-| Frozen Bell | Bell | Additive | additive, bell, inharmonic | -14.0 | -3.7 dBTP | 0.00 dB |
-| Aah Ensemble | Pad | Additive | additive, vocal, choir | -14.0 | -6.6 dBTP | 0.00 dB |
-| Spectral Keys | Keys | Additive | additive, glass, dynamic | -14.0 | -5.3 dBTP | 0.00 dB |
-| Harmonic Bass | Bass | Additive | additive, mono, plucky | -14.0 | -12.1 dBTP | 0.00 dB |
-| Odd Lead | Lead | Additive | additive, hollow, mono | -14.0 | -13.5 dBTP | 0.00 dB |
-| Stretched Air | Texture | Additive | additive, airy, stereo, ambient | -14.0 | -4.7 dBTP | 0.00 dB |
-| Phase Bass | Bass | PD | pd, mono, punchy | -14.0 | -9.3 dBTP | 0.00 dB |
-| Reso Whistle | Lead | PD | pd, resonant, mono | -14.0 | -8.3 dBTP | 0.00 dB |
-| Phase Brass | Brass | PD | pd, brass, swell | -14.0 | -8.1 dBTP | 0.00 dB |
-| Cosine Strings | Strings | PD | pd, ensemble, soft | -14.0 | -4.4 dBTP | 0.00 dB |
-| Hollow Keys | Keys | PD | pd, square, vintage | -14.0 | -5.3 dBTP | 0.00 dB |
-| Reso Pluck | Pluck | PD | pd, resonant, short | -15.5 | -1.8 dBTP | 0.00 dB |
-| Ring Metal | Bell | PD | pd, ring, metallic | -14.0 | -6.7 dBTP | 0.00 dB |
-| Stepped Dream | Pad | PD | pd, morph, evolving | -14.0 | -5.2 dBTP | 0.00 dB |
-| Pentatonic Rain | Pluck | Analog + FM6 | scale, pentatonic, bright | -16.4 | -1.8 dBTP | 3.29 dB |
-| Dorian Dusk | Pad | Analog | scale, dorian, bass split | -14.0 | -5.3 dBTP | 0.00 dB |
-| Phrygian Smoke | Texture | Wavetable + PD | scale, phrygian, dark | -14.0 | -5.6 dBTP | 0.10 dB |
-| Lydian Glass | Keys | Wavetable + FM6 | scale, lydian, glassy | -14.2 | -1.8 dBTP | 1.35 dB |
-| Blue Hour | Keys | Analog + PD + FM6 | scale, blues, bass split | -14.8 | -1.8 dBTP | 0.93 dB |
-| Desert Veil | Pad | Wavetable + FM6 | scale, harmonic minor, exotic | -14.0 | -4.5 dBTP | -4.55 dB |
-| Stone Garden | Pluck | FM6 + Wavetable | scale, pentatonic, mallet | -15.3 | -1.8 dBTP | 2.31 dB |
-| Whole Tone Dream | Texture | Additive + PD | scale, whole tone, ambient | -14.0 | -4.2 dBTP | -5.66 dB |
-| Golden Choir | Pad | Additive + Wavetable | scale, major, choir | -14.0 | -6.6 dBTP | -2.56 dB |
-| Highway Brass | Brass | Analog + FM6 + PD | scale, mixolydian, bass split | -14.0 | -7.1 dBTP | -7.91 dB |
-| Grey Strings | Strings | Analog + Wavetable + PD | scale, minor, ensemble | -14.0 | -3.1 dBTP | -2.56 dB |
-| Octave Bells | Bell | Additive + FM6 | scale, major, bells | -14.0 | -2.7 dBTP | 0.76 dB |
-| Fifths Engine | Sequence | Analog + Wavetable | scale, suspended, mono | -14.0 | -6.6 dBTP | -4.30 dB |
-| Chapel Modes | Organ | Additive + FM6 | scale, dorian, organ | -14.0 | -6.1 dBTP | -6.61 dB |
-| Night Metal | Bell | PD + FM6 | scale, pentatonic, metallic | -14.0 | -3.1 dBTP | 0.00 dB |
-| Twin Colours | Keys | Additive + Wavetable | scale, split, white keys, black keys | -14.0 | -2.8 dBTP | -3.01 dB |
-| Ebony Ivory | Pluck | PD + Additive | scale, split, white keys, black keys | -14.7 | -1.8 dBTP | -0.31 dB |
-| Locked Low | Bass | Additive + Analog | scale, minor, layered | -14.0 | -8.0 dBTP | -5.27 dB |
-| Gold Lead | Lead | FM6 + Additive | scale, major, layered | -14.0 | -9.1 dBTP | -7.78 dB |
-| Diminished Haze | Texture | Analog + Additive | scale, diminished, dark | -14.0 | -6.1 dBTP | 1.29 dB |
-| Cascade Arp | Arp | Wavetable + PD | scale, pentatonic, stereo | -16.0 | -1.8 dBTP | 2.83 dB |
-| Quintal Pad | Chord | Analog | scale, chord, fifths | -14.0 | -4.2 dBTP | -2.08 dB |
-| Triad Keys | Chord | Wavetable | scale, chord, diatonic triads | -15.7 | -1.8 dBTP | -1.18 dB |
-| Cloud Steps | Pad | PD + FM6 | scale, pentatonic, dreamy | -14.0 | -5.2 dBTP | -0.72 dB |
+| Iron Pulse | Bass | Analog | analog, bass | -14.0 | -6.3 dBTP | -1.75 dB |
+| Tidal Rumble | Bass | Additive | additive, bass | -14.0 | -8.9 dBTP | -1.01 dB |
+| Sharp Thump | Bass | FM6 | fm6, bass | -14.0 | -10.5 dBTP | -7.46 dB |
+| Silver Engine | Bass | Wavetable | wavetable, bass | -14.0 | -8.4 dBTP | -1.60 dB |
+| Solar Pulse | Bass | PD | pd, bass | -14.0 | -9.6 dBTP | -7.93 dB |
+| Liquid Thump | Bass | Analog | analog, bass | -14.0 | -6.0 dBTP | -3.51 dB |
+| Bright Growl | Bass | Additive | additive, bass | -14.0 | -11.2 dBTP | 3.30 dB |
+| Frozen Root | Bass | FM6 | fm6, bass | -14.0 | -10.7 dBTP | -7.57 dB |
+| Paper Rumble | Bass | Wavetable | wavetable, bass | -14.0 | -6.4 dBTP | -2.13 dB |
+| Misty Undertow | Bass | PD | pd, bass | -14.0 | -8.9 dBTP | -8.87 dB |
+| Golden Engine | Bass | Analog | analog, bass | -14.0 | -6.2 dBTP | -1.53 dB |
+| Bright Engine | Bass | Additive | additive, bass | -14.0 | -6.9 dBTP | 1.46 dB |
+| Neon Engine | Bass | FM6 | fm6, bass | -14.0 | -8.4 dBTP | -5.96 dB |
+| Hazy Engine | Bass | Wavetable | wavetable, bass | -14.0 | -10.9 dBTP | -5.00 dB |
+| Lunar Rumble | Bass | PD | pd, bass | -14.0 | -8.2 dBTP | -6.87 dB |
+| Amber Thump | Bass | Analog | analog, bass | -14.0 | -7.6 dBTP | -3.93 dB |
+| Misty Engine | Bass | Additive | additive, bass | -14.0 | -12.0 dBTP | 2.72 dB |
+| Molten Low End | Bass | FM6 | fm6, bass | -14.0 | -9.3 dBTP | -8.45 dB |
+| Quiet Thump | Bass | Wavetable | wavetable, bass | -14.0 | -9.8 dBTP | -3.26 dB |
+| Prism Thump | Bass | PD | pd, bass | -14.0 | -10.4 dBTP | -7.79 dB |
+| Glassy Hammer | Keys | Analog | analog, keys | -15.7 | -1.8 dBTP | 3.60 dB |
+| Bright Parlour | Keys | Additive | additive, keys | -14.0 | -7.4 dBTP | 3.78 dB |
+| Velvet Felt | Keys | FM6 | fm6, keys | -21.7 | -1.8 dBTP | 0.56 dB |
+| Cold Piano | Keys | Wavetable | wavetable, keys | -14.0 | -3.6 dBTP | 0.57 dB |
+| Dusty Parlour | Keys | PD | pd, keys | -16.6 | -1.8 dBTP | 2.81 dB |
+| Neon Felt | Keys | Analog | analog, keys | -14.0 | -3.6 dBTP | 3.32 dB |
+| Cobalt Ivory | Keys | Additive | additive, keys | -15.8 | -1.8 dBTP | 2.98 dB |
+| Amber Ivory | Keys | FM6 | fm6, keys | -18.7 | -1.8 dBTP | 0.43 dB |
+| Wild Keys | Keys | Wavetable | wavetable, keys | -19.3 | -1.8 dBTP | 3.25 dB |
+| Cobalt Felt | Keys | PD | pd, keys | -14.0 | -7.4 dBTP | -0.63 dB |
+| Cobalt Lounge | Keys | Analog | analog, keys | -15.6 | -1.8 dBTP | 3.62 dB |
+| Quiet Piano | Keys | Additive | additive, keys | -14.6 | -1.8 dBTP | 3.28 dB |
+| Liquid Lounge | Keys | FM6 | fm6, keys | -18.2 | -1.8 dBTP | 1.80 dB |
+| Glassy Tines | Keys | Wavetable | wavetable, keys | -14.0 | -6.1 dBTP | -1.43 dB |
+| Iron Tines | Keys | PD | pd, keys | -16.8 | -1.8 dBTP | 4.03 dB |
+| Soft Console | Keys | Analog | analog, keys | -14.0 | -6.9 dBTP | -2.54 dB |
+| Velvet Clav | Keys | Additive | additive, keys | -16.0 | -1.8 dBTP | 2.98 dB |
+| Cold Felt | Keys | FM6 | fm6, keys | -19.4 | -1.8 dBTP | 2.26 dB |
+| Bright Blade | Lead | Analog | analog, lead | -14.0 | -6.7 dBTP | -5.52 dB |
+| Amber Voice | Lead | Additive | additive, lead | -14.0 | -8.1 dBTP | -1.85 dB |
+| Copper Laser | Lead | FM6 | fm6, lead | -14.0 | -12.0 dBTP | -6.82 dB |
+| Rusty Whistle | Lead | Wavetable | wavetable, lead | -14.0 | -6.1 dBTP | -5.20 dB |
+| Paper Voice | Lead | PD | pd, lead | -14.0 | -11.6 dBTP | -5.95 dB |
+| Soft Comet | Lead | Analog | analog, lead | -14.0 | -9.6 dBTP | -8.52 dB |
+| Iron Voice | Lead | Additive | additive, lead | -14.0 | -8.0 dBTP | -3.36 dB |
+| Frozen Blade | Lead | FM6 | fm6, lead | -14.0 | -7.4 dBTP | -5.72 dB |
+| Deep Siren | Lead | Wavetable | wavetable, lead | -14.0 | -3.0 dBTP | -2.23 dB |
+| Copper Hero | Lead | PD | pd, lead | -14.0 | -11.8 dBTP | -7.98 dB |
+| Hollow Solo | Lead | Analog | analog, lead | -14.0 | -6.2 dBTP | 0.53 dB |
+| Wild Comet | Lead | Additive | additive, lead | -14.0 | -8.1 dBTP | -1.90 dB |
+| Deep Laser | Lead | FM6 | fm6, lead | -14.0 | -12.0 dBTP | -6.80 dB |
+| Wild Siren | Lead | Wavetable | wavetable, lead | -14.0 | -7.1 dBTP | -6.78 dB |
+| Prism Whistle | Lead | PD | pd, lead | -14.0 | -11.7 dBTP | -5.84 dB |
+| Cobalt Line | Lead | Analog | analog, lead | -14.0 | -9.9 dBTP | -7.15 dB |
+| Cobalt Laser | Lead | Additive | additive, lead | -14.0 | -8.0 dBTP | -3.37 dB |
+| Hollow Laser | Lead | FM6 | fm6, lead | -14.0 | -12.0 dBTP | -6.83 dB |
+| Cobalt Voice | Lead | Wavetable | wavetable, lead | -14.0 | -8.6 dBTP | -8.65 dB |
+| Molten Lead | Lead | PD | pd, lead | -14.0 | -11.6 dBTP | -5.97 dB |
+| Hollow Halo | Pad | Analog | analog, pad | -14.0 | -4.7 dBTP | 1.93 dB |
+| Prism Choir | Pad | Additive | additive, pad | -14.0 | -7.2 dBTP | 1.48 dB |
+| Copper Haze | Pad | FM6 | fm6, pad | -14.0 | -5.7 dBTP | -4.82 dB |
+| Soft Aurora | Pad | Wavetable | wavetable, pad | -14.0 | -4.7 dBTP | -0.91 dB |
+| Sharp Choir | Pad | PD | pd, pad | -14.0 | -7.2 dBTP | -2.69 dB |
+| Dusty Horizon | Pad | Analog | analog, pad | -14.0 | -5.1 dBTP | 1.27 dB |
+| Copper Veil | Pad | Additive | additive, pad | -14.0 | -5.7 dBTP | -0.82 dB |
+| Wild Haze | Pad | FM6 | fm6, pad | -14.0 | -4.7 dBTP | -4.33 dB |
+| Lunar Halo | Pad | Wavetable | wavetable, pad | -14.0 | -3.3 dBTP | 1.41 dB |
+| Lunar Choir | Pad | PD | pd, pad | -14.0 | -7.2 dBTP | -2.61 dB |
+| Frozen Field | Pad | Analog | analog, pad | -14.0 | -5.7 dBTP | 0.65 dB |
+| Polar Drift | Pad | Additive | additive, pad | -14.0 | -6.6 dBTP | 2.37 dB |
+| Cold Aurora | Pad | FM6 | fm6, pad | -14.0 | -5.7 dBTP | -4.82 dB |
+| Dusty Veil | Pad | Wavetable | wavetable, pad | -14.0 | -4.3 dBTP | -1.96 dB |
+| Molten Ocean | Pad | PD | pd, pad | -14.0 | -7.2 dBTP | -2.60 dB |
+| Sharp Veil | Pad | Analog | analog, pad | -14.0 | -5.7 dBTP | 0.80 dB |
+| Quiet Veil | Pad | Additive | additive, pad | -14.0 | -5.2 dBTP | 0.62 dB |
+| Golden Aurora | Pad | FM6 | fm6, pad | -14.0 | -4.9 dBTP | -4.36 dB |
+| Liquid Choir | Pad | Wavetable | wavetable, pad | -14.0 | -3.1 dBTP | -1.56 dB |
+| Dusty Cloud | Pad | PD | pd, pad | -14.0 | -7.2 dBTP | -2.60 dB |
+| Bright Seed | Pluck | Analog | analog, pluck | -22.5 | -1.8 dBTP | 2.12 dB |
+| Glassy Ping | Pluck | Additive | additive, pluck | -22.8 | -1.8 dBTP | 9.77 dB |
+| Wild Harp | Pluck | FM6 | fm6, pluck | -22.0 | -1.8 dBTP | 2.62 dB |
+| Hollow Ping | Pluck | Wavetable | wavetable, pluck | -24.2 | -1.8 dBTP | 5.04 dB |
+| Golden Seed | Pluck | PD | pd, pluck | -21.0 | -1.8 dBTP | 4.91 dB |
+| Ember Seed | Pluck | Analog | analog, pluck | -22.3 | -1.8 dBTP | 7.79 dB |
+| Deep Drop | Pluck | Additive | additive, pluck | -27.3 | -1.8 dBTP | 2.96 dB |
+| Soft Ripple | Pluck | FM6 | fm6, pluck | -23.2 | -1.8 dBTP | 1.50 dB |
+| Copper Kalimba | Pluck | Wavetable | wavetable, pluck | -25.5 | -1.8 dBTP | 4.62 dB |
+| Deep Seed | Pluck | PD | pd, pluck | -21.7 | -1.8 dBTP | 4.99 dB |
+| Golden Ping | Pluck | Analog | analog, pluck | -21.2 | -1.8 dBTP | 2.08 dB |
+| Iron Kalimba | Pluck | Additive | additive, pluck | -27.0 | -1.8 dBTP | 2.88 dB |
+| Amber Ping | Pluck | FM6 | fm6, pluck | -23.1 | -1.8 dBTP | 3.26 dB |
+| Ember Kalimba | Pluck | Wavetable | wavetable, pluck | -26.1 | -1.8 dBTP | 4.64 dB |
+| Quiet Kalimba | Pluck | PD | pd, pluck | -21.6 | -1.8 dBTP | 4.92 dB |
+| Sharp Kalimba | Pluck | Analog | analog, pluck | -21.6 | -1.8 dBTP | 2.08 dB |
+| Distant Pizz | Pluck | Additive | additive, pluck | -27.4 | -1.8 dBTP | 2.97 dB |
+| Soft Kalimba | Pluck | FM6 | fm6, pluck | -23.9 | -1.8 dBTP | 1.51 dB |
+| Soft Block | Chord | Analog | analog, chord | -19.2 | -1.8 dBTP | 7.20 dB |
+| Soft Memory | Chord | Wavetable | wavetable, chord | -14.0 | -5.2 dBTP | -0.43 dB |
+| Hazy Accord | Chord | FM6 | fm6, chord | -21.2 | -1.8 dBTP | -1.02 dB |
+| Wild Fifths | Chord | PD | pd, chord | -14.0 | -4.1 dBTP | 0.28 dB |
+| Dusty Fifths | Chord | Analog | analog, chord | -19.0 | -1.8 dBTP | 6.11 dB |
+| Molten Hit | Chord | Wavetable | wavetable, chord | -14.0 | -3.3 dBTP | 1.92 dB |
+| Deep Swell | Chord | FM6 | fm6, chord | -19.9 | -1.8 dBTP | 1.31 dB |
+| Crimson Chord | Chord | PD | pd, chord | -14.0 | -3.6 dBTP | -1.09 dB |
+| Cold Memory | Chord | Analog | analog, chord | -19.5 | -1.8 dBTP | 5.79 dB |
+| Tidal Block | Chord | Wavetable | wavetable, chord | -14.0 | -5.6 dBTP | 0.61 dB |
+| Cobalt Triad | Chord | FM6 | fm6, chord | -21.2 | -1.8 dBTP | -1.02 dB |
+| Ember Stack | Chord | PD | pd, chord | -14.0 | -3.6 dBTP | -0.64 dB |
+| Velvet Hit | Chord | Analog | analog, chord | -18.9 | -1.8 dBTP | 7.52 dB |
+| Molten Triad | Chord | Wavetable | wavetable, chord | -14.0 | -5.4 dBTP | -1.25 dB |
+| Hazy Triad | Chord | FM6 | fm6, chord | -20.3 | -1.8 dBTP | -0.10 dB |
+| Glassy Hit | Chord | PD | pd, chord | -14.0 | -4.5 dBTP | -0.54 dB |
+| Glassy Mallet | Percussive | Analog | analog, percussive | -25.1 | -1.8 dBTP | -0.18 dB |
+| Liquid Tom | Percussive | Additive | additive, percussive | -26.6 | -1.8 dBTP | 5.26 dB |
+| Molten Mallet | Percussive | FM6 | fm6, percussive | -24.9 | -1.8 dBTP | -0.41 dB |
+| Lunar Knock | Percussive | Wavetable | wavetable, percussive | -21.3 | -1.8 dBTP | 2.98 dB |
+| Quiet Gong | Percussive | PD | pd, percussive | -20.7 | -1.8 dBTP | 4.30 dB |
+| Ember Mallet | Percussive | Analog | analog, percussive | -26.3 | -1.8 dBTP | 1.46 dB |
+| Cold Drum | Percussive | Additive | additive, percussive | -28.2 | -1.8 dBTP | 3.95 dB |
+| Soft Metal | Percussive | FM6 | fm6, percussive | -22.1 | -1.8 dBTP | 2.57 dB |
+| Neon Tap | Percussive | Wavetable | wavetable, percussive | -25.3 | -1.8 dBTP | 2.42 dB |
+| Misty Tom | Percussive | PD | pd, percussive | -22.8 | -1.8 dBTP | 4.98 dB |
+| Deep Mallet | Percussive | Analog | analog, percussive | -24.1 | -1.8 dBTP | 1.48 dB |
+| Golden Metal | Percussive | Additive | additive, percussive | -26.0 | -1.8 dBTP | 9.84 dB |
+| Solar Clang | Percussive | FM6 | fm6, percussive | -25.8 | -1.8 dBTP | -0.52 dB |
+| Ember Tap | Percussive | Wavetable | wavetable, percussive | -20.5 | -1.8 dBTP | 4.54 dB |
+| Cobalt Knock | Percussive | PD | pd, percussive | -22.1 | -1.8 dBTP | 4.50 dB |
+| Crimson Clang | Percussive | Analog | analog, percussive | -28.5 | -1.8 dBTP | 1.47 dB |
+| 01 Bass Multi | Bass | Analog + Additive + FM6 + Wavetable + PD | multi, bass, note assign | -14.0 | -4.7 dBTP | 0.00 dB |
+| 02 Pad Multi | Pad | Additive + FM6 + Wavetable + PD + Analog | multi, pad, note assign | -14.0 | -4.9 dBTP | 0.00 dB |
+| 03 Synth Multi | Other | FM6 + Wavetable + PD + Analog + Additive | multi, synth, note assign | -14.0 | -6.8 dBTP | 0.00 dB |
+| 04 Lead Multi | Lead | Wavetable + PD + Analog + Additive + FM6 | multi, lead, note assign | -14.1 | -1.8 dBTP | 0.00 dB |
+| 05 Keys Multi | Keys | PD + Analog + Additive + FM6 + Wavetable | multi, keys, note assign | -17.9 | -1.8 dBTP | 0.00 dB |
+| 06 Pluck Multi | Pluck | Analog + Additive + FM6 + Wavetable + PD | multi, pluck, note assign | -26.5 | -1.8 dBTP | 0.00 dB |
+| 07 Chord Multi | Chord | FM6 + PD + Analog + Wavetable | multi, chord, note assign | -20.7 | -1.8 dBTP | 0.00 dB |
+| 08 Percussive Multi | Percussive | FM6 + Wavetable + PD + Analog + Additive | multi, percussive, note assign | -25.5 | -1.8 dBTP | 0.00 dB |
+| 09 Bell Multi | Bell | FM6 | multi, bell, fm, note assign | -15.6 | -1.8 dBTP | 0.00 dB |
+| 10 Organ Multi | Organ | Additive + Wavetable + FM6 | multi, organ, note assign | -14.0 | -6.7 dBTP | 0.00 dB |
+| 11 Strings Multi | Strings | Wavetable + Additive + Analog | multi, strings, note assign | -14.0 | -2.5 dBTP | 0.00 dB |
+| 12 Brass Multi | Brass | FM6 + Analog + Wavetable | multi, brass, note assign | -14.0 | -3.7 dBTP | 0.00 dB |
+| 13 Chromatic Drift | Texture | FM6 + Wavetable + PD + Analog + Additive | multi, pad, evolving, note assign | -14.0 | -5.0 dBTP | 0.00 dB |
+| 14 Twelve Echoes | Sequence | Wavetable + PD + Analog + Additive + FM6 | multi, pluck, delay, note assign | -21.2 | -1.8 dBTP | 0.00 dB |
+| 15 Glass Spectrum | Bell | FM6 | multi, glass, note assign | -16.1 | -1.8 dBTP | 0.00 dB |
+| 16 Dark Matter | Bass | Analog + Additive + FM6 + Wavetable + PD | multi, dark, distorted, note assign | -14.0 | -8.0 dBTP | 0.00 dB |
+| 17 Sunrise Ensemble | Strings | Wavetable + Additive + Analog | multi, ensemble, note assign | -14.0 | -2.5 dBTP | 0.00 dB |
+| 18 Tape Keys | Keys | FM6 + Wavetable + PD + Analog + Additive | multi, lofi, keys, note assign | -20.7 | -1.8 dBTP | 0.00 dB |
+| 19 Metal Garden | Percussive | Wavetable + PD + Analog + Additive + FM6 | multi, metallic, note assign | -22.6 | -1.8 dBTP | 0.00 dB |
+| 20 Neon Arcade | Lead | PD + Analog + Additive + FM6 + Wavetable | multi, chip, lead, note assign | -14.0 | -6.8 dBTP | 0.00 dB |
+| 21 Velvet Stabs | Chord | Analog + Wavetable + FM6 + PD | multi, stabs, note assign | -19.4 | -1.8 dBTP | 0.00 dB |
+| 22 Prism Mallets | Percussive | Additive + FM6 + Wavetable + PD + Analog | multi, mallets, note assign | -28.0 | -1.8 dBTP | 0.00 dB |
+| 23 Hybrid Engines | Other | FM6 + Wavetable + PD + Analog + Additive | multi, all engines, note assign | -14.0 | -8.4 dBTP | 0.00 dB |
+| 24 Slow Motion | Pad | Wavetable + PD + Analog + Additive + FM6 | multi, slow, ambient, note assign | -14.5 | -1.8 dBTP | 0.00 dB |

@@ -9,13 +9,14 @@ Gli oscillatori di Analog, FM6, Wavetable e PD lavorano in oversampling interno 
 Sottrattivo virtuale-analogico con oscillatori band-limited.
 
 - **3 OSC**: On, Wave (Sine, Triangle, Saw, Square, Pulse, SuperSaw, Half, Narrow), Octave ±4, Semitone ±12,
-  Fine ±100 ct, Level, Pan, Phase, Phase Reset, Pulse Width 1–99 %, SuperSaw Detune/Spread/Voices 2–7,
-  Stereo Width, Wave Mod.
+  Fine ±100 ct, Level, Pan, Phase, Phase Reset, Wave Mod, **Route** (Filter / Bypass del filtro); Pulse Width 1–99 %
+  solo con Pulse; SuperSaw Detune/Spread/Voices 2–7 e Stereo Width solo con SuperSaw. Un OSC a Level 0 resta
+  sorgente silenziosa di sync/FM/ring.
 - **Mod**: Hard Sync 2→1, FM 3→1 e 2→1 (lineare, audio-rate), Ring 1×2.
-- **Mixer**: Volume, Pan, Mute/Solo per OSC; livelli Sub e Noise; Osc Master. Ogni sorgente va al filtro
-  (**Filter**) o lo salta (**Bypass**).
-- **Sub**: Sine/Square, −1/−2 ottave rispetto a OSC 1, Level, Phase.
-- **Noise**: White/Pink, Level, Color, Pan, Stereo Width.
+- **Sub**: Sine/Square, −1/−2 ottave rispetto a OSC 1, Level, Phase, Route.
+- **Noise**: Level, White/Pink, Color, Pan, Stereo Width, Route.
+- **Output**: livello complessivo delle sorgenti prima del filtro. (Il vecchio modulo Mixer non c'è più: livello e pan
+  sono negli oscillatori.)
 
 ## Additive
 Banco fino a **256 parziali** (default 64); le parziali oltre Nyquist vengono sfumate automaticamente.
@@ -36,6 +37,8 @@ Sintesi FM (phase modulation) a **6 operatori**.
 - Per operatore: On, Ratio/Fixed, Ratio, Coarse, Fine, Fixed Hz, Detune, Wave (Sine, Half Sine, Abs Sine,
   Pulse Sine, Alt Sine, Camel Sine, Square, Saw), Phase, Phase Reset, Sync, Feedback, Output Level,
   Velocity e AM Sens, Pan, key scaling (Breakpoint, Depth, curve ±Lin/±Exp), Rate Scaling.
+  **Output Level**: ampiezza = valore² (50 % ≈ −12 dB come carrier, indice di modulazione ben udibile su quasi tutta la
+  corsa). I banchi .syx vengono convertiti con la stessa legge, quindi suonano come prima.
 - **ENV per operatore**: AHDSR con curve, Loop e Time Scale.
 - **Algorithm**: 32 algoritmi classici + **Custom** (matrice 6×6 + uscite; la diagonale è il feedback).
   **Algorithm A/B + Morph** sfuma connessioni, feedback e carrier tra due algoritmi.

@@ -621,6 +621,7 @@ Generated from the same source as the plug-in. Detailed descriptions of every pa
 | Global Scale | Off / On | Off |  |  |
 | Global Scale Root | C / C# / D / D# / E / F / F# / G / G# / A / A# / B | C |  |  |
 | Global Scale Type | 34 items | Major |  |  |
+| Global Scale Mode | Poly / Mono | Poly |  |  |
 | Global Scale Amount | 0.0 … 1.0 | 1.0 | % |  |
 | Global Scale Smooth | 0.0 … 1.0 | 0.35 | % |  |
 

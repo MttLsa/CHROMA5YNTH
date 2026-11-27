@@ -191,6 +191,16 @@ void ChromaProcessor::initAll()
     commitHistory();
 }
 
+void ChromaProcessor::initLayer (int layer)
+{
+    history.commit();
+    auto* on = state.getParameter (ParamIDs::layerOn[(size_t) juce::jlimit (0, numLayers - 1, layer)]);
+    const float wasOn = on != nullptr ? on->getValue() : 0.0f;
+    synth.initLayer (layer);
+    if (on != nullptr) on->setValueNotifyingHost (wasOn);
+    commitHistory();
+}
+
 PresetManager& ChromaProcessor::getPresets()
 {
     if (presets == nullptr)

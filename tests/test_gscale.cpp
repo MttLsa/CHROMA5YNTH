@@ -32,18 +32,18 @@ double peakHz (const std::vector<float>& x, size_t from, size_t len, double fs, 
     return bestF;
 }
 
-std::vector<float> correct (double hz, int root, int scale, float amount, float smooth, int seconds = 1)
+std::vector<float> correct (double hz, int root, int scale, float amount, float smooth, int seconds = 1, bool mono = false)
 {
     const double fs = 48000.0;
     ScaleCorrector c;
     c.prepare (fs, 256);
-    c.setScale (root, scale, amount, smooth);
+    c.setScale (root, scale, amount, smooth, 440.0f, mono);
     std::vector<float> out;
     double ph = 0.0;
     std::vector<float> l (256), r (256);
     for (int b = 0; b < (int) (seconds * fs) / 256; ++b)
     {
-        for (int i = 0; i < 256; ++i) { l[(size_t) i] = r[(size_t) i] = 0.5f * (float) std::sin (ph); ph += 2.0 * M_PI * hz / fs; }
+        for (int i = 0; i < 256; ++i) { l[(size_t) i] = r[(size_t) i] = 0.4f * (float) (std::sin (ph) + 0.5 * std::sin (2.0 * ph) + 0.25 * std::sin (3.0 * ph)); ph += 2.0 * M_PI * hz / fs; }
         c.process (l.data(), r.data(), 256);
         out.insert (out.end(), l.begin(), l.end());
     }
@@ -86,6 +86,10 @@ TEST_CASE ("Global Scale: an off-scale tone is pulled to the scale note", "[gsca
     const double f = peakHz (y, 24000, 16384, 48000.0, 400.0, 500.0);
     INFO ("corrected " << f);
     CHECK (std::abs (f - 440.0) < 1.5);
+    // Mono mode: YIN recognises the 452 Hz fundamental, the whole harmonic spectrum moves to 440 / 880 / 1320
+    const auto m = correct (452.0, 9, 11, 1.0f, 0.0f, 1, true);
+    CHECK (std::abs (peakHz (m, 24000, 16384, 48000.0, 400.0, 500.0) - 440.0) < 1.5);
+    CHECK (std::abs (peakHz (m, 24000, 16384, 48000.0, 850.0, 950.0) - 880.0) < 3.0);
     // Amount 0: unchanged
     const auto z = correct (452.0, 9, 11, 0.0f, 0.0f);
     CHECK (std::abs (peakHz (z, 24000, 16384, 48000.0, 400.0, 500.0) - 452.0) < 1.5);

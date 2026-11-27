@@ -20,7 +20,7 @@ StyleLookAndFeel::StyleLookAndFeel()
     setColour (DocumentWindow::backgroundColourId, bg);
     setColour (Label::textColourId, text);
     setColour (TextButton::buttonColourId, panel2);
-    setColour (TextButton::buttonOnColourId, accent);
+    setColour (TextButton::buttonOnColourId, accentG);    // toolbar selections: white (tabs and layer tiles set blue)
     setColour (TextButton::textColourOffId, text);
     setColour (TextButton::textColourOnId, Colours::black);
     setColour (ToggleButton::textColourId, text);
@@ -209,7 +209,13 @@ bool FineSlider::keyPressed (const KeyPress& k)
     if (k.isKeyCode (KeyPress::upKey) || k.isKeyCode (KeyPress::rightKey)) dir = 1;
     if (k.isKeyCode (KeyPress::downKey) || k.isKeyCode (KeyPress::leftKey)) dir = -1;
     if (dir == 0)
+    {
+        const auto ch = k.getTextCharacter();
+        if (onTypedChar != nullptr && ((ch >= '0' && ch <= '9') || ch == '-' || ch == '.' || ch == ',' || k.isKeyCode (KeyPress::returnKey))
+            && onTypedChar (ch))
+            return true;
         return Slider::keyPressed (k);
+    }
     const double interval = getInterval();
     double v;
     if (interval > 0.0 && (getMaximum() - getMinimum()) / interval <= 400.0)
@@ -244,6 +250,45 @@ String Binding::format (float v) const
     return num (v) + (unit.isNotEmpty() ? (unit == "%" || unit == utf8 ("°") ? unit : " " + unit) : String());
 }
 
+std::optional<float> Binding::parse (const String& input) const
+{
+    auto t = input.trim().replaceCharacter (',', '.');
+    if (t.isEmpty()) return std::nullopt;
+    if (kind == Kind::Choice || kind == Kind::Bool)
+    {
+        for (int i = 0; i < choices.size(); ++i)
+            if (choices[i].equalsIgnoreCase (t)) return min + (float) i;
+        if (kind == Kind::Bool)
+        {
+            if (t.equalsIgnoreCase ("on") || t == "1") return max;
+            if (t.equalsIgnoreCase ("off") || t == "0") return min;
+        }
+        if (t.containsOnly ("0123456789"))
+        {
+            const int i = t.getIntValue() - 1;    // 1-based position in the list
+            if (i >= 0 && i < choices.size()) return min + (float) i;
+        }
+        return std::nullopt;
+    }
+    const auto lower = t.toLowerCase().removeCharacters (" ");
+    const auto numText = lower.initialSectionContainingOnly ("+-0123456789.e");
+    if (numText.isEmpty() || ! numText.containsAnyOf ("0123456789")) return std::nullopt;
+    float v = numText.getFloatValue();
+    const auto suffix = lower.substring (numText.length());
+    const auto shown = format (get != nullptr ? get() : def);        // the readout tells the unit the user sees
+    if (suffix.startsWith ("k")) v *= 1000.0f;                        // 1.2k, 1.2khz
+    else if (suffix == "ms") { if (unit == "s") v *= 0.001f; }
+    else if (suffix == "s" && unit == "ms") v *= 1000.0f;
+    else if (suffix == "%" || (suffix.isEmpty() && unit == "%" && min >= -1.0f && max <= 2.0f))
+    {
+        if (unit == "%" && min >= -1.0f && max <= 2.0f) v *= 0.01f;
+    }
+    else if (suffix.isEmpty() && unit == "s" && shown.endsWith (" ms")) v *= 0.001f;
+    else if (suffix.isEmpty() && unit == "Hz" && shown.endsWith ("kHz")) v *= 1000.0f;
+    if (kind == Kind::Int) v = (float) roundToInt (v);
+    return jlimit (min, max, v);
+}
+
 NormalisableRange<double> Binding::range() const
 {
     if (hasHostRange)
@@ -270,7 +315,61 @@ Knob::Knob (const String& c, Colour a) : caption (c), accent (a)
     slider.setVelocityBasedMode (false);
     slider.setMouseDragSensitivity (slider.dragPixels);
     slider.onValueChange = [this] { repaint(); };
+    slider.onTypedChar = [this] (juce_wchar ch)
+    {
+        if (binding == nullptr) return false;
+        beginTextEntry (ch == '\r' || ch == '\n' || ch == 0 ? String() : String::charToString (ch));
+        return true;
+    };
     addAndMakeVisible (slider);
+}
+
+void Knob::beginTextEntry (const String& initial)
+{
+    if (binding == nullptr) return;
+    editor = std::make_unique<TextEditor>();
+    editor->setFont (style::font (11.5f));
+    editor->setJustification (Justification::centred);
+    editor->setColour (TextEditor::backgroundColourId, style::outline);
+    editor->setColour (TextEditor::focusedOutlineColourId, accent);
+    editor->setColour (TextEditor::outlineColourId, accent);
+    editor->setColour (TextEditor::textColourId, style::text);
+    editor->setIndents (2, 1);
+    editor->setTooltip ("Scrivi un valore (es. 250 ms, 1.2k, 45%) e premi Invio; Esc annulla.");
+    const int capH = jlimit (10, 16, getHeight() / 6);
+    editor->setBounds (getLocalBounds().removeFromBottom (capH + 4).reduced (1, 0));
+    editor->setText (initial.isNotEmpty() ? initial : binding->format ((float) slider.getValue()), false);
+    editor->onReturnKey = [this] { endTextEntry (true); };
+    editor->onEscapeKey = [this] { endTextEntry (false); };
+    editor->onFocusLost = [this] { endTextEntry (true); };
+    addAndMakeVisible (*editor);
+    editor->grabKeyboardFocus();
+    if (initial.isNotEmpty()) editor->moveCaretToEnd();
+    else editor->selectAll();
+}
+
+void Knob::endTextEntry (bool apply)
+{
+    if (editor == nullptr) return;
+    const auto text = editor->getText();
+    auto keep = std::move (editor);          // destroyed after the callbacks returned
+    keep->setVisible (false);
+    MessageManager::callAsync ([k = std::shared_ptr<TextEditor> (std::move (keep))] {});
+    if (apply && binding != nullptr)
+        if (const auto v = binding->parse (text))
+        {
+            if (binding->beginGesture) binding->beginGesture();
+            slider.setValue (*v, sendNotificationSync);
+            if (binding->endGesture) binding->endGesture();
+        }
+    repaint();
+}
+
+void Knob::mouseDoubleClick (const MouseEvent& e)
+{
+    // double click on the value readout = type a value (double click on the knob itself = default)
+    if (e.y >= getHeight() - jlimit (10, 16, getHeight() / 6) - 2)
+        beginTextEntry ({});
 }
 
 void Knob::setAccent (Colour c)
@@ -485,38 +584,52 @@ void Panel::paint (Graphics& g)
 }
 
 //==============================================================================
+Font nameFont (float h)
+{
+    static const Typeface::Ptr light = Typeface::createSystemTypefaceFor (ChromaAssets::UrbanistLight_ttf, ChromaAssets::UrbanistLight_ttfSize);
+    return Font (FontOptions (light).withHeight (h));
+}
+
+Colour rainbow (int k, float t)
+{
+    // 12 hues red -> violet (one per note of the chromatic scale), vertical shade: light on top, saturated below
+    const float hue = (float) jlimit (0, 11, k) / 12.0f * 0.83f;
+    const float sat = 0.35f + 0.6f * jlimit (0.0f, 1.0f, t);
+    const float bri = 1.0f - 0.15f * jlimit (0.0f, 1.0f, t);
+    return Colour::fromHSV (hue, sat, bri, 1.0f);
+}
+
 void drawHeader (Graphics& g, Rectangle<float> bar, const String& subtitle, const String& version)
 {
-    const auto f = style::font (26.0f, true).withExtraKerningFactor (0.18f);
-    const float base = bar.getCentreY() + 4.0f;
+    const auto f = nameFont (31.0f).withExtraKerningFactor (0.02f);
+    const float base = bar.getCentreY() + 6.0f;
 
     GlyphArrangement ga;
-    ga.addLineOfText (f, "CHROMA", bar.getX() + 4.0f, base);
+    ga.addLineOfText (f, "CHROMA5YNTH", bar.getX() + 2.0f, base);
     const float w1 = ga.getBoundingBox (0, -1, true).getWidth();
-    g.setColour (style::text);
+    g.setColour (style::text.brighter (0.1f));
     ga.draw (g);
 
-    GlyphArrangement gb;
-    gb.addLineOfText (f, "5YNTH", bar.getX() + 4.0f + w1 + 4.0f, base);
-    const float w2 = gb.getBoundingBox (0, -1, true).getWidth();
-    g.setColour (style::text.withAlpha (0.55f));
-    gb.draw (g);
-
     GlyphArrangement gm;
-    gm.addLineOfText (style::font (9.5f).withExtraKerningFactor (0.12f), "TMFU audiovibe", bar.getX() + 5.0f, base + 12.0f);
+    gm.addLineOfText (style::font (9.5f).withExtraKerningFactor (0.12f), "TMFU audiovibe", bar.getX() + 3.0f, base + 13.0f);
     g.setColour (style::text.withAlpha (0.85f));
     gm.draw (g);
 
-    const float x = bar.getX() + 4.0f + w1 + 4.0f + w2 + 14.0f;
-    const float midY = base - 9.0f;
-    g.setColour (style::accent);
-    g.fillRoundedRectangle (x, midY - 8.0f, 6.0f, 16.0f, 1.5f);
-    g.setColour (style::accent2);
-    g.fillRoundedRectangle (x + 9.0f, midY - 8.0f, 6.0f, 16.0f, 1.5f);
+    // 12 rainbow bars, vertically shaded
+    const float x = bar.getX() + 2.0f + w1 + 14.0f;
+    const float barW = 6.0f, gap = 2.5f, barH = 20.0f, top = base - 11.0f - barH * 0.5f;
+    for (int k = 0; k < 12; ++k)
+    {
+        const auto r = Rectangle<float> (x + (float) k * (barW + gap), top, barW, barH);
+        ColourGradient grad (rainbow (k, 0.0f), r.getX(), r.getY(), rainbow (k, 1.0f), r.getX(), r.getBottom(), false);
+        g.setGradientFill (grad);
+        g.fillRoundedRectangle (r, 1.5f);
+    }
+    const float tx = x + 12.0f * (barW + gap) + 12.0f;
 
     g.setColour (style::textDim);
     g.setFont (style::font (12.0f));
-    g.drawText (subtitle, (int) (x + 28.0f), (int) (midY - 10.0f), 400, 20, Justification::centredLeft);
+    g.drawText (subtitle, (int) tx, (int) (top + barH * 0.5f - 10.0f), 400, 20, Justification::centredLeft);
     g.setColour (style::textDim.withAlpha (0.6f));
     g.drawText (version, bar.toNearestInt().withTrimmedRight (6), Justification::centredRight);
 }

@@ -128,3 +128,12 @@
 - CI: step "QA report" con i numeri CPU. 124/124 test verdi (Linux + macOS). Nessun bug trovato nel plugin; corretto solo il confronto dei parametri discreti nel test (host invia valori non quantizzati).
 - Fix build #65: soglia CPU instabile sul runner condiviso (stesso codice 45 % → 81 %): misura in 8 segmenti da 0.25 s, gate sul segmento migliore, report migliore/mediana.
 - Aperti: misura CPU su Apple Silicon reale; prova d'ascolto (vedi chat fase 13).
+
+## v1.1 – Modifiche richieste (GUI, NOTE ASSIGN, GLOBAL SCALE, FM, preset) ✅
+- FM6: Output Level con legge knob² (prima −6 dB/12 di corsa: Op 2–6 a metà corsa erano a −36 dB, quindi inudibili); .syx convertiti con la stessa legge.
+- GUI: moduli in righe in ordine di flusso (Op n | Op n Env, OSC | Advanced, Filter ultimo nella scheda Engine), knob più piccoli, colori per sezione, nome in Urbanist Light (come GROOVULATION) + 12 barre arcobaleno (variante C), controlli condizionali, Mod Env 2/3 e LFO non assegnati in grigio, "(Filter Envelope)"/"(Wavetable Filter 2 Envelope)", valori digitabili, WT Editor chiuso al cambio di engine.
+- Analog: tolto il Mixer (Route nell'OSC, Level/Route di Sub e Noise nei loro moduli, Output); destinazioni Mod Matrix v1.0 rimappate (`mmver`).
+- NOTE ASSIGN (ex SCALE): menu Synth 1–12/Off per nota. Init = solo il synth selezionato.
+- GLOBAL SCALE (host): correzione in tempo reale per synth con Signalsmith Stretch + YIN (motore/riconoscimento dei moduli MELODIC di Groovulation), Poly/Mono, 34 scale di Ableton, Amount/Smooth, ≈1 cent, latenza 64 ms riportata solo se attivo.
+- Preset: tools/gen_recipes.py → 24 Multi a 12 synth (synth n = nota n, si parte da "01 Bass Multi", ogni synth livellato da solo) + 128 Layer (7 categorie).
+- Test nuovi: test_gscale, FM via processore, rimappatura mm, parsing valori, set di fabbrica (24/128, nota→synth). Versione 1.1.0.

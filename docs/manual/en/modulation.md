@@ -1,6 +1,6 @@
 # Voice, filters and modulation
 
-These modules are shared by all engines (*Voice* and *Modulation* tabs).
+These modules are shared by all engines (*Voice* and *Modulation* tabs; the **Filter** is the last module of the *Engine* tab).
 
 ## Voice
 - **Mode**: Mono, Poly, Unison, Legato. **Max Voices** per Layer.

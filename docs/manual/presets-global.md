@@ -7,11 +7,14 @@
 - Libreria: `~/Library/Audio/Presets/TMFU audiovibe/CHROMA5YNTH/{Multi,Layer}`; preferiti in `favourites.txt`.
 - Browser (pulsante **Presets**): Multi/Layer, ricerca (tutte le parole su nome, categoria, autore, tag), filtri
   categoria/tag/autore, preferiti, Save / Load (doppio clic) / Rename / Delete / Import / Export.
-- **Preset di fabbrica**: 64 Multi (40 patch a un Layer, 8 per engine, + 24 Multi che usano SCALE) e le 40 patch anche
-  come Layer preset. Sono incorporati nel plugin e copiati in `{Multi,Layer}/Factory` al primo uso (di nuovo solo
+- **Preset di fabbrica**: **24 Multi** che usano tutti e 12 i synth con NOTE ASSIGN (Synth 1 = Do, Synth 2 = Do#, …
+  Synth 12 = Si): i 12 synth di un Multi hanno suoni della stessa famiglia ma ognuno con carattere/timbro/filtro
+  proprio. Si parte da *01 Bass Multi*, poi Pad, Synth, Lead, Keys, Pluck, Chord, Percussive, Bell, Organ, Strings,
+  Brass e 12 Multi liberi. **128 Layer** (un solo synth, su tutte le note) nelle categorie Bass, Keys, Lead, Pad, Pluck,
+  Chord e Percussive. Sono incorporati nel plugin e copiati in `{Multi,Layer}/Factory` al primo uso (di nuovo solo
   quando cambia il set di fabbrica). Elenco: [factory-presets.md](factory-presets.md).
 - **Normalizzazione**: ogni preset di fabbrica è renderizzato offline (nota C3, velocity 100, 4 s) e riceve un trim
-  per arrivare a −14 LUFS short-term max, mai sopra −1 dBTP: **Preset Trim** (Multi, sommato al Master Volume) e
+  per arrivare a −14 LUFS short-term max, mai sopra −1 dBTP (nei Multi NOTE ASSIGN ogni synth è livellato da solo): **Preset Trim** (Multi, sommato al Master Volume) e
   **Trim** del Layer (Layer preset, dopo le Layer FX). Strumento: `tools/presetnorm` (vedi `presets/README.md`).
 
 ## Undo/Redo, A/B, Randomize, Init
@@ -22,7 +25,8 @@
   "Analog" = tutte le sezioni Analog, "Master FX · Reverb"). Mai toccati: Master Volume, polifonia, Scale, MPE,
   Global, Macro, Automation Slot, On/Engine/Volume/Mute/Solo/Transpose/range dei Layer; "Layer · Voice" e
   "Layer · Performance" solo se scelte esplicitamente come sezione.
-- **Init**: riporta la patch ai default (le impostazioni globali e le mappature MIDI restano).
+- **Init**: riporta ai default **solo il synth selezionato** (resta acceso/spento com'era); gli altri 11 synth, Master,
+  impostazioni globali e mappature MIDI non cambiano.
 
 ## MIDI learn
 - Clic destro su un controllo → *MIDI Learn*, poi muovere un controller: il CC (qualsiasi canale) viene assegnato.
