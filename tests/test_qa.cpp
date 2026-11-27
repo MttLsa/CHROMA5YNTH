@@ -235,7 +235,16 @@ TEST_CASE ("QA: host state save/restore", "[qa]")
         b.setStateInformation (s1.getData(), (int) s1.getSize());
         prepare (b, 44100.0, 512);   // host reopens the project at another rate / block size
         for (size_t i = 0; i < (size_t) a.getParameters().size(); ++i)
-            REQUIRE (std::abs (a.getParameters()[(int) i]->getValue() - b.getParameters()[(int) i]->getValue()) < 1e-5f);
+        {
+            INFO (dynamic_cast<juce::RangedAudioParameter*> (a.getParameters()[(int) i])->getParameterID()
+                  << " a=" << a.getParameters()[(int) i]->getValue() << " b=" << b.getParameters()[(int) i]->getValue());
+            auto* pa = a.getParameters()[(int) i];
+            auto* pb = b.getParameters()[(int) i];
+            if (pa->isDiscrete() || pa->isBoolean())
+                REQUIRE (pa->getCurrentValueAsText() == pb->getCurrentValueAsText());   // hosts may send unsnapped values
+            else
+                REQUIRE (std::abs (pa->getValue() - pb->getValue()) < 1e-5f);
+        }
         for (int l = 0; l < 12; ++l)
             for (int i = 0; i < (int) lp::count; ++i)
             {
